@@ -21,7 +21,7 @@ public class GridGenerator : NetworkBehaviour
     private Canvas canvas;
 
     private List<Hex> hexes;
-    private readonly SyncList<HexSyncData> hexesSyncList;
+    private readonly SyncList<HexSyncData> hexesSyncList = new SyncList<HexSyncData>();
 
     private void Awake()
     {

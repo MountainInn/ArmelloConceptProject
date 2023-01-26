@@ -27,8 +27,6 @@ public class GridGenerator : NetworkBehaviour
     {
         canvas = GameObject.FindObjectOfType<Canvas>();
         tilemap = GetComponentInChildren<Tilemap>();
-
-        tiles = Resources.LoadAll<SpriteRenderer>("Prefabs/Tiles").ToList();
     }
 
     public override void OnStartServer()

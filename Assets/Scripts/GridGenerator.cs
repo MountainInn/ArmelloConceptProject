@@ -7,8 +7,9 @@ using UnityEngine.Tilemaps;
 using UnityEngine.UI;
 using TMPro;
 using MountainInn;
+using Mirror;
 
-public class GridGenerator : MonoBehaviour
+public class GridGenerator : NetworkBehaviour
 {
     [RangeAttribute(1, 3)]
     [SerializeField] int radius;
@@ -18,7 +19,9 @@ public class GridGenerator : MonoBehaviour
 
     private Tilemap tilemap;
     private Canvas canvas;
-    private List<SpriteRenderer> tiles;
+
+    private List<Hex> hexes;
+    private readonly SyncList<HexSyncData> hexesSyncList;
 
     private void Awake()
     {
@@ -28,33 +31,33 @@ public class GridGenerator : MonoBehaviour
         tiles = Resources.LoadAll<SpriteRenderer>("Prefabs/Tiles").ToList();
     }
 
-    private void Start()
+    public override void OnStartServer()
     {
-
-        Generate(radius);
+        RandomizeHexesSyncData();
     }
 
-    private void Generate(int radius)
+    private void RandomizeHexesSyncData()
     {
         foreach ( var coord in TilePositions(radius) )
         {
-            InstantiateCoordText(coord);
+            HexSyncData hexSyncData = new HexSyncData(Hex.GetRandomType(), coord.xy());
 
-            InstantiateRandomTile(coord);
+            hexesSyncList.Add(hexSyncData);
         }
-
-        onMapGenerated?.Invoke();
     }
 
-    private void InstantiateRandomTile(Vector3Int coord)
+    private void RealizeHexesSyncData()
     {
-        var randomPrefab = tiles.GetRandom();
+        foreach (var hexSyncData in hexesSyncList)
+        {
+            Hex hex = Hex.RealizeSyncData(hexSyncData);
 
-        var position = tilemap.GetCellCenterWorld(coord);
+            hexes.Add(hex);
 
-        var tile = Instantiate(randomPrefab, position, Quaternion.identity, tilemap.transform);
+            var position = tilemap.GetCellCenterWorld(hexSyncData.coord.xy_());
 
-        // tilemap.SetTile(new Vector3Int(x, y, 0) , );
+            var tile = Instantiate(hex.viewPrefab, position, Quaternion.identity, tilemap.transform);
+        }
     }
 
     private IEnumerable<Vector3Int> TilePositions(int radius)

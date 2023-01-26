@@ -20,4 +20,14 @@ namespace MountainInn
             return Input.mousePosition * canvas.transform.lossyScale.x;
         }
     }
+
+    static public class ArrayExt
+    {
+        static public object GetRandom(this System.Array array)
+        {
+            int id = UnityEngine.Random.Range(0, array.Length);
+
+            return array.GetValue(id);
+        }
+    }
 }

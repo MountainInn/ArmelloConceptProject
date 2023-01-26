@@ -21,6 +21,16 @@ namespace MountainInn
         }
     }
 
+    static public class Vector3IntExt
+    {
+        static public Vector2Int xy(this Vector3Int v3) => new Vector2Int(v3.x, v3.y);
+    }
+   
+    static public class Vector2IntExt
+    {
+        static public Vector3Int xy_(this Vector2Int v2, int z = 0) => new Vector3Int(v2.x, v2.y, z);
+    }
+
     static public class ArrayExt
     {
         static public object GetRandom(this System.Array array)

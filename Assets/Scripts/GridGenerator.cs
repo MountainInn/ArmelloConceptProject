@@ -23,10 +23,13 @@ public class GridGenerator : NetworkBehaviour
     private List<Hex> hexes;
     private readonly SyncList<HexSyncData> hexesSyncList = new SyncList<HexSyncData>();
 
+    private HexTile[] tiles;
+
     private void Awake()
     {
         canvas = GameObject.FindObjectOfType<Canvas>();
         tilemap = GetComponentInChildren<Tilemap>();
+        tiles = Resources.LoadAll<HexTile>("Prefabs/Tiles/");
     }
 
     public override void OnStartServer()
@@ -49,6 +52,7 @@ public class GridGenerator : NetworkBehaviour
         foreach (var hexSyncData in hexesSyncList)
         {
             Hex hex = Hex.RealizeSyncData(hexSyncData);
+        var tilePrefab = (HexTile) tiles.First(sr => sr.name == hexSyncData.hexSubtype.ToString());
 
             hexes.Add(hex);
 

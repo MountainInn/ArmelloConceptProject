@@ -4,7 +4,6 @@ using MountainInn;
 abstract public class Hex
 {
     public Vector2Int coordinates {get; protected set;}
-    public SpriteRenderer viewPrefab {get; protected set;}
 
     public Hex(Vector2Int coordinates)
     {

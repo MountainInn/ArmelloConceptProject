@@ -13,7 +13,6 @@ abstract public class Hex
 
     abstract public void OnStepped();
 
-
     public enum Type
     {
         Forest, Mountain, Lake, Sand
@@ -26,9 +25,9 @@ abstract public class Hex
         return subtype switch
         {
             (Hex.Type.Forest) => new Forest(coord),
-                (Hex.Type.Mountain) => new Forest(coord),
-                (Hex.Type.Lake) => new Forest(coord),
-                (Hex.Type.Sand) => new Forest(coord),
+                (Hex.Type.Mountain) => new Mountain(coord),
+                (Hex.Type.Lake) => new Lake(coord),
+                (Hex.Type.Sand) => new Sand(coord),
                 (_) => throw new System.Exception($"Hex subtype {subtype} not handled by RealizeSubtype function")
                 };
     }
@@ -54,6 +53,42 @@ public struct HexSyncData
 public class Forest : Hex
 {
     public Forest(Vector2Int coordinates) : base(coordinates)
+    {
+    }
+
+    public override void OnStepped()
+    {
+
+    }
+}
+
+public class Mountain : Hex
+{
+    public Mountain(Vector2Int coordinates) : base(coordinates)
+    {
+    }
+
+    public override void OnStepped()
+    {
+
+    }
+}
+
+public class Lake : Hex
+{
+    public Lake(Vector2Int coordinates) : base(coordinates)
+    {
+    }
+
+    public override void OnStepped()
+    {
+
+    }
+}
+
+public class Sand : Hex
+{
+    public Sand(Vector2Int coordinates) : base(coordinates)
     {
     }
 

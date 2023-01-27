@@ -29,7 +29,33 @@ public class GridGenerator : NetworkBehaviour
     {
         canvas = GameObject.FindObjectOfType<Canvas>();
         tilemap = GetComponentInChildren<Tilemap>();
+
+        hexes = new List<Hex>();
+        hexesSyncList.Callback += OnHexesChanged;
+
         tiles = Resources.LoadAll<HexTile>("Prefabs/Tiles/");
+    }
+
+    private void OnHexesChanged(SyncList<HexSyncData>.Operation op, int itemIndex, HexSyncData oldItem, HexSyncData newItem)
+    {
+        switch (op)
+        {
+            case SyncList<HexSyncData>.Operation.OP_ADD:
+                RealizeHexesSyncData(newItem);
+                break;
+
+            case SyncList<HexSyncData>.Operation.OP_INSERT:
+                break;
+
+            case SyncList<HexSyncData>.Operation.OP_REMOVEAT:
+                break;
+
+            case SyncList<HexSyncData>.Operation.OP_SET:
+                break;
+
+            case SyncList<HexSyncData>.Operation.OP_CLEAR:
+                break;
+        }
     }
 
     public override void OnStartServer()
@@ -47,19 +73,19 @@ public class GridGenerator : NetworkBehaviour
         }
     }
 
-    private void RealizeHexesSyncData()
+    private void RealizeHexesSyncData(HexSyncData hexSyncData)
     {
-        foreach (var hexSyncData in hexesSyncList)
-        {
-            Hex hex = Hex.RealizeSyncData(hexSyncData);
+        Hex hex = Hex.RealizeSyncData(hexSyncData);
         var tilePrefab = (HexTile) tiles.First(sr => sr.name == hexSyncData.hexSubtype.ToString());
 
-            hexes.Add(hex);
+        hexes.Add(hex);
 
-            var position = tilemap.GetCellCenterWorld(hexSyncData.coord.xy_());
+        var position = tilemap.GetCellCenterWorld(hexSyncData.coord.xy_());
 
-            var tile = Instantiate(hex.viewPrefab, position, Quaternion.identity, tilemap.transform);
-        }
+        HexTile tile = Instantiate(tilePrefab, position, Quaternion.identity, tilemap.transform);
+        tile.Initialize(hexSyncData.coord);
+
+        NetworkServer.Spawn(tile.gameObject);
     }
 
     private IEnumerable<Vector3Int> TilePositions(int radius)

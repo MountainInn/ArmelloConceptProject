@@ -1,10 +1,13 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
 using Mirror;
+using System;
 
 public class HexTile : NetworkBehaviour, IPointerClickHandler, IPointerEnterHandler, IPointerExitHandler
 {
-    Vector2Int coordinates;
+    public event Action<Vector2Int> onHexClicked;
+
+    private Vector2Int coordinates;
     private SpriteRenderer spriteRenderer;
     private Color baseColor, highlightColor;
 
@@ -22,7 +25,7 @@ public class HexTile : NetworkBehaviour, IPointerClickHandler, IPointerEnterHand
 
     public void OnPointerClick(PointerEventData eventData)
     {
-        Debug.Log("Hex!");
+        onHexClicked?.Invoke(coordinates);
     }
 
     public void OnPointerEnter(PointerEventData eventData)

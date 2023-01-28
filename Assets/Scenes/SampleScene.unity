@@ -200,7 +200,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 125811553}
-  - component: {fileID: 125811552}
+  - component: {fileID: 125811555}
   - component: {fileID: 125811551}
   - component: {fileID: 125811554}
   m_Layer: 0
@@ -227,34 +227,6 @@ MonoBehaviour:
   maxFragments: 55
   ignoreCachedMessagesAtStartUpInSeconds: 2
   relayControl: 1
---- !u!114 &125811552
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 125811550}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8aab4c8111b7c411b9b92cf3dbc5bd4e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  dontDestroyOnLoad: 1
-  runInBackground: 1
-  autoStartServerBuild: 1
-  autoConnectClientBuild: 0
-  sendRate: 30
-  offlineScene: 
-  onlineScene: 
-  transport: {fileID: 125811551}
-  networkAddress: localhost
-  maxConnections: 100
-  authenticator: {fileID: 0}
-  playerPrefab: {fileID: 6100752503988652460, guid: 7989bb1ec1397fc4e83c7443a77c9680, type: 3}
-  autoCreatePlayer: 1
-  playerSpawnMethod: 0
-  spawnPrefabs: []
-  timeInterpolationGui: 0
 --- !u!4 &125811553
 Transform:
   m_ObjectHideFlags: 0
@@ -284,6 +256,34 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   AttributeKeys:
   - lobby_name
+--- !u!114 &125811555
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 125811550}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9183b91b6d914414b9d64d1be245e596, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  dontDestroyOnLoad: 1
+  runInBackground: 1
+  autoStartServerBuild: 1
+  autoConnectClientBuild: 0
+  sendRate: 30
+  offlineScene: 
+  onlineScene: 
+  transport: {fileID: 125811551}
+  networkAddress: localhost
+  maxConnections: 100
+  authenticator: {fileID: 0}
+  playerPrefab: {fileID: 6100752503988652460, guid: 7989bb1ec1397fc4e83c7443a77c9680, type: 3}
+  autoCreatePlayer: 1
+  playerSpawnMethod: 0
+  spawnPrefabs: []
+  timeInterpolationGui: 0
 --- !u!1 &519420028
 GameObject:
   m_ObjectHideFlags: 0
@@ -745,6 +745,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1804388978}
   - component: {fileID: 1804388977}
+  - component: {fileID: 1804388979}
   m_Layer: 0
   m_Name: SceneContext
   m_TagString: Untagged
@@ -765,7 +766,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _scriptableObjectInstallers: []
-  _monoInstallers: []
+  _monoInstallers:
+  - {fileID: 1804388979}
   _installerPrefabs: []
   _autoRun: 1
   OnPreInstall:
@@ -798,6 +800,18 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 6
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1804388979
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1804388975}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c8ff88b034146714bab8616a03ecffa6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1954911779
 GameObject:
   m_ObjectHideFlags: 0
@@ -854,7 +868,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1954911779}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e36002693f8542a42b50a524440e07c2, type: 3}
+  m_Script: {fileID: 11500000, guid: f1dc11caaf5595346a24f53db56c0d02, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   syncDirection: 0
@@ -862,6 +876,7 @@ MonoBehaviour:
   syncInterval: 0.1
   radius: 3
   textPrefab: {fileID: 529381153}
+  tilemap: {fileID: 0}
 --- !u!114 &1954911783
 MonoBehaviour:
   m_ObjectHideFlags: 0

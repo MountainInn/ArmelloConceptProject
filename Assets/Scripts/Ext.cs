@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -18,6 +19,18 @@ namespace MountainInn
         static public Vector3 MousePositionScaledToCanvas()
         {
             return Input.mousePosition * canvas.transform.lossyScale.x;
+        }
+    }
+
+    static public class GridExt
+    {
+
+        static public void HexXBorders(int radius, int y, out int left, out int right)
+        {
+            int absY = Math.Abs(y);
+
+            left = -radius + (absY)  /2;
+            right = radius - (absY+1)/2;
         }
     }
 

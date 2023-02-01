@@ -6,6 +6,7 @@ using UnityEngine.Tilemaps;
 using TMPro;
 using MountainInn;
 using Mirror;
+using Zenject;
 
 public class Map : NetworkBehaviour
 {
@@ -21,6 +22,11 @@ public class Map : NetworkBehaviour
     private HexTile[] tilePrefabs;
     private HashSet<Vector2Int> pickedPositions = new HashSet<Vector2Int>();
 
+    [Inject]
+    public void Construct(EOSLobbyUI lobbyUI)
+    {
+        lobbyUI.onStartGameButtonClicked += RandomizeMap;
+    }
 
     private void Awake()
     {

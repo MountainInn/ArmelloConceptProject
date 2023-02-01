@@ -7,8 +7,8 @@ using MountainInn;
 public class Character : NetworkBehaviour
 {
     [SyncVar] public Vector2Int coordinates;
-    public ushort moveRadius = 1;
-    public ushort moveRadiusSquared = 1;
+    [Range(1, 10)]
+    public int moveRadius = 1;
     public Map map;
 
     [Inject]

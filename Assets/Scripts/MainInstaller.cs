@@ -33,4 +33,5 @@ public class MainInstaller : MonoInstaller
             .Lazy();
     }
 
+    public DiContainer GetContainer() => Container;
 }

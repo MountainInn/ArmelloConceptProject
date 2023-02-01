@@ -23,13 +23,14 @@ public class MainInstaller : MonoInstaller
         Container
             .BindFactory<Player, Player.Factory>()
             .FromComponentInNewPrefabResource("Prefabs/PlayerPrefab")
-            .AsTransient();
+            .AsTransient()
+            .Lazy();
 
         Container
             .BindFactory<Character, Character.Factory>()
             .FromComponentInNewPrefabResource("Prefabs/Character")
-            .AsTransient();
-
+            .AsTransient()
+            .Lazy();
     }
 
     new public void Start()

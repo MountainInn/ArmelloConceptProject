@@ -6,6 +6,11 @@ public class MainInstaller : MonoInstaller
     public override void InstallBindings()
     {
         Container
+            .Bind<EOSLobbyUI>()
+            .FromComponentInHierarchy()
+            .AsSingle();
+
+        Container
             .Bind<Map>()
             .FromComponentInHierarchy()
             .AsSingle();

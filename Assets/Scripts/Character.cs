@@ -7,7 +7,7 @@ using MountainInn;
 
 public class Character : NetworkBehaviour
 {
-    public Vector2Int coordinates { get; private set; }
+    [SyncVar] public Vector2Int coordinates;
     public ushort moveRadius = 1;
     public ushort moveRadiusSquared = 1;
     public Map map;

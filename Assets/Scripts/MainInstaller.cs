@@ -33,8 +33,4 @@ public class MainInstaller : MonoInstaller
             .Lazy();
     }
 
-    new public void Start()
-    {
-        base.Start();
-    }
 }

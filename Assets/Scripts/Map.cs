@@ -17,10 +17,13 @@ public class Map : NetworkBehaviour
     public event Action<List<HexTile>> onGenerated;
 
     public List<HexTile> hexTiles {get; private set;}
+    public event Action<HexTile> onTileCreated;
     [HideInInspector]
     public Tilemap tilemap;
     private HexTile[] tilePrefabs;
     private HashSet<Vector2Int> pickedPositions = new HashSet<Vector2Int>();
+
+    readonly public SyncList<HexSyncData> hexSyncs = new SyncList<HexSyncData>();
 
     [Inject]
     public void Construct(EOSLobbyUI lobbyUI)
@@ -32,34 +35,71 @@ public class Map : NetworkBehaviour
     {
         tilemap = GetComponentInChildren<Tilemap>();
         tilePrefabs = Resources.LoadAll<HexTile>("Prefabs/Tiles/");
+        hexTiles = new List<HexTile>();
     }
 
-    public override void OnStartServer()
+    public override void OnStartClient()
     {
-        RandomizeMap();
+        Debug.Log("_Map OnStartCLient");
+        hexSyncs.Callback += OnHexSyncDataUpdated;
+    }
+
+    void OnHexSyncDataUpdated(SyncList<HexSyncData>.Operation op, int index, HexSyncData oldItem, HexSyncData newItem)
+    {
+        Debug.Log(op);
+        switch (op)
+        {
+            case SyncList<HexSyncData>.Operation.OP_ADD:
+                var newTile = CreateTile(newItem);
+                hexTiles.Add(newTile);
+                Debug.Log("--+Sync Tile") ;
+                break;
+
+            case SyncList<HexSyncData>.Operation.OP_CLEAR:
+                hexTiles.ForEach(h => GameObject.Destroy(h.gameObject));
+                hexTiles.Clear();
+                Debug.Log("--+Clear Tiles") ;
+
+                break;
+            default:
+                break;
+        }
+    }
+
+    public void RandomizeMap()
+    {
+        hexTiles = new List<HexTile>();
+        var hexData = new List<HexSyncData>();
+
+        foreach (var coord in TilePositions(radius))
+        {
+            HexSyncData hexSync = new HexSyncData
+            {
+                coord = coord.xy(),
+                hexSubtype = Hex.GetRandomType()
+            };
+            hexData.Add(hexSync);
+        }
+
+        hexSyncs.AddRange(hexData);
 
         onGenerated?.Invoke(hexTiles);
     }
 
-    private void RandomizeMap()
+    private HexTile CreateTile(HexSyncData hexSyncData)
     {
-        hexTiles = new List<HexTile>();
+        var tilePrefab = (HexTile)tilePrefabs.First(sr => sr.name == hexSyncData.hexSubtype.ToString());
 
-        foreach ( var coord in TilePositions(radius) )
-        {
-            HexSyncData hexSyncData = new HexSyncData(Hex.GetRandomType(), coord.xy());
+        var position = tilemap.GetCellCenterWorld(hexSyncData.coord.xy_());
 
-            var tilePrefab = (HexTile) tilePrefabs.First(sr => sr.name == hexSyncData.hexSubtype.ToString());
+        HexTile newTile = Instantiate(tilePrefab, position, Quaternion.identity, tilemap.transform);
+        newTile.Initialize(hexSyncData.coord);
 
-            var position = tilemap.GetCellCenterWorld(hexSyncData.coord.xy_());
+        hexTiles.Add(newTile);
 
-            HexTile newTile = Instantiate(tilePrefab, position, Quaternion.identity, tilemap.transform);
-            newTile.Initialize(hexSyncData.coord);
-
-            hexTiles.Add(newTile);
-
-            NetworkServer.Spawn(newTile.gameObject);
-        }
+        onTileCreated?.Invoke(newTile);
+       
+        return newTile;
     }
 
     public Vector2Int GetRandomCoordinates()
@@ -67,11 +107,11 @@ public class Map : NetworkBehaviour
         Vector2Int randomCoordinates;
         do
         {
-            int y = UnityEngine.Random.Range(-radius, radius+1);
+            int y = UnityEngine.Random.Range(-radius, radius + 1);
 
             MountainInn.GridExt.HexXBorders(radius, y, out int left, out int right);
 
-            int x = UnityEngine.Random.Range(left, right+1);
+            int x = UnityEngine.Random.Range(left, right + 1);
 
             randomCoordinates = new Vector2Int(x, y);
         }
@@ -91,7 +131,7 @@ public class Map : NetworkBehaviour
 
             for (int x = left; x <= right; x++)
             {
-                yield return new Vector3Int(x,y, 0);
+                yield return new Vector3Int(x, y, 0);
             }
         }
     }

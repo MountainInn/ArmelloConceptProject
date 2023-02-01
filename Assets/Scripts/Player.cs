@@ -4,30 +4,87 @@ using UnityEngine;
 using UnityEngine.Tilemaps;
 using Zenject;
 using MountainInn;
-
+using System;
 
 public class Player : NetworkBehaviour
 {
-    private Tilemap tilemap;
-    private Character character;
+    public Character character;
+    private Map map;
+    private Character.Factory characterFactory;
 
     [Inject]
-    public void Construct(Map map, Tilemap tilemap, Character.Factory characterFactory)
+    public void Construct(Map map, Character.Factory characterFactory)
     {
-        this.tilemap = tilemap;
-        this.character = characterFactory.Create();
-        this.character.transform.SetParent(transform, true);
+        this.characterFactory = characterFactory;
+        this.map = map;
 
-        foreach (var item in map.hexTiles)
+        Debug.Log("_Inject_ player");
+    }
+
+    [Command]
+    private void CmdCreateCharacter()
+    {
+        this.character = characterFactory.Create();
+        NetworkServer.Spawn(this.character.gameObject, this.connectionToClient);
+    }
+
+    private void Awake()
+    {
+        if (!isServer)
         {
-            item.onHexClicked += MoveCharacter;
+            var installer = GameObject.FindObjectOfType<MainInstaller>();
+            installer.GetContainer().Inject(this);
         }
+
+        NetworkClient.RegisterSpawnHandler((uint)3611098826, SpawnCharacter, (o)=> Destroy(o));
+    }
+
+    public override void OnStartLocalPlayer()
+    {
+        if (map.hexTiles.Count == 0)
+        {
+            map.onTileCreated += SubToTileClick;
+        }
+        else
+        {
+            map.hexTiles.ForEach(SubToTileClick);
+        }
+    }
+
+    private void SubToTileClick(HexTile tile)
+    {
+        tile.onHexClicked += MoveCharacter;
+    }
+
+    private void OnDisable()
+    {
+        if (!isLocalPlayer)
+            return;
+
+        map.onTileCreated -= SubToTileClick;
+        map.hexTiles.ForEach(t => t.onHexClicked -= MoveCharacter);
+    }
+
+    private void Start()
+    {
+        CmdCreateCharacter();
+    }
+
+    GameObject SpawnCharacter(Vector3 position, uint assetId)
+    {
+        character = characterFactory.Create();
+        var netId = character.GetComponent<NetworkIdentity>().netId;
+        character.name = $"Character [netId={netId}]";
+        if (isLocalPlayer)
+            character.name = $"My Character [netId={netId}]";
+        return character.gameObject;
     }
 
 
     private void MoveCharacter(Vector2Int coordinates)
     {
-        if (coordinates == character.coordinates ||
+        if (character is null ||
+            coordinates == character.coordinates ||
             character.OutOfReach(coordinates)
         )
             return;
@@ -45,7 +102,7 @@ public class Player : NetworkBehaviour
         }
         public Player Create(Vector3 startPosition, Quaternion startRotation)
         {
-            var player = base.Create();
+            var player = Create();
 
             player.transform.position = startPosition;
             player.transform.rotation = startRotation;

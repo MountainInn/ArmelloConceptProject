@@ -12,15 +12,11 @@ public class ArmelloNetworkManager : NetworkManager
         this.playerFactory = playerFactory;
     }
 
-
     public override void OnServerAddPlayer(NetworkConnectionToClient conn)
     {
-        Transform startPos = GetStartPosition();
-        GameObject player = startPos != null
-            ? playerFactory.Create(startPos.position, startPos.rotation).gameObject
-            : playerFactory.Create().gameObject;
+        GameObject player = playerFactory.Create().gameObject;
 
-        player.name = $"{playerPrefab.name} [connId={conn.connectionId}]";
+        player.name = $"Player [connId={conn.connectionId}]";
         NetworkServer.AddPlayerForConnection(conn, player);
     }
 }

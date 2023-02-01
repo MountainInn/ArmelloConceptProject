@@ -7,7 +7,7 @@ public class HexTile : NetworkBehaviour, IPointerClickHandler, IPointerEnterHand
 {
     public event Action<Vector2Int> onHexClicked;
 
-    private Vector2Int coordinates;
+    public Vector2Int coordinates {get; private set;}
     private SpriteRenderer spriteRenderer;
     private Color baseColor, highlightColor;
 

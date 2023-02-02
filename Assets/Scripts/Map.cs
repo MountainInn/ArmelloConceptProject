@@ -21,7 +21,7 @@ public class Map : NetworkBehaviour
     [HideInInspector]
     public Tilemap tilemap;
     private HexTile[] tilePrefabs;
-    private HashSet<Vector2Int> pickedPositions = new HashSet<Vector2Int>();
+    private HashSet<Vector3Int> pickedPositions = new HashSet<Vector3Int>();
 
     readonly public SyncList<HexSyncData> hexSyncs = new SyncList<HexSyncData>();
 
@@ -93,7 +93,7 @@ public class Map : NetworkBehaviour
         var position = tilemap.GetCellCenterWorld(hexSyncData.coord.xy_());
 
         HexTile newTile = Instantiate(tilePrefab, position, Quaternion.identity, tilemap.transform);
-        newTile.Initialize(hexSyncData.coord);
+        newTile.Initialize(hexSyncData.coord.xy_());
 
         hexTiles.Add(newTile);
 
@@ -102,9 +102,9 @@ public class Map : NetworkBehaviour
         return newTile;
     }
 
-    public Vector2Int GetRandomCoordinates()
+    public Vector3Int GetRandomCoordinates()
     {
-        Vector2Int randomCoordinates;
+        Vector3Int randomCoordinates;
         do
         {
             int y = UnityEngine.Random.Range(-radius, radius + 1);
@@ -113,7 +113,7 @@ public class Map : NetworkBehaviour
 
             int x = UnityEngine.Random.Range(left, right + 1);
 
-            randomCoordinates = new Vector2Int(x, y);
+            randomCoordinates = new Vector3Int(x, y);
         }
         while (pickedPositions.Contains(randomCoordinates));
 

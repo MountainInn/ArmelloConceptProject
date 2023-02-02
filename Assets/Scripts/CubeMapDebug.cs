@@ -59,14 +59,19 @@ public class CubeMapDebug : MonoBehaviour
 
         var result = cubeMap.FindPath(start.coord, endCoord);
 
-        while (result.parent != null)
+        var coord = endCoord;
+
+        while (result[coord].HasValue)
         {
-            var item = cubeMap[result.coord];
+            var item = cubeMap[result[coord].Value];
             path.Add(item);
-            result = result.parent;
+           
             if (highlightPath)
                 item.HighlightPath();
+
+            coord = result[coord].Value;
         }
+
         if (highlightPath && result[endCoord].HasValue)
             cubeMap[result[endCoord].Value].HighlightPath();
     }

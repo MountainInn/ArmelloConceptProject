@@ -49,7 +49,7 @@ public class Player : NetworkBehaviour
 
     private void SubToTileClick(HexTile tile)
     {
-        tile.onHexClicked += MoveCharacter;
+        tile.onClicked += MoveCharacter;
     }
 
     private void OnDisable()
@@ -58,7 +58,7 @@ public class Player : NetworkBehaviour
             return;
 
         map.onTileCreated -= SubToTileClick;
-        map.hexTiles.ForEach(t => t.onHexClicked -= MoveCharacter);
+        map.hexTiles.ForEach(t => t.onClicked -= MoveCharacter);
     }
 
     private void Start()

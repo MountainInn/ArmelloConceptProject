@@ -77,7 +77,7 @@ public class Player : NetworkBehaviour
     }
 
 
-    private void MoveCharacter(Vector2Int coordinates)
+    private void MoveCharacter(Vector3Int coordinates)
     {
         if (character is null ||
             coordinates == character.coordinates ||

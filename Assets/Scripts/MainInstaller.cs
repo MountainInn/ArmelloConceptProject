@@ -11,6 +11,16 @@ public class MainInstaller : MonoInstaller
             .AsSingle();
 
         Container
+            .Bind<CubeMap>()
+            .FromComponentsInHierarchy()
+            .AsSingle();
+
+        Container
+            .Bind<CubeMapDebug>()
+            .FromComponentsInHierarchy()
+            .AsSingle();
+
+        Container
             .Bind<Map>()
             .FromComponentInHierarchy()
             .AsSingle();

@@ -1,10 +1,6 @@
-using System.Collections.Generic;
 using Mirror;
 using UnityEngine;
-using UnityEngine.Tilemaps;
 using Zenject;
-using MountainInn;
-using System;
 
 public class Player : NetworkBehaviour
 {

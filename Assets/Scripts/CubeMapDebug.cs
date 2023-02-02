@@ -6,6 +6,10 @@ using System.Collections.Generic;
 
 public class CubeMapDebug : MonoBehaviour
 {
+    public bool
+        highlightNeighbours,
+        highlightPath;
+
     CubeMap.PathfindingNode start, end;
     CubeMap cubeMap;
 
@@ -27,20 +31,22 @@ public class CubeMapDebug : MonoBehaviour
                     hex.onPointerEnter += SetEnd;
                     hex.onPointerEnter += FindPath;
                     hex.onPointerEnter += FindNeighbours;
+                    hex.onPointerEnter += (coord)=>cubeMap[coord].HighlightMouseOver();
                 });
         };
     }
 
     private void FindNeighbours(Vector3Int coord)
     {
-        neighbours.ForEach(n => n.RemoveHighlight());
-        neighbours.Clear();
+        if (highlightNeighbours)
+            neighbours.ForEach(n => n.RemoveHighlight());
 
         neighbours =
             cubeMap.NeighbourTilesInRadius(1, coord)
             .ToList();
 
-        neighbours.ForEach(n => n.HighlightNeighbour());
+        if (highlightNeighbours)
+            neighbours.ForEach(n => n.HighlightNeighbour());
     }
 
     private void FindPath(Vector3Int endCoord)
@@ -57,9 +63,12 @@ public class CubeMapDebug : MonoBehaviour
         {
             var item = cubeMap[result.coord];
             path.Add(item);
-            item.HighlightPath();
             result = result.parent;
+            if (highlightPath)
+                item.HighlightPath();
         }
+        if (highlightPath && result[endCoord].HasValue)
+            cubeMap[result[endCoord].Value].HighlightPath();
     }
 
     private void SetEnd(Vector3Int coord)

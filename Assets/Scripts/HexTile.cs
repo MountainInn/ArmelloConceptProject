@@ -5,7 +5,9 @@ using System;
 
 public class HexTile : NetworkBehaviour, IPointerClickHandler, IPointerEnterHandler, IPointerExitHandler
 {
-    public event Action<Vector2Int> onHexClicked;
+    public event Action<Vector3Int> onClicked;
+    public event Action<Vector3Int> onPointerEnter;
+    public event Action<Vector3Int> onPointerExit;
 
     public Vector3Int coordinates {get; private set;}
     private SpriteRenderer spriteRenderer;
@@ -23,19 +25,22 @@ public class HexTile : NetworkBehaviour, IPointerClickHandler, IPointerEnterHand
         this.coordinates = coordinates;
     }
 
+
     public void OnPointerClick(PointerEventData eventData)
     {
-        onHexClicked?.Invoke(coordinates);
+        onClicked?.Invoke(coordinates);
     }
 
     public void OnPointerEnter(PointerEventData eventData)
     {
         HighlightMouseOver();
+        onPointerEnter?.Invoke(coordinates);
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
         RemoveHighlight();
+        onPointerExit?.Invoke(coordinates);
     }
 
     public void RemoveHighlight()

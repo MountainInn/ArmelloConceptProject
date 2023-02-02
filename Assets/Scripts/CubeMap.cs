@@ -104,74 +104,58 @@ public class CubeMap : MonoBehaviour
         return go;
     }
 
-    public PathfindingNode FindPath(Vector3Int from, Vector3Int to)
+    public Dictionary<Vector3Int, Vector3Int?> FindPath(Vector3Int from, Vector3Int to)
     {
-        SortedList<int, PathfindingNode> priorityList = new SortedList<int, PathfindingNode>(new DuplicateKeyComparer<int>());
+        SortedList<int, Vector3Int> priorityList = new SortedList<int, Vector3Int>(new DuplicateKeyComparer<int>());
 
-        Dictionary<Vector3Int, PathfindingNode> nodes =
-            tiles.Select(kv =>
-            {
-                var node = new PathfindingNode()
-                {
-                    coord = kv.Key,
-                    distance = int.MaxValue,
-                    rootDistance = int.MaxValue
-                };
+        var cameFrom = new Dictionary<Vector3Int, Vector3Int?>();
+        var costSoFar = new Dictionary<Vector3Int, int>();
 
-                if (from == node.coord)
-                {
-                    node.rootDistance = 0;
-                    priorityList.Add(0, node);
-                }
-
-                node.InitManhattanDistance(to);
-
-                return node;
-            })
-            .ToDictionary((node) => node.coord,
-                          (node) => node);
-
-        int minDistance = int.MaxValue;
+        cameFrom.Add(from, null);
+        costSoFar.Add(from, 0);
+        priorityList.Add(0, from);
 
         while (priorityList.Count > 0)
         {
             var kv = priorityList.ElementAt(0);
             priorityList.RemoveAt(0);
 
-            var item = kv.Value;
-            item.visited = true;
+            Vector3Int current = kv.Value;
 
-            NeighbourCoordinatesInRadius(1, item.coord)
-                .Select(i3 => nodes[i3])
-                .Where(n => !n.visited)
+            if (current == to)
+            {
+                break;
+            }
+
+            NeighbourCoordinatesInRadius(1, current)
                 .ToList()
-                .ForEach(n =>
-                {
-                    n.rootDistance = Math.Min(n.rootDistance, item.rootDistance + 1);
+                .ForEach(next =>{
+                    // graph.cost - Возвращает цену движения от текущего тайла
+                    // к следующему, может пригодиться если разные типы тайлов
+                    // будут иметь разную проходимость.
+                    // Пока что просто поставлю 1.
+                    // new_cost = cost_so_far[current] + graph.cost(current, next)
+                    var newCost = costSoFar[current] + 1;
 
-                    minDistance = Math.Min(n.distance, n.rootDistance + n.manhattanDistance);
-
-                    if (minDistance != n.distance)
+                    if (!costSoFar.ContainsKey(next) || newCost < costSoFar[next])
                     {
-                        n.distance = (int)minDistance;
-                        n.parent = item;
-
-                        // Change queue priority of the neighbor
-                        if (priorityList.ContainsValue(n))
-                        {
-                            int index = priorityList.IndexOfValue(n);
-                            priorityList.RemoveAt(index);
-                            priorityList.Add(minDistance, n);
-                        }
+                        costSoFar[next] = newCost;
+                        int priority = newCost + heuiristic(to , next);
+                        priorityList.Add(priority, next);
+                        cameFrom[next] = current;
                     }
-
-                    if (!priorityList.ContainsValue(n))
-                        priorityList.Add(0, n);
-
                 });
         }
 
-        return nodes[to];
+        return cameFrom;
+    }
+
+    private int heuiristic(Vector3Int end, Vector3Int next)
+    {
+        return
+            Math.Abs(end.x - next.x) +
+            Math.Abs(end.y - next.y) +
+            Math.Abs(end.z - next.z);
     }
 
     public IEnumerable<HexTile> NeighbourTilesInRadius(int radius, Vector3Int startCoordinates)

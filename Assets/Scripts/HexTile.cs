@@ -30,11 +30,34 @@ public class HexTile : NetworkBehaviour, IPointerClickHandler, IPointerEnterHand
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        spriteRenderer.color = highlightColor;
+        HighlightMouseOver();
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
+        RemoveHighlight();
+    }
+
+    public void RemoveHighlight()
+    {
         spriteRenderer.color = baseColor;
+    }
+
+    public void HighlightMouseOver()
+    {
+        spriteRenderer.color = highlightColor;
+    }
+
+    public void HighlightPath()
+    {
+        spriteRenderer.color = Color.yellow * 0.15f;
+    }
+    public void HighlightNeighbour()
+    {
+        spriteRenderer.color = Color.blue * 0.15f;
+    }
+    public void HighlightStart()
+    {
+        spriteRenderer.color = Color.blue * 0.15f;
     }
 }

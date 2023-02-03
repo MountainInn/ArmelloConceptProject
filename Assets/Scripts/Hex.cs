@@ -16,33 +16,19 @@ abstract public class Hex
     {
         Forest, Mountain, Lake, Sand
     }
-    public static Hex RealizeSyncData(HexSyncData syncData)
-    {
-        var coord = syncData.coord;
-        var subtype = syncData.hexSubtype;
-       
-        return subtype switch
-        {
-            (Hex.Type.Forest) => new Forest(coord),
-                (Hex.Type.Mountain) => new Mountain(coord),
-                (Hex.Type.Lake) => new Lake(coord),
-                (Hex.Type.Sand) => new Sand(coord),
-                (_) => throw new System.Exception($"Hex subtype {subtype} not handled by RealizeSubtype function")
-                };
-    }
 
     public static Hex.Type GetRandomType()
     {
-        return (Hex.Type)System.Enum.GetValues(typeof(Hex.Type)).GetRandom();
+        return System.Enum.GetValues(typeof(Hex.Type)).ArrayGetRandom<Hex.Type>();
     }
 }
 
 public struct HexSyncData
 {
     public Hex.Type hexSubtype;
-    public Vector2Int coord;
+    public Vector3Int coord;
 
-    public HexSyncData(Hex.Type hexSubtype, Vector2Int coord)
+    public HexSyncData(Hex.Type hexSubtype, Vector3Int coord)
     {
         this.hexSubtype = hexSubtype;
         this.coord = coord;

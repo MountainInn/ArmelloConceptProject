@@ -2,43 +2,76 @@ using Mirror;
 using UnityEngine;
 using DG.Tweening;
 using Zenject;
+using System.Collections.Generic;
 using MountainInn;
+using System.Linq;
 
 public class Character : NetworkBehaviour
 {
     [SyncVar] public Vector3Int coordinates;
     [Range(1, 10)]
     public int moveRadius = 1;
-    public Map map;
+    public CubeMap cubeMap;
 
     [Inject]
-    public void Construct(Map map)
+    public void Construct(CubeMap cubeMap)
     {
-        this.map = map;
-        coordinates = map.GetRandomCoordinates();
-
-        transform.position = map.tilemap.GetCellCenterWorld(coordinates);
+        this.cubeMap = cubeMap;
     }
 
+    private void OnEnable()
+    {
+        cubeMap.onGenerated += CmdPlaceCharacter;
+    }
 
-    public void Move(Vector3Int coordinates)
+    private void OnDisable()
+    {
+        cubeMap.onGenerated -= CmdPlaceCharacter;
+    }
+
+    [Command]
+    private void CmdPlaceCharacter()
+    {
+        Debug.Log($"{gameObject.name} CmdPlaceCharacter");
+        coordinates = cubeMap.GetRandomCoordinates();
+
+        RpcPlaceCharacter();
+    }
+
+    [ClientRpc]
+    private void RpcPlaceCharacter()
+    {
+        transform.position = cubeMap[coordinates].transform.position;
+
+        if (isOwned)
+            ClearWarscreen();
+    }
+
+    [ClientRpc]
+    public void RpcMove(Vector3Int coordinates)
     {
         this.coordinates = coordinates;
-       
-        Vector3 position = map.tilemap.GetCellCenterWorld(coordinates);
+
+        Vector3 position = cubeMap[coordinates].transform.position;
 
         transform.DOMove(position, .5f);
+
+        if (isOwned)
+            ClearWarscreen();
+    }
+
+    private void ClearWarscreen()
+    {
+        cubeMap.tiles[coordinates].ToggleVisibility(true);
+
+        cubeMap.NeighbourTilesInRadius(moveRadius, coordinates)
+            .ToList()
+            .ForEach(tile => tile.ToggleVisibility(true));
     }
 
     public bool OutOfReach(Vector3Int target)
     {        
-        Vector3
-            position = map.tilemap.GetCellCenterWorld(coordinates),
-            targetPos = map.tilemap.GetCellCenterWorld(target);
-
-        float distance = (targetPos - position).magnitude;
-
-        return distance > moveRadius * 1.8f;
+        return moveRadius < cubeMap.Distance(coordinates, target);
     }
 
     public class Factory : PlaceholderFactory<Character>

@@ -1,27 +1,23 @@
+using System.Collections.Generic;
+using System.Linq;
 using Mirror;
+using MountainInn;
 using UnityEngine;
 using Zenject;
 
 public class Player : NetworkBehaviour
 {
     public Character character;
-    private Map map;
+    private CubeMap cubeMap;
     private Character.Factory characterFactory;
 
     [Inject]
-    public void Construct(Map map, Character.Factory characterFactory)
+    public void Construct(CubeMap cubeMap, Character.Factory characterFactory)
     {
         this.characterFactory = characterFactory;
-        this.map = map;
+        this.cubeMap = cubeMap;
 
         Debug.Log("_Inject_ player");
-    }
-
-    [Command]
-    private void CmdCreateCharacter()
-    {
-        this.character = characterFactory.Create();
-        NetworkServer.Spawn(this.character.gameObject, this.connectionToClient);
     }
 
     private void Awake()
@@ -37,19 +33,7 @@ public class Player : NetworkBehaviour
 
     public override void OnStartLocalPlayer()
     {
-        if (map.hexTiles.Count == 0)
-        {
-            map.onTileCreated += SubToTileClick;
-        }
-        else
-        {
-            map.hexTiles.ForEach(SubToTileClick);
-        }
-    }
-
-    private void SubToTileClick(HexTile tile)
-    {
-        tile.onClicked += MoveCharacter;
+        cubeMap.onHexClicked += CmdMoveCharacter;
     }
 
     private void OnDisable()
@@ -57,13 +41,19 @@ public class Player : NetworkBehaviour
         if (!isLocalPlayer)
             return;
 
-        map.onTileCreated -= SubToTileClick;
-        map.hexTiles.ForEach(t => t.onClicked -= MoveCharacter);
+        cubeMap.onHexClicked -= CmdMoveCharacter;
     }
 
     private void Start()
     {
         CmdCreateCharacter();
+    }
+
+    [Command]
+    private void CmdCreateCharacter()
+    {
+        this.character = characterFactory.Create();
+        NetworkServer.Spawn(this.character.gameObject, this.connectionToClient);
     }
 
     GameObject SpawnCharacter(Vector3 position, uint assetId)
@@ -77,7 +67,8 @@ public class Player : NetworkBehaviour
     }
 
 
-    private void MoveCharacter(Vector3Int coordinates)
+    [Command]
+    private void CmdMoveCharacter(Vector3Int coordinates)
     {
         if (character is null ||
             coordinates == character.coordinates ||
@@ -85,7 +76,7 @@ public class Player : NetworkBehaviour
         )
             return;
 
-        character.Move(coordinates);
+        character.RpcMove(coordinates);
     }
 
     public class Factory : PlaceholderFactory<Player>

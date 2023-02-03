@@ -2,22 +2,65 @@ using System;
 using System.Linq;
 using UnityEngine;
 using System.Collections.Generic;
+using Mirror;
+using Zenject;
+using MountainInn;
 
-public class CubeMap : MonoBehaviour
+public class CubeMap : NetworkBehaviour
 {
     [Range(1, 3)]
     public int mapRadius;
     public int hexagonSize = 1;
-    public HexTile hexagonPrefab;
+    private HexTile[] hexagonPrefabs;
 
-    public event Action<Dictionary<Vector3Int, HexTile>> onGenerated;
+    public event Action<Vector3Int> onHexClicked;
+    public event Action<Vector3Int> onHexPointerEnter;
+    public event Action<Vector3Int> onHexPointerExit;
+    public event Action onGenerated;
+    public event Action onCleared;
 
-    Dictionary<Vector3Int, HexTile> tiles;
+    public Dictionary<Vector3Int, HexTile> tiles { get; private set; }
 
-    void Start()
+    private HashSet<Vector3Int> pickedPositions = new HashSet<Vector3Int>();
+
+    readonly public SyncList<HexSyncData> syncData = new SyncList<HexSyncData>();
+
+    [Inject]
+    public void Construct(EOSLobbyUI lobbyUI)
     {
-        Generate(mapRadius);
+        lobbyUI.onStartGameButtonClicked += () => Generate(mapRadius);
     }
+
+    public void Awake()
+    {
+        tiles = new Dictionary<Vector3Int, HexTile>();
+    }
+
+    [ClientRpc]
+    private void OnGeneratedInvoke()
+    {
+        onGenerated?.Invoke();
+    }
+
+    public void OnEnable()
+    {
+        hexagonPrefabs = (HexTile[])Resources.LoadAll<HexTile>("Prefabs/Tiles/");
+    }
+
+    public void OnDisable()
+    {
+    }
+
+    public override void OnStartClient()
+    {
+        syncData.Callback += OnHexSyncDataUpdated;
+    }
+
+    public override void OnStopClient()
+    {
+        syncData.Callback -= OnHexSyncDataUpdated;
+    }
+
 
     public HexTile this[Vector3Int v3]
     {
@@ -30,79 +73,111 @@ public class CubeMap : MonoBehaviour
         set => tiles[new Vector3Int(q, r, s)] = value;
     }
 
-    public Dictionary<Vector3Int, HexTile> Gen(int radius)
+    void OnHexSyncDataUpdated(SyncList<HexSyncData>.Operation op, int index, HexSyncData oldItem, HexSyncData newItem)
     {
-        tiles = new Dictionary<Vector3Int, HexTile>();
-
-        var center = new Vector3Int(0, 0, 0);
-
-        tiles.Add(center, CreateHex(center));
-
-        for (int r = 1; r <= radius; r++)
+        switch (op)
         {
-            int
-                pillar = 0,
-                full = 1,
-                empty = 2;
+            case SyncList<HexSyncData>.Operation.OP_ADD:
+                if (tiles.ContainsKey(newItem.coord))
+                    return;
+               
+                var hex = CreateHex(newItem);
+                tiles.Add(hex.coordinates, hex);
+                break;
 
-            int rev = 0;
+            case SyncList<HexSyncData>.Operation.OP_CLEAR:
+                tiles.Values.ToList().ForEach(hex => GameObject.Destroy(hex.gameObject));
+                tiles.Clear();
+                break;
 
-            int[] coords = new int[] { r, -r, 0 };
-
-            do
-            {
-                while (coords[full] != 0)
-                {
-                    int sign = Math.Sign(coords[full]);
-                    coords[full] -= sign;
-                    coords[empty] += sign;
-
-                    var c = new Vector3Int(coords[0], coords[1], coords[2]);
-                    tiles.Add(c, CreateHex(c));
-                }
-
-                if (--pillar < 0) pillar += coords.Length;
-                if (--full < 0) full += coords.Length;
-                if (--empty < 0) empty += coords.Length;
-            }
-            while (++rev < 6);
+            default:
+                break;
         }
-
-        Debug.Log("Count: " + tiles.Count);
-        return tiles;
     }
 
+    [Server]
     public Dictionary<Vector3Int, HexTile> Generate(int radius)
     {
-        tiles =
+        syncData.Clear();
+
+        if (tiles != null || tiles.Count > 0)
+        {
+            tiles.Values
+                .Where(hex => hex != null)
+                .ToList()
+                .ForEach(hex => NetworkServer.Destroy(hex.gameObject));
+
+            tiles.Clear();
+            tiles = new Dictionary<Vector3Int, HexTile>();
+        }
+        onCleared?.Invoke();
+
+        var newSyncData =
             TilePositions(radius)
-            .Select(coord => (coord, CreateHex(coord)))
-            .ToDictionary(kv => kv.coord, kv => kv.Item2);
+            .Select(CreateSyncData)
+            .ToList();
 
-        Debug.Log($"Count: {tiles.Count}");
+        // tiles =
+        //     newSyncData
+        //     .Select(CreateHex)
+        //     .ToDictionary(hex => hex.coordinates,
+        //                   hex => hex);
 
-        onGenerated?.Invoke(tiles);
+        syncData.AddRange(newSyncData);
+
+        OnGeneratedInvoke();
 
         return tiles;
-
     }
 
-    HexTile CreateHex(Vector3Int coordinates)
+    HexSyncData CreateSyncData(Vector3Int coord)
     {
+        return new HexSyncData()
+        {
+            coord = coord,
+                hexSubtype = Hex.GetRandomType()
+                };
+    }
+
+    HexTile CreateHex(HexSyncData syncData)
+    {
+        var coordinates = syncData.coord;
+
         float x = hexagonSize * (MathF.Sqrt(3) * coordinates.x + MathF.Sqrt(3) / 2 * coordinates.y);
         float y = hexagonSize * 3f / 2 * coordinates.y;
 
         var position = new Vector3(x, y, 0) / 2;
 
-        var go = Instantiate(hexagonPrefab, position, Quaternion.identity, transform)
+        HexTile prefab = (HexTile)hexagonPrefabs
+            .First(sr => sr.name == syncData.hexSubtype.ToString());
+
+        var hexagon = Instantiate(prefab, position, Quaternion.identity, transform)
             .GetComponent<HexTile>();
 
-        go.Initialize(coordinates);
+        hexagon.Initialize(coordinates);
 
-        Debug.Log(coordinates.ToString());
+        hexagon.onClicked += onHexClicked;
+        hexagon.onPointerEnter += onHexPointerEnter;
+        hexagon.onPointerExit += onHexPointerExit;
 
-        return go;
+        return hexagon;
     }
+
+    public Vector3Int GetRandomCoordinates()
+    {
+        var coords = TilePositions(mapRadius);
+        Vector3Int randomCoordinates;
+        do
+        {
+            randomCoordinates = coords.GetRandom();
+        }
+        while (pickedPositions.Contains(randomCoordinates));
+
+        pickedPositions.Add(randomCoordinates);
+
+        return randomCoordinates;
+    }
+
 
     public Dictionary<Vector3Int, Vector3Int?> FindPath(Vector3Int from, Vector3Int to)
     {
@@ -129,18 +204,19 @@ public class CubeMap : MonoBehaviour
 
             NeighbourCoordinatesInRadius(1, current)
                 .ToList()
-                .ForEach(next =>{
-                    // graph.cost - Возвращает цену движения от текущего тайла
-                    // к следующему, может пригодиться если разные типы тайлов
-                    // будут иметь разную проходимость.
-                    // Пока что просто поставлю 1.
-                    // new_cost = cost_so_far[current] + graph.cost(current, next)
+                .ForEach(next =>
+                {
+// graph.cost - Возвращает цену движения от текущего тайла
+// к следующему, может пригодиться если разные типы тайлов
+// будут иметь разную проходимость.
+// Пока что просто поставлю 1.
+// new_cost = cost_so_far[current] + graph.cost(current, next)
                     var newCost = costSoFar[current] + 1;
 
                     if (!costSoFar.ContainsKey(next) || newCost < costSoFar[next])
                     {
                         costSoFar[next] = newCost;
-                        int priority = newCost + heuiristic(to , next);
+                        int priority = newCost + heuiristic(to, next);
                         priorityList.Add(priority, next);
                         cameFrom[next] = current;
                     }

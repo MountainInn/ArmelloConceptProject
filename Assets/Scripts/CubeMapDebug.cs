@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Linq;
 using Zenject;
 using System;
+using MountainInn;
 using System.Collections.Generic;
 
 public class CubeMapDebug : MonoBehaviour
@@ -21,19 +22,20 @@ public class CubeMapDebug : MonoBehaviour
     public void Construct(CubeMap cubeMap)
     {
         this.cubeMap = cubeMap;
-        cubeMap.onGenerated += (tiles) =>
-        {
-            tiles.Values
-                .ToList()
-                .ForEach(hex =>
-                {
-                    hex.onClicked += SetStart;
-                    hex.onPointerEnter += SetEnd;
-                    hex.onPointerEnter += FindPath;
-                    hex.onPointerEnter += FindNeighbours;
-                    hex.onPointerEnter += (coord)=>cubeMap[coord].HighlightMouseOver();
-                });
-        };
+        cubeMap.onHexClicked += SetStart;
+        cubeMap.onHexPointerEnter += SetEnd;
+        cubeMap.onHexPointerEnter += FindPath;
+        cubeMap.onHexPointerEnter += FindNeighbours;
+        cubeMap.onHexPointerEnter += (coord)=>cubeMap[coord].HighlightMouseOver();
+    }
+
+    private void Reset()
+    {
+        start = null;
+        end = null;
+        path = null;
+        neighbours = null;
+        startTile = null;
     }
 
     private void FindNeighbours(Vector3Int coord)
@@ -54,7 +56,10 @@ public class CubeMapDebug : MonoBehaviour
         if (start is null)
             return;
 
-        path.ForEach(tile => tile.RemoveHighlight());
+        path
+            .Where(tile => tile != null)
+            .ToList()
+            .ForEach(tile => tile.RemoveHighlight());
         path.Clear();
 
         var result = cubeMap.FindPath(start.coord, endCoord);
@@ -83,8 +88,12 @@ public class CubeMapDebug : MonoBehaviour
 
     private void SetStart(Vector3Int coord)
     {
-        if (startTile is not null)
+        if (cubeMap.tiles == null || !cubeMap.tiles.ContainsKey(coord))
+            return;       
+
+        if (startTile != null)
             startTile.RemoveHighlight();
+
 
         start = new CubeMap.PathfindingNode() { coord = coord };
         startTile = cubeMap[coord];

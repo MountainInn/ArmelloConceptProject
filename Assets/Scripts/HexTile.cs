@@ -10,14 +10,25 @@ public class HexTile : NetworkBehaviour, IPointerClickHandler, IPointerEnterHand
     public event Action<Vector3Int> onPointerExit;
 
     public Vector3Int coordinates {get; private set;}
+    public bool isVisible = false;
+
     private SpriteRenderer spriteRenderer;
-    private Color baseColor, highlightColor;
+    private Color baseColor, highlightColor, warScreenColor;
 
     private void Awake()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
         baseColor = spriteRenderer.color;
-        highlightColor = baseColor * 1.1f;
+        warScreenColor = baseColor *.5f;
+
+        ToggleVisibility(false);
+    }
+
+    private void OnDestroy()
+    {
+        onClicked = null;
+        onPointerEnter = null;
+        onPointerExit = null;
     }
 
     public void Initialize(Vector3Int coordinates)
@@ -45,12 +56,18 @@ public class HexTile : NetworkBehaviour, IPointerClickHandler, IPointerEnterHand
 
     public void RemoveHighlight()
     {
-        spriteRenderer.color = baseColor;
+        spriteRenderer.color = (isVisible)? baseColor : warScreenColor;
+    }
+
+    public void ToggleVisibility(bool toggle)
+    {
+        isVisible = toggle;
+        spriteRenderer.color = (isVisible) ? baseColor : warScreenColor;
     }
 
     public void HighlightMouseOver()
     {
-        spriteRenderer.color = highlightColor;
+        spriteRenderer.color = ((isVisible) ? baseColor : warScreenColor) * 1.1f;
     }
 
     public void HighlightPath()

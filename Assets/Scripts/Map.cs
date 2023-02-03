@@ -28,7 +28,6 @@ public class Map : NetworkBehaviour
     [Inject]
     public void Construct(EOSLobbyUI lobbyUI)
     {
-        lobbyUI.onStartGameButtonClicked += RandomizeMap;
     }
 
     private void Awake()
@@ -75,7 +74,7 @@ public class Map : NetworkBehaviour
         {
             HexSyncData hexSync = new HexSyncData
             {
-                coord = coord.xy(),
+                coord = coord,
                 hexSubtype = Hex.GetRandomType()
             };
             hexData.Add(hexSync);
@@ -90,10 +89,10 @@ public class Map : NetworkBehaviour
     {
         var tilePrefab = (HexTile)tilePrefabs.First(sr => sr.name == hexSyncData.hexSubtype.ToString());
 
-        var position = tilemap.GetCellCenterWorld(hexSyncData.coord.xy_());
+        var position = tilemap.GetCellCenterWorld(hexSyncData.coord);
 
         HexTile newTile = Instantiate(tilePrefab, position, Quaternion.identity, tilemap.transform);
-        newTile.Initialize(hexSyncData.coord.xy_());
+        newTile.Initialize(hexSyncData.coord);
 
         hexTiles.Add(newTile);
 

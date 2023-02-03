@@ -73,10 +73,9 @@ MonoBehaviour:
   syncDirection: 0
   syncMode: 0
   syncInterval: 0.1
-  coordinates: {x: 0, y: 0}
+  coordinates: {x: 0, y: 0, z: 0}
   moveRadius: 1
-  moveRadiusSquared: 1
-  map: {fileID: 0}
+  cubeMap: {fileID: 0}
 --- !u!23 &7278258989069780887
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -218,7 +217,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7278258989069780905}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2f74aedd71d9a4f55b3ce499326d45fb, type: 3}
   m_Name: 

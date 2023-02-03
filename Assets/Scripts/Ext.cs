@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -46,11 +47,27 @@ namespace MountainInn
 
     static public class ArrayExt
     {
-        static public object GetRandom(this System.Array array)
+        static public T ArrayGetRandom<T>(this System.Array array)
         {
             int id = UnityEngine.Random.Range(0, array.Length);
 
-            return array.GetValue(id);
+            return (T) array.GetValue(id);
         }
     }
+
+    static public class IEnumerableExt
+    {
+        static public IEnumerable<T> NotNull<T>(this IEnumerable<T> enumerable)
+            where T : class
+        {
+            return enumerable.Where(item => item != null);
+        }
+        static public T GetRandom<T>(this IEnumerable<T> enumerable)
+        {
+            int id = UnityEngine.Random.Range(0, enumerable.Count());
+
+            return enumerable.ElementAt(id);
+        }
+    }
+
 }

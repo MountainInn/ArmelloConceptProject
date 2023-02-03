@@ -70,4 +70,15 @@ namespace MountainInn
         }
     }
 
+static public class MathExt
+{
+    static public int Fact(int n)
+    {
+        return
+            Enumerable
+            .Range(1, n)
+            .Aggregate((a , b) => a * b);
+    }
+}
+
 }

@@ -21,8 +21,8 @@ public class MainInstaller : MonoInstaller
             .AsSingle();
 
         Container
-            .Bind<TurnSystem>()
-            .FromComponentsInHierarchy()
+            .Bind<Map>()
+            .FromComponentInHierarchy()
             .AsSingle();
 
         Container

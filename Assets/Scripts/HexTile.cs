@@ -2,15 +2,56 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using Mirror;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 public class HexTile : NetworkBehaviour, IPointerClickHandler, IPointerEnterHandler, IPointerExitHandler
 {
+    public class MorphingRule
+    {
+        public HexType resultType;
+        public Dictionary<HexType, int> requiredNeighbours;
+
+        public MorphingRule(HexType resultType, params (HexType, int)[] requiredNeighbours)
+        {
+            this.resultType = resultType;
+            this.requiredNeighbours =
+                requiredNeighbours.ToDictionary(tup => tup.Item1, tup => tup.Item2);
+        }
+
+        public HexType? TryToMorph(CubeMap cubeMap, Vector3Int coord)
+        {
+            if (CheckNeighbours(cubeMap, coord))
+                return resultType;
+
+            return null;
+        }
+
+        public bool CheckNeighbours(CubeMap cubeMap, Vector3Int coord)
+        {
+            Dictionary<HexType, int> count = new Dictionary<HexType, int>(requiredNeighbours);
+
+            var neighbours = cubeMap.NeighbourTilesInRadius(1, coord);
+
+            foreach (var item in neighbours)
+            {
+                if (!count.ContainsKey(item.currentType))
+                    return false;
+
+                count[item.currentType]--;
+            }
+
+            return count.Values.Count(v => v > 0) == 0;
+        }
+    }
+
     public event Action<Vector3Int> onClicked;
     public event Action<Vector3Int> onPointerEnter;
     public event Action<Vector3Int> onPointerExit;
 
     public Vector3Int coordinates {get; private set;}
     public bool isVisible = false;
+    public HexType baseType, currentType;
 
     private SpriteRenderer spriteRenderer;
     private Color baseColor, highlightColor, warScreenColor;
@@ -82,4 +123,9 @@ public class HexTile : NetworkBehaviour, IPointerClickHandler, IPointerEnterHand
     {
         spriteRenderer.color = Color.blue * 0.15f;
     }
+}
+
+public enum HexType
+{
+    Forest, Mountain, Lake, Sand
 }

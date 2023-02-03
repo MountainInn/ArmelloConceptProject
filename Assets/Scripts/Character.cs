@@ -29,6 +29,19 @@ public class Character : NetworkBehaviour
         cubeMap.onGenerated -= CmdPlaceCharacter;
     }
 
+    private void Start()
+    {
+        if ( cubeMap.IsReady )
+        {
+            Debug.Log("=-=-=-Map is ready");
+            CmdPlaceCharacter();
+        }
+        else
+        {
+            Debug.Log("=-=-=-Map is NOT ready");
+        }
+    }
+
     [Command]
     private void CmdPlaceCharacter()
     {

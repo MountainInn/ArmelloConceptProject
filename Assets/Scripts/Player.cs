@@ -36,17 +36,17 @@ public class Player : NetworkBehaviour
         cubeMap.onHexClicked += CmdMoveCharacter;
     }
 
+    private void Start()
+    {
+        CmdCreateCharacter();
+    }
+
     private void OnDisable()
     {
         if (!isLocalPlayer)
             return;
 
         cubeMap.onHexClicked -= CmdMoveCharacter;
-    }
-
-    private void Start()
-    {
-        CmdCreateCharacter();
     }
 
     [Command]

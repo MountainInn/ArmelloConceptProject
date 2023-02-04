@@ -25,6 +25,8 @@ public class CubeMap : NetworkBehaviour
 
     readonly public SyncList<HexSyncData> syncData = new SyncList<HexSyncData>();
 
+    public bool IsReady => tiles != null && tiles.Count == (MathExt.Fact(mapRadius) + 1);
+
     [Inject]
     public void Construct(EOSLobbyUI lobbyUI)
     {

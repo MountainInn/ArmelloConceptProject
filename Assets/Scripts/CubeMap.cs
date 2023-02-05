@@ -340,28 +340,11 @@ public class CubeMap : NetworkBehaviour
         while (++rev < 6);
     }
 
-    public class PathfindingNode
     {
-        public bool
-            visited;
 
-        public Vector3Int
-            coord;
 
-        public int
-            distance,
-            rootDistance,
-            manhattanDistance;
 
-        public PathfindingNode
-            parent;
 
-        public void InitManhattanDistance(Vector3Int end)
-        {
-            manhattanDistance =
-                Math.Abs(end.x - coord.x) +
-                Math.Abs(end.y - coord.y) +
-                Math.Abs(end.z - coord.z);
         }
     }
 

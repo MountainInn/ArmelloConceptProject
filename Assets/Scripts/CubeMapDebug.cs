@@ -11,7 +11,7 @@ public class CubeMapDebug : MonoBehaviour
         highlightNeighbours,
         highlightPath;
 
-    CubeMap.PathfindingNode start, end;
+    Vector3Int start, end;
     CubeMap cubeMap;
 
     List<HexTile> path = new List<HexTile>();
@@ -29,15 +29,6 @@ public class CubeMapDebug : MonoBehaviour
         cubeMap.onHexPointerEnter += (coord)=>cubeMap[coord].HighlightMouseOver();
     }
 
-    private void Reset()
-    {
-        start = null;
-        end = null;
-        path = null;
-        neighbours = null;
-        startTile = null;
-    }
-
     private void FindNeighbours(Vector3Int coord)
     {
         if (highlightNeighbours)
@@ -53,16 +44,13 @@ public class CubeMapDebug : MonoBehaviour
 
     private void FindPath(Vector3Int endCoord)
     {
-        if (start is null)
-            return;
-
         path
             .Where(tile => tile != null)
             .ToList()
             .ForEach(tile => tile.RemoveHighlight());
         path.Clear();
 
-        var result = cubeMap.FindPath(start.coord, endCoord);
+        var result = cubeMap.FindPath(start, endCoord);
 
         var coord = endCoord;
 
@@ -83,7 +71,7 @@ public class CubeMapDebug : MonoBehaviour
 
     private void SetEnd(Vector3Int coord)
     {
-        end = new CubeMap.PathfindingNode() { coord = coord };
+        end = coord;
     }
 
     private void SetStart(Vector3Int coord)
@@ -95,7 +83,7 @@ public class CubeMapDebug : MonoBehaviour
             startTile.RemoveHighlight();
 
 
-        start = new CubeMap.PathfindingNode() { coord = coord };
+        start = coord;
         startTile = cubeMap[coord];
         startTile.HighlightStart();
     }

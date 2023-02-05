@@ -3,97 +3,70 @@ using System.Linq;
 using Mirror;
 using System;
 using System.Collections.Generic;
+using UniRx;
+using MountainInn;
 
 public class TurnSystem : NetworkBehaviour
 {
-    [SyncVar] int currentPlayerId;
-    readonly List<Player> players = new List<Player>();
+    readonly SyncDictionary<uint, Player> players = new SyncDictionary<uint, Player>();
+    [SyncVar] int currentPlayerIndex = -1;
 
-    readonly Dictionary<Player, List<TurnAction>> playersActions = new Dictionary<Player, List<TurnAction>>();
+    [SyncVar(hook = nameof(SetPlayerNetIdStreamValue))]
+    uint currentPlayerNetId = uint.MaxValue;
 
     [SyncVar] Player currentPlayer;
 
-    public void AddPlayer(Player player, params TurnAction[] turnActions)
+    ReactiveProperty<uint> playerNetIdStream = new ReactiveProperty<uint>(uint.MaxValue);
+
+    IDisposable turnDisposable;
+
+    public void RegisterPlayers(List<Player> newPlayers)
     {
-        players.Add(player);
-        playersActions.Add(player, new List<TurnAction>(turnActions));
-    }
+        players.Clear();
 
-    public void CheckActionsLeft()
-    {
-        var uses = playersActions[currentPlayer]
-            .Sum(act => act.usesLeft);
-
-        if (uses == 0)
-        {
-            GiveTurnToNextPlayer();
-        }
-    }
-
-    private void GiveTurnToNextPlayer()
-    {
-        currentPlayerId++;
-        currentPlayerId %= players.Count;
-
-        currentPlayer = players[currentPlayerId];
-
-        playersActions[currentPlayer]
+        newPlayers
+            .Shuffle()
             .ToList()
-            .ForEach(act => act.RestoreUses());
+            .ForEach((p) =>
+            {
+                p.turn = new Turn(p.netId, playerNetIdStream);
+                players.Add(p.netId, p);
+            });
+
+
+        StartNextPlayerTurn();
     }
 
-    abstract public class TurnAction
+
+    public void StartNextPlayerTurn()
     {
-        public event Action onExecuted;
-        public event Action onUsesOver;
-        public int uses {get; protected set;}
-        public int usesLeft;
+        currentPlayerIndex = (currentPlayerIndex+1) % players.Count;
 
-        public TurnAction(int uses)
+        (uint nextNetId, Player nextPlayer) = players.ElementAt(currentPlayerIndex);
+
+
+        turnDisposable?.Dispose();
+        turnDisposable =
+            nextPlayer.turn.completed
+            .Subscribe((b) =>
+            {
+                if (b)
+                {
+                    StartNextPlayerTurn();
+                }
+            });
+
+        currentPlayer = nextPlayer;
+
+        if (isServer)
         {
-            this.uses = uses;
-            this.usesLeft = uses;
-        }
-
-        protected bool UsesLeft() => usesLeft > 0;
-
-        public void SignalExecuted()
-        {
-            onExecuted?.Invoke();
-
-            if (--usesLeft <= 0)
-                onUsesOver?.Invoke();
-        }
-
-        internal void RestoreUses()
-        {
-            usesLeft = uses;
+            playerNetIdStream.SetValueAndForceNotify(nextNetId);
+            currentPlayerNetId = nextNetId;
         }
     }
 
-    public class MoveCharacter_TurnAction : TurnAction
+    private void SetPlayerNetIdStreamValue(uint oldNetId, uint newNetId)
     {
-        Character character;
-
-        public MoveCharacter_TurnAction(Character character, int stepCount) : base(stepCount)
-        {
-            this.character = character;
-        }
-
-        public void Move(Vector3Int coordinates)
-        {
-            if (!UsesLeft())
-                return;
-
-            if (character is null ||
-                coordinates == character.coordinates ||
-                character.OutOfReach(coordinates)
-            )
-                return;
-
-            character.Move(coordinates);
-
-            SignalExecuted();
-        }
+        playerNetIdStream.Value = newNetId;
     }
 }

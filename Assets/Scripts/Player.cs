@@ -8,6 +8,8 @@ using Zenject;
 public class Player : NetworkBehaviour
 {
     public Character character;
+    public Turn turn;
+
     private CubeMap cubeMap;
     private Character.Factory characterFactory;
 
@@ -75,6 +77,12 @@ public class Player : NetworkBehaviour
             character.OutOfReach(coordinates)
         )
             return;
+
+        character.coordinates = coordinates;
+
+        turn.CompleteExplorationPhase();
+        turn.CompleteMovementPhase();
+        turn.CompleteCombatPhase();
 
         character.RpcMove(coordinates);
     }

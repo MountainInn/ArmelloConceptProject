@@ -57,10 +57,9 @@ namespace MountainInn
 
     static public class IEnumerableExt
     {
-        static public IEnumerable<T> NotNull<T>(this IEnumerable<T> enumerable)
-            where T : class
+        static public IEnumerable<T> Shuffle<T>(this IEnumerable<T> enumerable)
         {
-            return enumerable.Where(item => item != null);
+            return enumerable.OrderBy(_ => UnityEngine.Random.value);
         }
         static public T GetRandom<T>(this IEnumerable<T> enumerable)
         {
@@ -70,15 +69,28 @@ namespace MountainInn
         }
     }
 
-static public class MathExt
-{
-    static public int Fact(int n)
+    static public class MathExt
     {
-        return
-            Enumerable
-            .Range(1, n)
-            .Aggregate((a , b) => a * b);
+        static public int Fact(int n)
+        {
+            return
+                Enumerable
+                .Range(1, n)
+                .Aggregate((a , b) => a * b);
+        }
     }
-}
+
+    public static class BoolExt
+    {
+        static public bool All(bool a, bool b, bool c)
+        {
+            return a && b && c;
+        }
+        static public bool All(bool a, bool b)
+        {
+            return a && b;
+        }
+    }
+
 
 }

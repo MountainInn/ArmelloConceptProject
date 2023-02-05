@@ -63,8 +63,6 @@ public class Character : NetworkBehaviour
     [ClientRpc]
     public void RpcMove(Vector3Int coordinates)
     {
-        this.coordinates = coordinates;
-
         Vector3 position = cubeMap[coordinates].transform.position;
 
         transform.DOMove(position, .5f);

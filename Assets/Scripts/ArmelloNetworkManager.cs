@@ -1,4 +1,5 @@
 using Mirror;
+using System;
 using System.Linq;
 using UnityEngine;
 using Zenject;
@@ -9,20 +10,22 @@ public class ArmelloNetworkManager : NetworkManager
     private TurnSystem turnSystem;
 
     [Inject]
-    public void Construct(Player.Factory playerFactory, TurnSystem turnSystem)
+    public void Construct(Player.Factory playerFactory, TurnSystem turnSystem, EOSLobbyUI lobbyUI)
     {
         this.playerFactory = playerFactory;
         this.turnSystem = turnSystem;
+
+        lobbyUI.onStartGameButtonClicked += RegisterPlayersWithTurnSystem;
     }
 
-    public override void OnServerConnect(NetworkConnectionToClient conn)
+    [Server]
+    private void RegisterPlayersWithTurnSystem()
     {
-        Player player = conn.owned
-            .Select(netid => netid.gameObject.GetComponent<Player>())
-            .Where(p => p != null)
-            .First();
+        var players =
+            GameObject.FindObjectsOfType<Player>()
+            .ToList();
 
-        turnSystem.AddPlayer(player);
+        turnSystem.RegisterPlayers(players);
     }
 
     public override void OnServerAddPlayer(NetworkConnectionToClient conn)

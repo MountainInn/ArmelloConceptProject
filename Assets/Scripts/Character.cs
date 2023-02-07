@@ -12,8 +12,7 @@ public class Character : NetworkBehaviour
     [Range(1, 10)]
     public int moveRadius = 1;
     public CubeMap cubeMap;
-
-    public Combat.Stats combatStats;
+    public Combat.CombatUnit combatUnit;
 
     [Inject]
     public void Construct(CubeMap cubeMap)

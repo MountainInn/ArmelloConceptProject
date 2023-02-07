@@ -55,6 +55,14 @@ namespace MountainInn
         }
     }
 
+    static public class IntExt
+    {
+        static public IEnumerable<int> ToRange(this int i)
+        {
+            return Enumerable.Range(0, i);
+        }
+    }
+
     static public class IEnumerableExt
     {
         static public IEnumerable<T> Shuffle<T>(this IEnumerable<T> enumerable)
@@ -66,6 +74,10 @@ namespace MountainInn
             int id = UnityEngine.Random.Range(0, enumerable.Count());
 
             return enumerable.ElementAt(id);
+        }
+        static public IEnumerable<T> NotEquals<T>(this IEnumerable<T> enumerable, T other)
+        {
+            return enumerable.Where(item => item.Equals(other));
         }
     }
 

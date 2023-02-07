@@ -25,7 +25,7 @@ public class TurnResolver : NetworkBehaviour
             {
                 var units =
                     GetComponents<Character>()
-                    .Select(ch => ch.combatStats)
+                    .Select(ch => ch.combatUnit)
                     .ToArray();
 
                 if (units.Length < 2)
@@ -39,8 +39,9 @@ public class TurnResolver : NetworkBehaviour
             .AddTo(this);
     }
 
-    public void StartCombat(params Combat.Stats[] units)
+    [Server]
+    public void StartCombat(params Combat.CombatUnit[] units)
     {
-        combat.StartCombat(units);
+        combat.SrvStartCombat(units);
     }
 }

@@ -30,7 +30,7 @@ public class CombatView : MonoBehaviour
         canvasGroup.alpha = (visible) ? 1f : 0f;
     }
 
-    public void InitStatsView(params Combat.Stats[] units)
+    public void InitStatsView(params Combat.CombatUnit[] units)
     {
         float angleInterval = Mathf.PI * 2 / units.Length;
 
@@ -53,23 +53,24 @@ public class CombatView : MonoBehaviour
                     .AddTo(statView);
             });
     }
+
+    public class StatViewPool : ObjectPool<StatView>
+    {
+        StatView prefab;
+        RectTransform parent;
+
+        public StatViewPool(StatView prefab, RectTransform parent)
+        {
+            this.prefab = prefab;
+            this.parent = parent;
+        }
+
+        protected override StatView CreateInstance()
+        {
+            var newStatView = GameObject.Instantiate(prefab, parent);
+
+            return newStatView;
+        }
+    }
 }
 
-public class StatViewPool : ObjectPool<StatView>
-{
-    StatView prefab;
-    RectTransform parent;
-
-    public StatViewPool(StatView prefab, RectTransform parent)
-    {
-        this.prefab = prefab;
-        this.parent = parent;
-    }
-
-    protected override StatView CreateInstance()
-    {
-        var newStatView = GameObject.Instantiate(prefab, parent);
-
-        return newStatView;
-    }
-}

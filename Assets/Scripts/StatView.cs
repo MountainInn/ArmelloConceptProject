@@ -11,7 +11,7 @@ public class StatView : MonoBehaviour
 
     CompositeDisposable disposables = new CompositeDisposable();
 
-    public void Initialize(Combat.Stats unit)
+    public void Initialize(Combat.CombatUnit unit)
     {
         unit.health
             .Subscribe(val =>{

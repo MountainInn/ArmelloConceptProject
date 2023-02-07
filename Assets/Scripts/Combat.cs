@@ -9,22 +9,62 @@ using MountainInn;
 
 public class Combat : NetworkBehaviour
 {
+    [SerializeField]
+    float combatDurationInSeconds = 5;
+
     IDisposable
         battleSubscription;
 
     public ReactiveProperty<bool>
         isOngoing = new ReactiveProperty<bool>(false);
 
-    public void StartCombat(params Stats[] units)
+   
+    [Server]
+    public void SrvStartCombat(params CombatUnit[] units)
     {
-        battleSubscription =
-            this
-            .UpdateAsObservable()
-            .SelectMany(_ => units)
-            .Subscribe(u =>
-                       u.SimulateBattle(units, Time.deltaTime));
+        var hitsAndTargets = SrvSimulateCombat(units);
 
+        RpcSimulateCombat(hitsAndTargets);
+    }
+
+    [ClientRpc]
+    private void RpcSimulateCombat(HitLog[] hitsAndTargets)
+    {
         isOngoing.Value = true;
+    }
+
+    [Server]
+    public HitLog[] SrvSimulateCombat(params CombatUnit[] units)
+    {
+        var attacks =
+            units
+            .Select(u =>
+            {
+                float attackPerBattle =
+                    combatDurationInSeconds * (u.speed / 100f);
+
+                int fullAttacks =
+                    (int)MathF.Floor(attackPerBattle);
+
+                var hits =
+                    fullAttacks
+                    .ToRange()
+                    .Select(n =>
+                    {
+                        var target = units.NotEquals(u).GetRandom();
+
+                        var damage =
+                            (int)Mathf.Max(1, u.attack / target.defense );
+                       
+                        return new Hit(){ target = target, damage = damage };
+                    })
+                    .ToArray();
+
+                return new HitLog(){ unit = u, hits = hits };
+            })
+            .ToArray();
+
+        return attacks;
     }
 
     public void EndCombat()
@@ -34,7 +74,21 @@ public class Combat : NetworkBehaviour
         isOngoing.Value = false;
     }
 
-    public class Stats
+    public struct HitLog
+    {
+        public  CombatUnit unit;
+        public  Hit[] hits;
+    }
+
+    public struct Hit
+    {
+        public CombatUnit
+            target;
+        public int
+            damage;
+    }
+
+    public class CombatUnit : NetworkBehaviour
     {
         public ReactiveProperty<int>
             health = new ReactiveProperty<int>(0);
@@ -42,23 +96,35 @@ public class Combat : NetworkBehaviour
         public ReactiveProperty<float>
             attackTimerRatio = new ReactiveProperty<float>(0);
 
+        [SyncVar]
         public int
             defense,
             attack,
             speed;
 
-        public void SimulateBattle(Stats[] allUnits, float delta)
-        {
-            if (AttackTimerTick(delta))
-            {
-                Stats target =
-                    allUnits
-                    .NotEquals(this)
-                    .GetRandom();
+        IDisposable battleDisposable;
 
-                MakeAttack(target);
-            }
+        [Client]
+        public void SimulateBattle(Hit[] hits, float delta)
+        {
+            battleDisposable =
+                this.UpdateAsObservable()
+                .Select(_ =>
+                        hits.Any() &&
+                        AttackTimerTick(delta))
+                .Where(b => b == true)
+                .Subscribe(_ =>
+                {
+                    var hit = hits.First();
+                    hit.target.health.Value -= hit.damage;
+                    hits = hits.Skip(1).ToArray();
+
+                    if (!hits.Any())
+                        battleDisposable.Dispose();
+                });
         }
+
+        [Client]
         public bool AttackTimerTick(float delta)
         {
             attackTimerRatio.Value += speed / 100f * delta;
@@ -69,13 +135,6 @@ public class Combat : NetworkBehaviour
                 attackTimerRatio.Value -= 1f;
 
             return res;
-        }
-
-        public void MakeAttack(Stats other)
-        {
-            int damageTaken = Mathf.Max(1, attack / other.defense);
-
-            other.health.Value -= damageTaken;
         }
     }
 }

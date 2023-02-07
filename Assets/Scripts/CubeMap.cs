@@ -5,27 +5,23 @@ using System.Collections.Generic;
 using Mirror;
 using Zenject;
 using MountainInn;
+using UniRx;
 
 public class CubeMap : NetworkBehaviour
 {
+    [SyncVar]
     [Range(1, 3)]
     public int mapRadius;
     public int hexagonSize = 1;
     private HexTile[] hexagonPrefabs;
 
-    public event Action<Vector3Int> onHexClicked;
-    public event Action<Vector3Int> onHexPointerEnter;
-    public event Action<Vector3Int> onHexPointerExit;
     public event Action onGenerated;
-    public event Action onCleared;
 
     public Dictionary<Vector3Int, HexTile> tiles { get; private set; }
 
     private HashSet<Vector3Int> pickedPositions = new HashSet<Vector3Int>();
-
+    public IObservable<bool> onSynced;
     readonly public SyncList<HexSyncData> syncData = new SyncList<HexSyncData>();
-
-    public bool IsReady => tiles != null && tiles.Count == (MathExt.Fact(mapRadius) + 1);
 
     [Inject]
     public void Construct(EOSLobbyUI lobbyUI)
@@ -39,7 +35,7 @@ public class CubeMap : NetworkBehaviour
     }
 
     [ClientRpc]
-    private void OnGeneratedInvoke()
+    private void RpcOnGeneratedInvoke()
     {
         onGenerated?.Invoke();
     }
@@ -51,6 +47,10 @@ public class CubeMap : NetworkBehaviour
 
     public void OnDisable()
     {
+        if (isClient)
+        {
+            tiles.Clear();
+        }
     }
 
     public override void OnStartClient()
@@ -61,6 +61,7 @@ public class CubeMap : NetworkBehaviour
     public override void OnStopClient()
     {
         syncData.Callback -= OnHexSyncDataUpdated;
+        tiles.Clear();
     }
 
 
@@ -75,15 +76,17 @@ public class CubeMap : NetworkBehaviour
         set => tiles[new Vector3Int(q, r, s)] = value;
     }
 
+    [Client]
     void OnHexSyncDataUpdated(SyncList<HexSyncData>.Operation op, int index, HexSyncData oldItem, HexSyncData newItem)
     {
         switch (op)
         {
             case SyncList<HexSyncData>.Operation.OP_ADD:
                 if (tiles.ContainsKey(newItem.coord))
-                    return;
-               
+                    break;
+
                 var hex = CreateHex(newItem);
+                hex.gameObject.name = $"{newItem.hexSubtype.ToString()} {newItem.coord.ToString()}";
                 tiles.Add(hex.coordinates, hex);
                 break;
 
@@ -95,12 +98,18 @@ public class CubeMap : NetworkBehaviour
             default:
                 break;
         }
+
+        if ( tiles.Count == ( MathExt.Fact(mapRadius) * 6 + 1 ))
+        {
+            onGenerated?.Invoke();
+        }
     }
 
     [Server]
     public Dictionary<Vector3Int, HexTile> Generate(int radius)
     {
-        syncData.Clear();
+        if (syncData.Count > 0)
+            syncData.Clear();
 
         if (tiles != null || tiles.Count > 0)
         {
@@ -112,22 +121,13 @@ public class CubeMap : NetworkBehaviour
             tiles.Clear();
             tiles = new Dictionary<Vector3Int, HexTile>();
         }
-        onCleared?.Invoke();
 
         var newSyncData =
             TilePositions(radius)
             .Select(CreateSyncData)
             .ToList();
 
-        // tiles =
-        //     newSyncData
-        //     .Select(CreateHex)
-        //     .ToDictionary(hex => hex.coordinates,
-        //                   hex => hex);
-
         syncData.AddRange(newSyncData);
-
-        OnGeneratedInvoke();
 
         return tiles;
     }
@@ -157,10 +157,6 @@ public class CubeMap : NetworkBehaviour
             .GetComponent<HexTile>();
 
         hexagon.Initialize(coordinates);
-
-        hexagon.onClicked += onHexClicked;
-        hexagon.onPointerEnter += onHexPointerEnter;
-        hexagon.onPointerExit += onHexPointerExit;
 
         return hexagon;
     }
@@ -338,14 +334,6 @@ public class CubeMap : NetworkBehaviour
             if (--empty < 0) empty += coords.Length;
         }
         while (++rev < 6);
-    }
-
-    {
-
-
-
-
-        }
     }
 
     public class DuplicateKeyComparer<TKey> : IComparer<TKey> where TKey : IComparable

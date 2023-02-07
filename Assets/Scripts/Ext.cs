@@ -65,6 +65,10 @@ namespace MountainInn
 
     static public class IEnumerableExt
     {
+        static public IEnumerable<(T, O)> Zip<T, O>(this IEnumerable<T> enumerable, IEnumerable<O> other)
+        {
+            return enumerable.Zip(other, (a , b) => (a, b));
+        }
         static public IEnumerable<T> Shuffle<T>(this IEnumerable<T> enumerable)
         {
             return enumerable.OrderBy(_ => UnityEngine.Random.value);
@@ -80,6 +84,18 @@ namespace MountainInn
             return enumerable.Where(item => item.Equals(other));
         }
     }
+    static public class EnumerableBoolExt
+    {
+        static public IEnumerable<bool> IsFalse(this IEnumerable<bool> enumerable)
+        {
+            return enumerable.Where(b => b == false);
+        }
+        static public IEnumerable<bool> IsTrue(this IEnumerable<bool> enumerable)
+        {
+            return enumerable.Where(b => b == true);
+        }
+    }
+
 
     static public class MathExt
     {

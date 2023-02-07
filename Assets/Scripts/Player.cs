@@ -4,6 +4,7 @@ using Mirror;
 using MountainInn;
 using UnityEngine;
 using Zenject;
+using UniRx;
 
 public class Player : NetworkBehaviour
 {
@@ -18,8 +19,6 @@ public class Player : NetworkBehaviour
     {
         this.characterFactory = characterFactory;
         this.cubeMap = cubeMap;
-
-        Debug.Log("_Inject_ player");
     }
 
     private void Awake()
@@ -33,59 +32,65 @@ public class Player : NetworkBehaviour
         NetworkClient.RegisterSpawnHandler((uint)3611098826, SpawnCharacter, (o)=> Destroy(o));
     }
 
-    public override void OnStartLocalPlayer()
-    {
-        cubeMap.onHexClicked += CmdMoveCharacter;
-    }
-
     private void Start()
     {
-        CmdCreateCharacter();
+        if (isLocalPlayer)
+        {
+            cubeMap.onGenerated += CmdCreateCharacter;
+        }
     }
 
-    private void OnDisable()
+    private void MoveCharacter(Vector3Int coord)
     {
-        if (!isLocalPlayer)
-            return;
-
-        cubeMap.onHexClicked -= CmdMoveCharacter;
+        Debug.Log("Player.MoveCharacter");
+        character.CmdMove(coord);
     }
 
     [Command]
     private void CmdCreateCharacter()
     {
+        if (this.character != null)
+            NetworkServer.Destroy(this.character.gameObject);
+
         this.character = characterFactory.Create();
+        InitializeCharacter(this.character);
+
         NetworkServer.Spawn(this.character.gameObject, this.connectionToClient);
     }
 
+    [Client]
     GameObject SpawnCharacter(Vector3 position, uint assetId)
     {
-        character = characterFactory.Create();
-        var netId = character.GetComponent<NetworkIdentity>().netId;
-        character.name = $"Character [netId={netId}]";
-        if (isLocalPlayer)
-            character.name = $"My Character [netId={netId}]";
+        this.character = characterFactory.Create();
+        InitializeCharacter(this.character);
+
         return character.gameObject;
     }
 
-
-    [Command]
-    private void CmdMoveCharacter(Vector3Int coordinates)
+    private void InitializeCharacter(Character character)
     {
-        if (character is null ||
-            coordinates == character.coordinates ||
-            character.OutOfReach(coordinates)
-        )
-            return;
+        var netId = character.GetComponent<NetworkIdentity>().netId;
+        character.name = $"Character [netId={netId}]";
+        if (isLocalPlayer)
+        {
+            character.name = $"My Character [netId={netId}]";
 
-        character.coordinates = coordinates;
+            character.onCharacterMoved +=
+                (chara) =>
+                {
+                    turn.CompleteExplorationPhase();
+                    turn.CompleteMovementPhase();
+                    turn.CompleteCombatPhase();
+                };
 
-        turn.CompleteExplorationPhase();
-        turn.CompleteMovementPhase();
-        turn.CompleteCombatPhase();
 
-        character.RpcMove(coordinates);
+            cubeMap.tiles
+                .Values
+                .ToList()
+                .ForEach(tile => tile.onClicked += MoveCharacter);
+        }
     }
+
 
     public class Factory : PlaceholderFactory<Player>
     {
@@ -99,7 +104,6 @@ public class Player : NetworkBehaviour
         {
             var player = Create();
 
-            player.transform.position = startPosition;
             player.transform.rotation = startRotation;
 
             return player;

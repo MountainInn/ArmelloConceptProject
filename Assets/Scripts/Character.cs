@@ -24,7 +24,7 @@ public class Character : NetworkBehaviour
 
     private void Awake()
     {
-        combatUnit = GetComponent<CombatUnit>()
+        combatUnit = GetComponent<CombatUnit>();
     }
 
     private void Start()

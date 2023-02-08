@@ -32,12 +32,13 @@ public class Player : NetworkBehaviour
         NetworkClient.RegisterSpawnHandler((uint)3611098826, SpawnCharacter, (o)=> Destroy(o));
     }
 
-    private void Start()
+    public override void OnStartLocalPlayer()
     {
-        if (isLocalPlayer)
-        {
-            cubeMap.onGenerated += CmdCreateCharacter;
-        }
+        CmdCreateCharacter();
+
+        MessageBroker.Default
+            .Receive<HexTile>()
+            .Subscribe(hex => MoveCharacter(hex.coordinates));
     }
 
     private void MoveCharacter(Vector3Int coord)
@@ -75,19 +76,15 @@ public class Player : NetworkBehaviour
         {
             character.name = $"My Character [netId={netId}]";
 
-            character.onCharacterMoved +=
-                (chara) =>
-                {
-                    turn.CompleteExplorationPhase();
-                    turn.CompleteMovementPhase();
-                    turn.CompleteCombatPhase();
-                };
+            // character.onCharacterMoved +=
+            //     (chara) =>
+            //     {
+            //         turn.CompleteExplorationPhase();
+            //         turn.CompleteMovementPhase();
+            //         turn.CompleteCombatPhase();
+            //     };
 
 
-            cubeMap.tiles
-                .Values
-                .ToList()
-                .ForEach(tile => tile.onClicked += MoveCharacter);
         }
     }
 

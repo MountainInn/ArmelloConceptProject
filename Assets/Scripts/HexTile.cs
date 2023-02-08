@@ -81,6 +81,8 @@ public class HexTile : NetworkBehaviour, IPointerClickHandler, IPointerEnterHand
     public void OnPointerClick(PointerEventData eventData)
     {
         onClicked?.Invoke(coordinates);
+
+        MessageBroker.Default.Publish(this);
     }
 
     public void OnPointerEnter(PointerEventData eventData)

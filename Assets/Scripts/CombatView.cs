@@ -23,6 +23,8 @@ public class CombatView : MonoBehaviour
     {
         rect = GetComponent<RectTransform>();
         canvasGroup = GetComponent<CanvasGroup>();
+
+        SetVisible(false);
     }
 
     public void SetVisible(bool visible)

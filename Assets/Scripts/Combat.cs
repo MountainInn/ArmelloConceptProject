@@ -46,13 +46,13 @@ public class Combat : NetworkBehaviour
         var attacks =
             units.Select(u => {
                 float attackPerBattle =
-                    u.attackTimerRatio.Value +
+                    u.attackTimerRatio +
                     combatDurationInSeconds * (u.speed / 100f);
 
                 int fullAttacks =
                     (int)MathF.Floor(attackPerBattle);
 
-                u.attackTimerRatio.Value = attackPerBattle - fullAttacks;
+                u.attackTimerRatio = attackPerBattle - fullAttacks;
 
                 var hits =
                     fullAttacks.ToRange()

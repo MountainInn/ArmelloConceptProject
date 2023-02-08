@@ -14,13 +14,13 @@ public class StatView : MonoBehaviour
 
     public void Initialize(CombatUnit unit, IDisposable combatOngoingDisposable)
     {
-        unit.health
+        unit.healthReactive
             .Subscribe(val =>{
                 healthText.text = val.ToString();
             })
             .AddTo(disposables);
 
-        unit.attackTimerRatio
+        unit.attackTimerRatioReactive
             .Subscribe(val =>{
                 attackProgress.fillAmount = val;
             })

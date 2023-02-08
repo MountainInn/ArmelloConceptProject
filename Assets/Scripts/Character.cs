@@ -22,6 +22,11 @@ public class Character : NetworkBehaviour
         this.cubeMap = cubeMap;
     }
 
+    private void Awake()
+    {
+        combatUnit = GetComponent<combatu>()
+    }
+
     private void Start()
     {
         if (isOwned)

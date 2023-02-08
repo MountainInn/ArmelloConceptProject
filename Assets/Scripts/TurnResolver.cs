@@ -21,26 +21,32 @@ public class TurnResolver : NetworkBehaviour
     {
         this.UpdateAsObservable()
             .Where(_ => !combat.isOngoing.Value && Input.GetKeyDown(KeyCode.F))
-            .Subscribe(_ =>
-            {
-                var units =
-                    GetComponents<Character>()
-                    .Select(ch => ch.combatUnit)
-                    .ToArray();
-
-                if (units.Length < 2)
-                {
-                    Debug.Log("Not enough players to start combat");
-                    return;
-                }
-
-                StartCombat(units);
-            })
+            .Subscribe(_ => CmdStartMockupCombat())
             .AddTo(this);
     }
 
     [Server]
-    public void StartCombat(params Combat.CombatUnit[] units)
+    [Command]
+    public void CmdStartMockupCombat()
+    {
+        var units =
+            GetComponents<Character>()
+            .Select(ch => ch.combatUnit)
+            .ToArray();
+
+        if (units.Length < 2)
+        {
+            Debug.Log("Not enough players to start combat");
+            return;
+        }
+
+        CmdStartCombat(units);
+    }
+
+
+    [Server]
+    [Command]
+    public void CmdStartCombat(params Combat.CombatUnit[] units)
     {
         combat.SrvStartCombat(units);
     }

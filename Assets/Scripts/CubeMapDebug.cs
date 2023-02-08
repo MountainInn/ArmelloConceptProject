@@ -22,11 +22,11 @@ public class CubeMapDebug : MonoBehaviour
     public void Construct(CubeMap cubeMap)
     {
         this.cubeMap = cubeMap;
-        cubeMap.onHexClicked += SetStart;
-        cubeMap.onHexPointerEnter += SetEnd;
-        cubeMap.onHexPointerEnter += FindPath;
-        cubeMap.onHexPointerEnter += FindNeighbours;
-        cubeMap.onHexPointerEnter += (coord)=>cubeMap[coord].HighlightMouseOver();
+        // cubeMap.onHexClicked += SetStart;
+        // cubeMap.onHexPointerEnter += SetEnd;
+        // cubeMap.onHexPointerEnter += FindPath;
+        // cubeMap.onHexPointerEnter += FindNeighbours;
+        // cubeMap.onHexPointerEnter += (coord)=>cubeMap[coord].HighlightMouseOver();
     }
 
     private void FindNeighbours(Vector3Int coord)

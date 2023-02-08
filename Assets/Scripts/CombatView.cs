@@ -32,7 +32,7 @@ public class CombatView : MonoBehaviour
         canvasGroup.alpha = (visible) ? 1f : 0f;
     }
 
-    public void InitStatsView(params Combat.CombatUnit[] units)
+    public void InitStatsView(params CombatUnit[] units)
     {
         float angleInterval = Mathf.PI * 2 / units.Length;
 

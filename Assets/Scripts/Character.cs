@@ -13,7 +13,7 @@ public class Character : NetworkBehaviour
     [Range(1, 10)]
     public int moveRadius = 1;
     public CubeMap cubeMap;
-    public Combat.CombatUnit combatUnit;
+    public CombatUnit combatUnit;
     public event Action<Character> onCharacterMoved;
 
     [Inject]

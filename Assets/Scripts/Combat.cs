@@ -87,68 +87,19 @@ public class Combat : NetworkBehaviour
 
         isOngoing.Value = false;
     }
+}
 
-    public struct HitLog
-    {
-        public  CombatUnit unit;
-        public  Hit[] hits;
-    }
 
-    public struct Hit
-    {
-        public CombatUnit
-            target;
-        public int
-            damage;
-    }
+public struct HitLog
+{
+    public  CombatUnit unit;
+    public  Hit[] hits;
+}
 
-    public class CombatUnit : NetworkBehaviour
-    {
-        public ReactiveProperty<int>
-            health = new ReactiveProperty<int>(0);
-
-        public ReactiveProperty<float>
-            attackTimerRatio = new ReactiveProperty<float>(0);
-
-        [SyncVar]
-        public int
-            defense,
-            attack,
-            speed;
-
-        IDisposable battleDisposable;
-
-        [Client]
-        public void SimulateBattle(Hit[] hits, float delta)
-        {
-            battleDisposable =
-                this.UpdateAsObservable()
-                .Select(_ =>
-                        hits.Any() &&
-                        AttackTimerTick(delta))
-                .Where(b => b == true)
-                .Subscribe(_ =>
-                {
-                    var hit = hits.First();
-                    hit.target.health.Value -= hit.damage;
-                    hits = hits.Skip(1).ToArray();
-
-                    if (!hits.Any())
-                        battleDisposable.Dispose();
-                });
-        }
-
-        [Client]
-        public bool AttackTimerTick(float delta)
-        {
-            attackTimerRatio.Value += speed / 100f * delta;
-
-            bool res = attackTimerRatio.Value >= 1f;
-
-            if (res)
-                attackTimerRatio.Value -= 1f;
-
-            return res;
-        }
-    }
+public struct Hit
+{
+    public CombatUnit
+        target;
+    public int
+        damage;
 }

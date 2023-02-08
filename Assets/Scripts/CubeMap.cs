@@ -18,10 +18,9 @@ public class CubeMap : NetworkBehaviour
     public event Action onGenerated;
 
     public Dictionary<Vector3Int, HexTile> tiles { get; private set; }
+    public Dictionary<Vector3Int, Vector3> positions { get; private set; }
 
     private HashSet<Vector3Int> pickedPositions = new HashSet<Vector3Int>();
-    public IObservable<bool> onSynced;
-    readonly public SyncList<HexSyncData> syncData = new SyncList<HexSyncData>();
 
     [Inject]
     public void Construct(EOSLobbyUI lobbyUI)
@@ -29,10 +28,27 @@ public class CubeMap : NetworkBehaviour
         lobbyUI.onStartGameButtonClicked += () => Generate(mapRadius);
     }
 
-    public void Awake()
-    {
-        tiles = new Dictionary<Vector3Int, HexTile>();
-    }
+    // public void AddHex(HexTile tile)
+    // {
+    //     var coord = tile.coordinates;
+
+    //     tiles.TryAdd(coord, tile);
+
+    //     bool fullMapSpawned = (tiles.Count == (MathExt.Fact(mapRadius) * 6 + 1));
+    //     if (fullMapSpawned)
+    //     {
+    //         var player =
+    //             NetworkClient.connection.owned
+    //             .First(netid => netid.gameObject.GetComponent<Player>())
+    //             .GetComponent<Player>();
+
+    //         Debug.Log("Full map");
+
+    //         tiles.Values
+    //             .ToList()
+    //             .ForEach(t => t.onClicked += player.MoveCharacter);
+    //     }
+    // }
 
     [ClientRpc]
     private void RpcOnGeneratedInvoke()
@@ -42,28 +58,12 @@ public class CubeMap : NetworkBehaviour
 
     public void OnEnable()
     {
+        Debug.Log("Enable");
+        tiles = new Dictionary<Vector3Int, HexTile>();
+        positions = new Dictionary<Vector3Int, Vector3>();
+
         hexagonPrefabs = (HexTile[])Resources.LoadAll<HexTile>("Prefabs/Tiles/");
     }
-
-    public void OnDisable()
-    {
-        if (isClient)
-        {
-            tiles.Clear();
-        }
-    }
-
-    public override void OnStartClient()
-    {
-        syncData.Callback += OnHexSyncDataUpdated;
-    }
-
-    public override void OnStopClient()
-    {
-        syncData.Callback -= OnHexSyncDataUpdated;
-        tiles.Clear();
-    }
-
 
     public HexTile this[Vector3Int v3]
     {
@@ -76,60 +76,33 @@ public class CubeMap : NetworkBehaviour
         set => tiles[new Vector3Int(q, r, s)] = value;
     }
 
-    [Client]
-    void OnHexSyncDataUpdated(SyncList<HexSyncData>.Operation op, int index, HexSyncData oldItem, HexSyncData newItem)
-    {
-        switch (op)
-        {
-            case SyncList<HexSyncData>.Operation.OP_ADD:
-                if (tiles.ContainsKey(newItem.coord))
-                    break;
-
-                var hex = CreateHex(newItem);
-                hex.gameObject.name = $"{newItem.hexSubtype.ToString()} {newItem.coord.ToString()}";
-                tiles.Add(hex.coordinates, hex);
-                break;
-
-            case SyncList<HexSyncData>.Operation.OP_CLEAR:
-                tiles.Values.ToList().ForEach(hex => GameObject.Destroy(hex.gameObject));
-                tiles.Clear();
-                break;
-
-            default:
-                break;
-        }
-
-        if ( tiles.Count == ( MathExt.Fact(mapRadius) * 6 + 1 ))
-        {
-            onGenerated?.Invoke();
-        }
-    }
-
     [Server]
-    public Dictionary<Vector3Int, HexTile> Generate(int radius)
+    public void Generate(int radius)
     {
-        if (syncData.Count > 0)
-            syncData.Clear();
-
-        if (tiles != null || tiles.Count > 0)
+        if (tiles != null && tiles.Count > 0)
         {
             tiles.Values
-                .Where(hex => hex != null)
+                .NotEqual(null)
+                .Select(hex => hex.gameObject)
                 .ToList()
-                .ForEach(hex => NetworkServer.Destroy(hex.gameObject));
+                .ForEach(NetworkServer.Destroy);
 
             tiles.Clear();
-            tiles = new Dictionary<Vector3Int, HexTile>();
         }
 
-        var newSyncData =
-            TilePositions(radius)
+        tiles =
+            TileCoordinates(radius)
             .Select(CreateSyncData)
-            .ToList();
+            .Select(CreateHex)
+            .ToDictionary(hex => hex.coordinates,
+                          hex => hex)
+            ;
 
-        syncData.AddRange(newSyncData);
-
-        return tiles;
+        tiles.Values
+            .Select(tile => tile.gameObject)
+            .ToList()
+            .ForEach(go => NetworkServer.Spawn(go))
+            ;
     }
 
     HexSyncData CreateSyncData(Vector3Int coord)
@@ -153,7 +126,9 @@ public class CubeMap : NetworkBehaviour
         var hexagon = Instantiate(prefab, position, Quaternion.identity, transform)
             .GetComponent<HexTile>();
 
-        hexagon.Initialize(coordinates);
+        hexagon.Initialize(syncData);
+
+        hexagon.gameObject.name = $"{syncData.hexSubtype} {coordinates}";
 
         return hexagon;
     }
@@ -171,7 +146,7 @@ public class CubeMap : NetworkBehaviour
 
     public Vector3Int GetRandomCoordinates()
     {
-        var coords = TilePositions(mapRadius);
+        var coords = TileCoordinates(mapRadius);
         Vector3Int randomCoordinates;
         do
         {
@@ -262,7 +237,7 @@ public class CubeMap : NetworkBehaviour
                 res = res.Concat(neighbours[i]);
             else
             {
-                res = res.Concat(TilePositionsRing(i));
+                res = res.Concat(TileCoordinatesRing(i));
             }
         }
 
@@ -302,20 +277,20 @@ public class CubeMap : NetworkBehaviour
     }
 
 
-    public IEnumerable<Vector3Int> TilePositions(int radius)
+    public IEnumerable<Vector3Int> TileCoordinates(int radius)
     {
         yield return new Vector3Int(0, 0, 0);
 
         for (int r = 1; r <= radius; r++)
         {
-            foreach (var item in TilePositionsRing(r))
+            foreach (var item in TileCoordinatesRing(r))
             {
                 yield return item;
             }
         }
     }
 
-    public IEnumerable<Vector3Int> TilePositionsRing(int radius)
+    public IEnumerable<Vector3Int> TileCoordinatesRing(int radius)
     {
         int
             pillar = 0,

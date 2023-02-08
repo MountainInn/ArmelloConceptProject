@@ -2,6 +2,7 @@ using UniRx;
 using MountainInn;
 using UnityEngine;
 using UnityEngine.UI;
+using System;
 
 public class StatView : MonoBehaviour
 {
@@ -11,7 +12,7 @@ public class StatView : MonoBehaviour
 
     CompositeDisposable disposables = new CompositeDisposable();
 
-    public void Initialize(Combat.CombatUnit unit)
+    public void Initialize(Combat.CombatUnit unit, IDisposable combatOngoingDisposable)
     {
         unit.health
             .Subscribe(val =>{
@@ -23,6 +24,9 @@ public class StatView : MonoBehaviour
             .Subscribe(val =>{
                 attackProgress.fillAmount = val;
             })
+            .AddTo(disposables);
+
+        combatOngoingDisposable
             .AddTo(disposables);
     }
 

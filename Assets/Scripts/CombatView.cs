@@ -45,12 +45,13 @@ public class CombatView : MonoBehaviour
 
                 var statView = statViewPool.Rent();
                 statView.transform.localPosition = localPosition;
-                statView.Initialize(units[i]);
 
-                combat.isOngoing
+                var combatOngoingDisposable =
+                    combat.isOngoing
                     .Where(b => b == false)
-                    .Subscribe(_ => statViewPool.Return(statView))
-                    .AddTo(statView);
+                    .Subscribe(_ => statViewPool.Return(statView));
+
+                statView.Initialize(units[i], combatOngoingDisposable);
             });
     }
 

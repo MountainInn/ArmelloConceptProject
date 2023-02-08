@@ -6,6 +6,7 @@ using System;
 using UniRx;
 using UniRx.Triggers;
 using MountainInn;
+using Zenject;
 
 public class Combat : NetworkBehaviour
 {
@@ -18,7 +19,19 @@ public class Combat : NetworkBehaviour
     public ReactiveProperty<bool>
         isOngoing = new ReactiveProperty<bool>(false);
 
-   
+    CombatView combatView;
+
+    [Inject]
+    public void Construct(CombatView combatView)
+    {
+        this.combatView = combatView;
+
+        isOngoing
+            .Subscribe(b => {
+                combatView.SetVisible(b);
+            });
+    }
+
     [Server]
     public void SrvStartCombat(params CombatUnit[] units)
     {
@@ -63,6 +76,7 @@ public class Combat : NetworkBehaviour
     [TargetRpc]
     private void RpcSimulateCombat(HitLog[] hitsAndTargets)
     {
+        combatView.InitStatsView(units);
         isOngoing.Value = true;
     }
 

@@ -76,7 +76,14 @@ public class Combat : NetworkBehaviour
     [TargetRpc]
     private void RpcSimulateCombat(HitLog[] hitsAndTargets)
     {
+        var units = hitsAndTargets.Select(log => log.unit).ToArray();
+
         combatView.InitStatsView(units);
+
+        hitsAndTargets
+            .ToList()
+            .ForEach(log => log.unit.StartSimulatingBattleObservable(log.hits));
+
         isOngoing.Value = true;
     }
 

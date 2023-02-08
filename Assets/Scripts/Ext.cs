@@ -79,7 +79,7 @@ namespace MountainInn
 
             return enumerable.ElementAt(id);
         }
-        static public IEnumerable<T> NotEquals<T>(this IEnumerable<T> enumerable, T other)
+        static public IEnumerable<T> NotEqual<T>(this IEnumerable<T> enumerable, T other)
         {
             return enumerable.Where(item => item.Equals(other));
         }

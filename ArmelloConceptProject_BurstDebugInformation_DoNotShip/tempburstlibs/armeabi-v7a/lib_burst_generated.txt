@@ -177,6 +177,7 @@ Library: lib_burst_generated
 --root-assembly=C:\Users\User\projects\unity\ArmelloConceptProject\Temp\StagingArea\Data\Managed\Unity.VisualScripting.Flow.dll
 --root-assembly=C:\Users\User\projects\unity\ArmelloConceptProject\Temp\StagingArea\Data\Managed\Unity.VisualScripting.Core.dll
 --root-assembly=C:\Users\User\projects\unity\ArmelloConceptProject\Temp\StagingArea\Data\Managed\Unity.Services.Core.Environments.Internal.dll
+--root-assembly=C:\Users\User\projects\unity\ArmelloConceptProject\Temp\StagingArea\Data\Managed\UniRx.dll
 --root-assembly=C:\Users\User\projects\unity\ArmelloConceptProject\Temp\StagingArea\Data\Managed\Unity.2D.Animation.Runtime.dll
 --root-assembly=C:\Users\User\projects\unity\ArmelloConceptProject\Temp\StagingArea\Data\Managed\Unity.TextMeshPro.dll
 --root-assembly=C:\Users\User\projects\unity\ArmelloConceptProject\Temp\StagingArea\Data\Managed\Unity.Burst.dll

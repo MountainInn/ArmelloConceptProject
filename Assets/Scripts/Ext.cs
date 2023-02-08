@@ -65,6 +65,15 @@ namespace MountainInn
 
     static public class IEnumerableExt
     {
+        static public IEnumerable<T> LookAt<T>(this IEnumerable<T> enumerable, Action<T> lookingAction)
+        {
+            Debug.Log("LookAt");
+            foreach (var item in enumerable)
+            {
+                lookingAction.Invoke(item);
+                yield return item;
+            }
+        }
         static public IEnumerable<(T, O)> Zip<T, O>(this IEnumerable<T> enumerable, IEnumerable<O> other)
         {
             return enumerable.Zip(other, (a , b) => (a, b));

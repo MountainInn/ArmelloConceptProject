@@ -27,31 +27,24 @@ public class Combat : NetworkBehaviour
         RpcSimulateCombat(hitsAndTargets);
     }
 
-    [ClientRpc]
-    private void RpcSimulateCombat(HitLog[] hitsAndTargets)
-    {
-        isOngoing.Value = true;
-    }
-
     [Server]
     public HitLog[] SrvSimulateCombat(params CombatUnit[] units)
     {
         var attacks =
-            units
-            .Select(u =>
-            {
+            units.Select(u => {
                 float attackPerBattle =
+                    u.attackTimerRatio.Value +
                     combatDurationInSeconds * (u.speed / 100f);
 
                 int fullAttacks =
                     (int)MathF.Floor(attackPerBattle);
 
+                u.attackTimerRatio.Value = attackPerBattle - fullAttacks;
+
                 var hits =
-                    fullAttacks
-                    .ToRange()
-                    .Select(n =>
-                    {
-                        var target = units.NotEquals(u).GetRandom();
+                    fullAttacks.ToRange()
+                    .Select(n => {
+                        var target = units.NotEqual(u).GetRandom();
 
                         var damage =
                             (int)Mathf.Max(1, u.attack / target.defense );
@@ -67,6 +60,13 @@ public class Combat : NetworkBehaviour
         return attacks;
     }
 
+    [TargetRpc]
+    private void RpcSimulateCombat(HitLog[] hitsAndTargets)
+    {
+        isOngoing.Value = true;
+    }
+
+    [Client]
     public void EndCombat()
     {
         battleSubscription?.Dispose();

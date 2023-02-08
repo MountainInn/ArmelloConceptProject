@@ -4,54 +4,21 @@ using Mirror;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using MountainInn;
+using UniRx;
 
-public class HexTile : NetworkBehaviour, IPointerClickHandler, IPointerEnterHandler, IPointerExitHandler
+public partial class HexTile : NetworkBehaviour, IPointerClickHandler, IPointerEnterHandler, IPointerExitHandler
 {
-    public class MorphingRule
-    {
-        public HexType resultType;
-        public Dictionary<HexType, int> requiredNeighbours;
-
-        public MorphingRule(HexType resultType, params (HexType, int)[] requiredNeighbours)
-        {
-            this.resultType = resultType;
-            this.requiredNeighbours =
-                requiredNeighbours.ToDictionary(tup => tup.Item1, tup => tup.Item2);
-        }
-
-        public HexType? TryToMorph(CubeMap cubeMap, Vector3Int coord)
-        {
-            if (CheckNeighbours(cubeMap, coord))
-                return resultType;
-
-            return null;
-        }
-
-        public bool CheckNeighbours(CubeMap cubeMap, Vector3Int coord)
-        {
-            Dictionary<HexType, int> count = new Dictionary<HexType, int>(requiredNeighbours);
-
-            var neighbours = cubeMap.NeighbourTilesInRadius(1, coord);
-
-            foreach (var item in neighbours)
-            {
-                if (!count.ContainsKey(item.currentType))
-                    return false;
-
-                count[item.currentType]--;
-            }
-
-            return count.Values.Count(v => v > 0) == 0;
-        }
-    }
 
     public event Action<Vector3Int> onClicked;
     public event Action<Vector3Int> onPointerEnter;
     public event Action<Vector3Int> onPointerExit;
 
-    public Vector3Int coordinates {get; private set;}
-    public bool isVisible = false;
+    [SyncVar]
+    public Vector3Int coordinates;
+    [SyncVar]
     public HexType baseType, currentType;
+    public bool isVisible = false;
 
     private SpriteRenderer spriteRenderer;
     private Color baseColor, highlightColor, warScreenColor;
@@ -60,9 +27,15 @@ public class HexTile : NetworkBehaviour, IPointerClickHandler, IPointerEnterHand
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
         baseColor = spriteRenderer.color;
-        warScreenColor = baseColor *.5f;
+        warScreenColor = baseColor * .5f;
 
         ToggleVisibility(false);
+
+        gameObject.name = $"{baseType} {coordinates}";
+    }
+
+    public void Start()
+    {
     }
 
     private void OnDestroy()
@@ -72,11 +45,13 @@ public class HexTile : NetworkBehaviour, IPointerClickHandler, IPointerEnterHand
         onPointerExit = null;
     }
 
-    public void Initialize(Vector3Int coordinates)
+    public void Initialize(HexSyncData syncData)
     {
-        this.coordinates = coordinates;
-    }
+        this.coordinates = syncData.coord;
+        baseType = (HexType) syncData.hexSubtype;
 
+        SetDirty();
+    }
 
     public void OnPointerClick(PointerEventData eventData)
     {
@@ -99,7 +74,7 @@ public class HexTile : NetworkBehaviour, IPointerClickHandler, IPointerEnterHand
 
     public void RemoveHighlight()
     {
-        spriteRenderer.color = (isVisible)? baseColor : warScreenColor;
+        spriteRenderer.color = (isVisible) ? baseColor : warScreenColor;
     }
 
     public void ToggleVisibility(bool toggle)
@@ -130,4 +105,10 @@ public class HexTile : NetworkBehaviour, IPointerClickHandler, IPointerEnterHand
 public enum HexType
 {
     Forest, Mountain, Lake, Sand
+}
+
+public struct SpawnHexTileMessage : NetworkMessage
+{
+    public SpawnMessage spawnMessage;
+    public Vector3Int coordinates;
 }

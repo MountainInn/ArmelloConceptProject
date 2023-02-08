@@ -24,21 +24,23 @@ public class Character : NetworkBehaviour
 
     private void Start()
     {
-        if (isServer)
+        if (isOwned)
         {
             CmdInitializeCoordinates();
         }
     }
 
-    [Command]
+    [Command(requiresAuthority = false)]
     private void CmdInitializeCoordinates()
     {
         var coord = cubeMap.GetRandomCoordinates();
 
-        RpcMove(coord, useTween: false);
+        var position = cubeMap.PositionFromCoordinates(coord);
+
+        RpcMove(coord, position, useTween: false);
     }
 
-    [Command]
+    [Command(requiresAuthority = false)]
     public void CmdMove(Vector3Int coordinates)
     {
         if (this.coordinates == coordinates ||
@@ -49,14 +51,14 @@ public class Character : NetworkBehaviour
             return;
         }
 
-        RpcMove(coordinates, true);
+        Vector3 position = cubeMap.PositionFromCoordinates(coordinates);
+
+        RpcMove(coordinates, position, true);
     }
 
     [ClientRpc]
-    public void RpcMove(Vector3Int coordinates, bool useTween)
+    public void RpcMove(Vector3Int coordinates, Vector3 position, bool useTween)
     {
-        Vector3 position = cubeMap[coordinates].transform.position;
-
         if (useTween)
         {
             transform
@@ -70,7 +72,7 @@ public class Character : NetworkBehaviour
         }
     }
 
-    [Command]
+    [Command(requiresAuthority = false)]
     private void CmdSetCoordinates(Vector3Int coordinates)
     {
         this.coordinates = coordinates;
@@ -79,13 +81,17 @@ public class Character : NetworkBehaviour
     [Client]
     private void CoordinatesSyncedHook(Vector3Int oldCoord, Vector3Int newCoord)
     {
-        if (isOwned)
-            ClearWarscreen();
+        ///Даёт null-reference
+        // Временно закоментировал
+        //
+        // if (isOwned)
+        //     ClearWarscreen();
 
-        InvokeOnCharacterMoved();
+        // Проблемы с авторитетом клиента при командовании
+        // InvokeOnCharacterMoved();
     }
 
-    [Command]
+    [Command(requiresAuthority = false)]
     private void InvokeOnCharacterMoved()
     {
         onCharacterMoved?.Invoke(this);

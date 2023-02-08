@@ -20,7 +20,7 @@ public class TurnResolver : NetworkBehaviour
     private void Awake()
     {
         this.UpdateAsObservable()
-            .Where(_ => !combat.isOngoing.Value && Input.GetKeyDown(KeyCode.F))
+            .Where(_ => !combat.isOngoing && Input.GetKeyDown(KeyCode.F))
             .Subscribe(_ => CmdStartMockupCombat())
             .AddTo(this);
     }
@@ -46,8 +46,8 @@ public class TurnResolver : NetworkBehaviour
 
     [Server]
     [Command]
-    public void CmdStartCombat(params Combat.CombatUnit[] units)
+    public void CmdStartCombat(params CombatUnit[] units)
     {
-        combat.SrvStartCombat(units);
+        combat.CmdStartCombat(units);
     }
 }

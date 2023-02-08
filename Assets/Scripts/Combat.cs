@@ -13,88 +13,74 @@ public class Combat : NetworkBehaviour
     [SerializeField]
     float combatDurationInSeconds = 5;
 
-    IDisposable
-        battleSubscription;
-
-    public ReactiveProperty<bool>
-        isOngoing = new ReactiveProperty<bool>(false);
+    [SyncVar(hook=nameof(OnIsOngoingSync))]
+    public bool isOngoing;
+    public ReactiveProperty<bool> isOngoingReactive = new ReactiveProperty<bool>(false);
 
     CombatView combatView;
+
+
+    private void OnIsOngoingSync(bool oldb, bool newb)
+    {
+        isOngoingReactive.Value = newb;
+    }
 
     [Inject]
     public void Construct(CombatView combatView)
     {
         this.combatView = combatView;
 
-        isOngoing
-            .Subscribe(b => {
-                combatView.SetVisible(b);
-            });
+        isOngoingReactive
+            .Subscribe(combatView.SetVisible);
     }
+
 
     [Server]
-    public void SrvStartCombat(params CombatUnit[] units)
+    [Command]
+    public void CmdStartCombat(params CombatUnit[] units)
     {
-        var hitsAndTargets = SrvSimulateCombat(units);
+        RpcInitCombatViews(units);
 
-        RpcSimulateCombat(hitsAndTargets);
+        CmdStartCombatSimulation(units);
     }
 
-    [Server]
-    public HitLog[] SrvSimulateCombat(params CombatUnit[] units)
+    [ClientRpc]
+    public void RpcInitCombatViews(params CombatUnit[] units)
     {
-        var attacks =
-            units.Select(u => {
-                float attackPerBattle =
-                    u.attackTimerRatio +
-                    combatDurationInSeconds * (u.speed / 100f);
-
-                int fullAttacks =
-                    (int)MathF.Floor(attackPerBattle);
-
-                u.attackTimerRatio = attackPerBattle - fullAttacks;
-
-                var hits =
-                    fullAttacks.ToRange()
-                    .Select(n => {
-                        var target = units.NotEqual(u).GetRandom();
-
-                        var damage =
-                            (int)Mathf.Max(1, u.attack / target.defense );
-
-                        target.health -= damage;
-                       
-                        return new Hit(){ target = target, damage = damage };
-                    })
-                    .ToArray();
-
-                return new HitLog(){ unit = u, hits = hits };
-            })
-            .ToArray();
-
-        return attacks;
-    }
-
-    [TargetRpc]
-    private void RpcSimulateCombat(HitLog[] hitsAndTargets)
-    {
-        var units = hitsAndTargets.Select(log => log.unit).ToArray();
-
         combatView.InitStatsView(units);
-
-        hitsAndTargets
-            .ToList()
-            .ForEach(log => log.unit.StartSimulatingBattleObservable(log.hits));
-
-        isOngoing.Value = true;
     }
 
-    [Client]
-    public void EndCombat()
+    [Command]
+    public void CmdStartCombatSimulation(params CombatUnit[] units)
     {
-        battleSubscription?.Dispose();
+        CompositeDisposable combatDisposables = new CompositeDisposable();
 
-        isOngoing.Value = false;
+        this.UpdateAsObservable()
+            .SelectMany(_ => units)
+            .Where(u => u.AttackTimerTick(Time.deltaTime))
+            .Subscribe(u =>
+            {
+                var target = units.NotEqual(u).GetRandom();
+
+                var damage =
+                    (int)Mathf.Max(1, u.attack / target.defense );
+
+                target.health -= damage;
+            })
+            .AddTo(combatDisposables);
+
+        float combatDuration = this.combatDurationInSeconds;
+
+        this.UpdateAsObservable()
+            .Where(_ => (combatDuration -= Time.deltaTime) <= 0)
+            .Subscribe(_ =>
+            {
+                isOngoing = false;
+                combatDisposables.Dispose();
+            })
+            .AddTo(combatDisposables);
+
+        isOngoing = true;
     }
 }
 

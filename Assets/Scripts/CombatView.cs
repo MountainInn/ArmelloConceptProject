@@ -49,7 +49,7 @@ public class CombatView : MonoBehaviour
                 statView.transform.localPosition = localPosition;
 
                 var combatOngoingDisposable =
-                    combat.isOngoing
+                    combat.isOngoingReactive
                     .Where(b => b == false)
                     .Subscribe(_ => statViewPool.Return(statView));
 

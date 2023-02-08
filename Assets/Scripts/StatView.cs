@@ -6,9 +6,9 @@ using System;
 
 public class StatView : MonoBehaviour
 {
-    private Text playerName;
-    private Text healthText;
-    private Image attackProgress;
+    [SerializeField] private Text playerName;
+    [SerializeField] private Text healthText;
+    [SerializeField] private Image attackProgress;
 
     CompositeDisposable disposables = new CompositeDisposable();
 

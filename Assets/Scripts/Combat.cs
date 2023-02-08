@@ -61,6 +61,8 @@ public class Combat : NetworkBehaviour
 
                         var damage =
                             (int)Mathf.Max(1, u.attack / target.defense );
+
+                        target.health -= damage;
                        
                         return new Hit(){ target = target, damage = damage };
                     })

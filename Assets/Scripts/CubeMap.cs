@@ -145,10 +145,7 @@ public class CubeMap : NetworkBehaviour
     {
         var coordinates = syncData.coord;
 
-        float x = hexagonSize * (MathF.Sqrt(3) * coordinates.x + MathF.Sqrt(3) / 2 * coordinates.y);
-        float y = hexagonSize * 3f / 2 * coordinates.y;
-
-        var position = new Vector3(x, y, 0) / 2;
+        var position = PositionFromCoordinates(coordinates);
 
         HexTile prefab = (HexTile)hexagonPrefabs
             .First(sr => sr.name == syncData.hexSubtype.ToString());
@@ -159,6 +156,17 @@ public class CubeMap : NetworkBehaviour
         hexagon.Initialize(coordinates);
 
         return hexagon;
+    }
+
+    public Vector3 PositionFromCoordinates(Vector3Int coordinates)
+    {
+        if (positions.TryGetValue(coordinates, out Vector3 position))
+            return position;
+
+        float x = hexagonSize * (MathF.Sqrt(3) * coordinates.x + MathF.Sqrt(3) / 2 * coordinates.y);
+        float y = hexagonSize * 3f / 2 * coordinates.y;
+
+        return positions[coordinates] = new Vector3(x, y, 0) / 2;
     }
 
     public Vector3Int GetRandomCoordinates()

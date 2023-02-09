@@ -57,6 +57,10 @@ namespace MountainInn
 
     static public class IntExt
     {
+        static public void ForLoop(this int i, Action<int> action)
+        {
+            Enumerable.Range(0, i).ToList().ForEach(action);
+        }
         static public IEnumerable<int> ToRange(this int i)
         {
             return Enumerable.Range(0, i);

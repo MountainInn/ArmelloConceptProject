@@ -3,6 +3,7 @@ using System.Linq;
 using UniRx;
 using UniRx.Toolkit;
 using Zenject;
+using MountainInn;
 
 public class CombatView : MonoBehaviour
 {
@@ -39,10 +40,8 @@ public class CombatView : MonoBehaviour
     {
         float angleInterval = Mathf.PI * 2 / units.Length;
 
-        Enumerable
-            .Range(0, units.Length)
-            .ToList()
-            .ForEach(i =>
+        units.Length
+            .ForLoop(i =>
             {
                 float a = i * angleInterval;
                 Vector2 localPosition = new Vector2(Mathf.Cos(a), Mathf.Sin(a));

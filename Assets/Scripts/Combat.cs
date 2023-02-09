@@ -78,7 +78,14 @@ public class Combat : NetworkBehaviour
         float combatDuration = this.combatDurationInSeconds;
 
         this.UpdateAsObservable()
-            .Where(_ => (combatDuration -= Time.deltaTime) <= 0)
+            .Where(_ =>
+            {
+                bool
+                    combatEnded = (combatDuration -= Time.deltaTime) <= 0,
+                    onlyOneUnitLeftAlive = units.Count(u => u.health > 0) == 1;
+
+                return combatEnded || onlyOneUnitLeftAlive;
+            })
             .Subscribe(_ =>
             {
                 isOngoing = false;

@@ -92,6 +92,15 @@ namespace MountainInn
         {
             return source.Where(item => !item.Equals(other));
         }
+        static public IEnumerable<T> Write<T>(this IEnumerable<T> source)
+        {
+            var str = source
+                .Select(item => item.ToString())
+                .Aggregate((a, b) => a + ", " + b);
+
+            Debug.Log(str);
+
+            return source;
         }
     }
     static public class EnumerableBoolExt

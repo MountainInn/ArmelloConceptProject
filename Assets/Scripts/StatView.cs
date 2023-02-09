@@ -9,6 +9,7 @@ public class StatView : MonoBehaviour
 {
     [SerializeField] private TextMeshProUGUI playerName;
     [SerializeField] private TextMeshProUGUI healthText;
+    [SerializeField] private Image attackProgressShadow;
     [SerializeField] private Image attackProgress;
 
     CompositeDisposable disposables = new CompositeDisposable();
@@ -23,6 +24,7 @@ public class StatView : MonoBehaviour
 
         unit.attackTimerRatioReactive
             .Subscribe(val =>{
+                attackProgressShadow.fillAmount = val;
                 attackProgress.fillAmount = val;
             })
             .AddTo(disposables);

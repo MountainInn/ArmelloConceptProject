@@ -12,15 +12,18 @@ public class StatView : MonoBehaviour
     [SerializeField] private Image attackProgressShadow;
     [SerializeField] private Image attackProgress;
 
-    CompositeDisposable disposables = new CompositeDisposable();
+    CompositeDisposable disposables;
 
     public void Initialize(CombatUnit unit, IDisposable combatOngoingDisposable)
     {
+        disposables = new CompositeDisposable();
+
         unit.healthReactive
             .Subscribe(val =>{
                 healthText.text = val.ToString();
             })
             .AddTo(disposables);
+
 
         unit.attackTimerRatioReactive
             .Subscribe(val =>{
@@ -33,9 +36,8 @@ public class StatView : MonoBehaviour
             .AddTo(disposables);
     }
 
-    private void OnDisable()
+    public void OnDisable()
     {
         disposables.Dispose();
     }
 }
-

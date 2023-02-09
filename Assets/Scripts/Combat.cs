@@ -65,6 +65,7 @@ public class Combat : NetworkBehaviour
                 var target =
                     units
                     .NotEqual(u)
+                    .Where(t => t.health > 0)
                     .GetRandom();
 
                 var damage =

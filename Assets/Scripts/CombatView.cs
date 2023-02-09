@@ -31,6 +31,8 @@ public class CombatView : MonoBehaviour
     public void SetVisible(bool visible)
     {
         canvasGroup.alpha = (visible) ? 1f : 0f;
+        canvasGroup.interactable = visible;
+        canvasGroup.blocksRaycasts = visible;
     }
 
     public void InitStatsView(params CombatUnit[] units)

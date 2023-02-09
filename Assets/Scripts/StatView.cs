@@ -3,11 +3,12 @@ using MountainInn;
 using UnityEngine;
 using UnityEngine.UI;
 using System;
+using TMPro;
 
 public class StatView : MonoBehaviour
 {
-    [SerializeField] private Text playerName;
-    [SerializeField] private Text healthText;
+    [SerializeField] private TextMeshProUGUI playerName;
+    [SerializeField] private TextMeshProUGUI healthText;
     [SerializeField] private Image attackProgress;
 
     CompositeDisposable disposables = new CompositeDisposable();

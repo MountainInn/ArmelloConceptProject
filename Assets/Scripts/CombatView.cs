@@ -6,7 +6,8 @@ using Zenject;
 
 public class CombatView : MonoBehaviour
 {
-    [Inject] Combat combat;
+    [SerializeField]
+    Combat combat;
 
     RectTransform rect;
     CanvasGroup canvasGroup;

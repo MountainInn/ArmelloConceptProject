@@ -16,12 +16,15 @@ public class TurnResolver : NetworkBehaviour
         combat = FindObjectOfType<Combat>();
     }
 
-    private void Awake()
+    private void Update()
     {
-        this.UpdateAsObservable()
-            .Where(_ => !combat.isOngoing && Input.GetKeyDown(KeyCode.F))
-            .Subscribe(_ => CmdStartMockupCombat())
-            .AddTo(this);
+        if (Input.GetKeyDown(KeyCode.F))
+        {
+            if (!combat.isOngoing)
+            {
+                CmdStartMockupCombat();
+            }
+        }
     }
 
     [Command(requiresAuthority = false)]

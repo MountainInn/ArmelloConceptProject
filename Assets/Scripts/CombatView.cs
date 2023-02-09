@@ -43,7 +43,7 @@ public class CombatView : MonoBehaviour
             {
                 float a = i * angleInterval;
                 Vector2 localPosition = new Vector2(Mathf.Cos(a), Mathf.Sin(a));
-                localPosition.Scale(rect.rect.size * 0.75f);
+                localPosition.Scale(rect.rect.size * 0.75f * 0.5f);
 
                 var statView = statViewPool.Rent();
                 statView.transform.localPosition = localPosition;

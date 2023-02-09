@@ -387,7 +387,7 @@ MonoBehaviour:
   syncDirection: 0
   syncMode: 0
   syncInterval: 0.1
-  combatDurationInSeconds: 50
+  combatDurationInSeconds: 5
   isOngoing: 0
   isOngoingReactive:
     value: 0

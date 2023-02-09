@@ -8,10 +8,10 @@ using UniRx.Triggers;
 public class CombatUnit : NetworkBehaviour
 {
     public ReactiveProperty<int>
-        healthReactive = new ReactiveProperty<int>(0);
+        healthReactive = new ReactiveProperty<int>();
 
     public ReactiveProperty<float>
-        attackTimerRatioReactive = new ReactiveProperty<float>(0);
+        attackTimerRatioReactive = new ReactiveProperty<float>();
 
     [SyncVar(hook = nameof(OnHealthSync))]
     public int health;
@@ -25,42 +25,20 @@ public class CombatUnit : NetworkBehaviour
         attack,
         speed;
 
-    IDisposable battleDisposable;
-
-    [Client]
-    public void StartSimulatingBattleObservable(Hit[] hits)
+    private void Awake()
     {
-        battleDisposable =
-            this.UpdateAsObservable()
-            .Where(_ =>
-                   hits.Any() &&
-                   AttackTimerTick(Time.deltaTime))
-            .Subscribe(_ =>
-            {
-                var hit = hits.First();
-                hits = hits.Skip(1).ToArray();
-
-                hit.target.healthReactive.Value -= hit.damage;
-
-                Debug.Log($"Hit for {hit.damage}");
-
-                if (!hits.Any())
-                {
-                    Debug.Log($"Run Out of Hits");
-                    battleDisposable.Dispose();
-                }
-            });
+        healthReactive.Value = health;
+        attackTimerRatioReactive.Value = attackTimerRatio;
     }
 
-    [Client]
     public bool AttackTimerTick(float delta)
     {
-        attackTimerRatioReactive.Value += speed / 100f * delta;
+        attackTimerRatio += speed / 100f * delta;
 
-        bool res = attackTimerRatioReactive.Value >= 1f;
+        bool res = attackTimerRatio >= 1f;
 
         if (res)
-            attackTimerRatioReactive.Value -= 1f;
+            attackTimerRatio -= 1f;
 
         return res;
     }

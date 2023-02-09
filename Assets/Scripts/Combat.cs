@@ -13,88 +13,87 @@ public class Combat : NetworkBehaviour
     [SerializeField]
     float combatDurationInSeconds = 5;
 
-    IDisposable
-        battleSubscription;
-
-    public ReactiveProperty<bool>
-        isOngoing = new ReactiveProperty<bool>(false);
+    [SyncVar(hook=nameof(OnIsOngoingSync))]
+    public bool isOngoing;
+    public ReactiveProperty<bool> isOngoingReactive = new ReactiveProperty<bool>(false);
 
     CombatView combatView;
+
+
+    private void OnIsOngoingSync(bool oldb, bool newb)
+    {
+        isOngoingReactive.Value = newb;
+    }
 
     [Inject]
     public void Construct(CombatView combatView)
     {
         this.combatView = combatView;
-
-        isOngoing
-            .Subscribe(b => {
-                combatView.SetVisible(b);
-            });
     }
 
-    [Server]
-    public void SrvStartCombat(params CombatUnit[] units)
+    public override void OnStartClient()
     {
-        var hitsAndTargets = SrvSimulateCombat(units);
-
-        RpcSimulateCombat(hitsAndTargets);
+        isOngoingReactive
+            .Subscribe(combatView.SetVisible);
     }
 
-    [Server]
-    public HitLog[] SrvSimulateCombat(params CombatUnit[] units)
+
+    [Command(requiresAuthority=false)]
+    public void CmdStartCombat(params CombatUnit[] units)
     {
-        var attacks =
-            units.Select(u => {
-                float attackPerBattle =
-                    u.attackTimerRatio +
-                    combatDurationInSeconds * (u.speed / 100f);
+        RpcInitCombatViews(units);
 
-                int fullAttacks =
-                    (int)MathF.Floor(attackPerBattle);
-
-                u.attackTimerRatio = attackPerBattle - fullAttacks;
-
-                var hits =
-                    fullAttacks.ToRange()
-                    .Select(n => {
-                        var target = units.NotEqual(u).GetRandom();
-
-                        var damage =
-                            (int)Mathf.Max(1, u.attack / target.defense );
-
-                        target.health -= damage;
-                       
-                        return new Hit(){ target = target, damage = damage };
-                    })
-                    .ToArray();
-
-                return new HitLog(){ unit = u, hits = hits };
-            })
-            .ToArray();
-
-        return attacks;
+        CmdStartCombatSimulation(units);
     }
 
-    [TargetRpc]
-    private void RpcSimulateCombat(HitLog[] hitsAndTargets)
+    [ClientRpc]
+    public void RpcInitCombatViews(params CombatUnit[] units)
     {
-        var units = hitsAndTargets.Select(log => log.unit).ToArray();
-
         combatView.InitStatsView(units);
-
-        hitsAndTargets
-            .ToList()
-            .ForEach(log => log.unit.StartSimulatingBattleObservable(log.hits));
-
-        isOngoing.Value = true;
     }
 
-    [Client]
-    public void EndCombat()
+    [Command(requiresAuthority=false)]
+    public void CmdStartCombatSimulation(params CombatUnit[] units)
     {
-        battleSubscription?.Dispose();
+        CompositeDisposable combatDisposables = new CompositeDisposable();
 
-        isOngoing.Value = false;
+        this.UpdateAsObservable()
+            .SelectMany(_ => units)
+            .Where(u => u.AttackTimerTick(Time.deltaTime))
+            .Subscribe(u =>
+            {
+                var target =
+                    units
+                    .NotEqual(u)
+                    .Where(t => t.health > 0)
+                    .GetRandom();
+
+                var damage =
+                    (int)Mathf.Max(1, u.attack / target.defense );
+
+                target.health -= damage;
+            })
+            .AddTo(combatDisposables);
+
+        float combatDuration = this.combatDurationInSeconds;
+
+        this.UpdateAsObservable()
+            .Where(_ =>
+            {
+                bool
+                    combatEnded = (combatDuration -= Time.deltaTime) <= 0,
+                    onlyOneUnitLeftAlive = units.Count(u => u.health > 0) == 1;
+
+                return combatEnded || onlyOneUnitLeftAlive;
+            })
+            .Subscribe(_ =>
+            {
+                isOngoing = false;
+                combatDisposables.Dispose();
+            })
+            .AddTo(combatDisposables);
+
+        isOngoing = true;
     }
 }
 

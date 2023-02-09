@@ -7,30 +7,31 @@ using System.Linq;
 
 public class TurnResolver : NetworkBehaviour
 {
-    CubeMap cubeMap;
     Combat combat;
+    CubeMap cubeMap;
 
-    [Inject]
-    public void Construct(CubeMap cubeMap, Combat combat)
+    private void Start()
     {
-        this.cubeMap = cubeMap;
-        this.combat = combat;
+        cubeMap = FindObjectOfType<CubeMap>();
+        combat = FindObjectOfType<Combat>();
     }
 
-    private void Awake()
+    private void Update()
     {
-        this.UpdateAsObservable()
-            .Where(_ => !combat.isOngoing.Value && Input.GetKeyDown(KeyCode.F))
-            .Subscribe(_ => CmdStartMockupCombat())
-            .AddTo(this);
+        if (Input.GetKeyDown(KeyCode.F))
+        {
+            if (!combat.isOngoing)
+            {
+                CmdStartMockupCombat();
+            }
+        }
     }
 
-    [Server]
-    [Command]
+    [Command(requiresAuthority = false)]
     public void CmdStartMockupCombat()
     {
         var units =
-            GetComponents<Character>()
+            FindObjectsOfType<Character>()
             .Select(ch => ch.combatUnit)
             .ToArray();
 
@@ -44,10 +45,9 @@ public class TurnResolver : NetworkBehaviour
     }
 
 
-    [Server]
-    [Command]
-    public void CmdStartCombat(params Combat.CombatUnit[] units)
+    [Command(requiresAuthority = false)]
+    public void CmdStartCombat(params CombatUnit[] units)
     {
-        combat.SrvStartCombat(units);
+        combat.CmdStartCombat(units);
     }
 }

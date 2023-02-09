@@ -183,7 +183,7 @@ public class EOSLobbyUI : EOSLobby
             GUILayout.Space(75);
 
             //draw join button
-            if (GUILayout.Button("Join", GUILayout.ExpandWidth(false)))
+            if (GUILayout.Button("Join", GUILayout.ExpandWidth(false), GUILayout.MinHeight(buttonHeight)))
             {
                 JoinLobby(lobby, AttributeKeys);
             }

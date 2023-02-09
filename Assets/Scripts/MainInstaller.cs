@@ -41,6 +41,18 @@ public class MainInstaller : MonoInstaller
             .FromComponentInNewPrefabResource("Prefabs/Character")
             .AsTransient()
             .Lazy();
+
+        Container
+            .Bind<StatView>()
+            .FromResource("Prefabs/Unit View")
+            .AsSingle()
+            .Lazy();
+
+        Container
+            .Bind<CombatView>()
+            .FromComponentInHierarchy()
+            .AsSingle()
+            .Lazy();
     }
 
     public DiContainer GetContainer() => Container;

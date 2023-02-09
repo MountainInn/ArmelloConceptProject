@@ -18,6 +18,15 @@ public class ArmelloNetworkManager : NetworkManager
         lobbyUI.onStartGameButtonClicked += RegisterPlayersWithTurnSystem;
     }
 
+    public override void OnStartServer()
+    {
+        base.OnStartServer();
+
+        var  turnResolver = Instantiate(spawnPrefabs.Find(prefab => prefab.name == "Turn Resolver"));
+        NetworkServer.Spawn(turnResolver.gameObject);
+    }
+
+
     [Server]
     private void RegisterPlayersWithTurnSystem()
     {

@@ -3,10 +3,12 @@ using System.Linq;
 using UniRx;
 using UniRx.Toolkit;
 using Zenject;
+using MountainInn;
 
 public class CombatView : MonoBehaviour
 {
-    [Inject] Combat combat;
+    [SerializeField]
+    Combat combat;
 
     RectTransform rect;
     CanvasGroup canvasGroup;
@@ -30,26 +32,26 @@ public class CombatView : MonoBehaviour
     public void SetVisible(bool visible)
     {
         canvasGroup.alpha = (visible) ? 1f : 0f;
+        canvasGroup.interactable = visible;
+        canvasGroup.blocksRaycasts = visible;
     }
 
     public void InitStatsView(params CombatUnit[] units)
     {
         float angleInterval = Mathf.PI * 2 / units.Length;
 
-        Enumerable
-            .Range(0, units.Length)
-            .ToList()
-            .ForEach(i =>
+        units.Length
+            .ForLoop(i =>
             {
                 float a = i * angleInterval;
                 Vector2 localPosition = new Vector2(Mathf.Cos(a), Mathf.Sin(a));
-                localPosition.Scale(rect.rect.size * 0.75f);
+                localPosition.Scale(rect.rect.size * 0.75f * 0.5f);
 
                 var statView = statViewPool.Rent();
                 statView.transform.localPosition = localPosition;
 
                 var combatOngoingDisposable =
-                    combat.isOngoing
+                    combat.isOngoingReactive
                     .Where(b => b == false)
                     .Subscribe(_ => statViewPool.Return(statView));
 

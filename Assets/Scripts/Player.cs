@@ -35,6 +35,7 @@ public class Player : NetworkBehaviour
     public override void OnStartLocalPlayer()
     {
         CmdCreateCharacter();
+        CmdCreateCharacter();
 
         MessageBroker.Default
             .Receive<HexTile>()
@@ -50,8 +51,8 @@ public class Player : NetworkBehaviour
     [Command]
     private void CmdCreateCharacter()
     {
-        if (this.character != null)
-            NetworkServer.Destroy(this.character.gameObject);
+        // if (this.character != null)
+        //     NetworkServer.Destroy(this.character.gameObject);
 
         this.character = characterFactory.Create();
         InitializeCharacter(this.character);

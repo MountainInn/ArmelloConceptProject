@@ -65,28 +65,28 @@ namespace MountainInn
 
     static public class IEnumerableExt
     {
-        static public IEnumerable<T> LookAt<T>(this IEnumerable<T> enumerable, Action<T> lookingAction)
+        static public IEnumerable<T> LookAt<T>(this IEnumerable<T> source, Action<T> lookingAction)
         {
             Debug.Log("LookAt");
-            foreach (var item in enumerable)
+            foreach (var item in source)
             {
                 lookingAction.Invoke(item);
                 yield return item;
             }
         }
-        static public IEnumerable<(T, O)> Zip<T, O>(this IEnumerable<T> enumerable, IEnumerable<O> other)
+        static public IEnumerable<(T, O)> Zip<T, O>(this IEnumerable<T> source, IEnumerable<O> other)
         {
-            return enumerable.Zip(other, (a , b) => (a, b));
+            return source.Zip(other, (a , b) => (a, b));
         }
-        static public IEnumerable<T> Shuffle<T>(this IEnumerable<T> enumerable)
+        static public IEnumerable<T> Shuffle<T>(this IEnumerable<T> source)
         {
-            return enumerable.OrderBy(_ => UnityEngine.Random.value);
+            return source.OrderBy(_ => UnityEngine.Random.value);
         }
-        static public T GetRandom<T>(this IEnumerable<T> enumerable)
+        static public T GetRandom<T>(this IEnumerable<T> source)
         {
-            int id = UnityEngine.Random.Range(0, enumerable.Count());
+            int id = UnityEngine.Random.Range(0, source.Count());
 
-            return enumerable.ElementAt(id);
+            return source.ElementAt(id);
         }
         static public IEnumerable<T> NotEqual<T>(this IEnumerable<T> source, T other)
         {
@@ -105,13 +105,13 @@ namespace MountainInn
     }
     static public class EnumerableBoolExt
     {
-        static public IEnumerable<bool> IsFalse(this IEnumerable<bool> enumerable)
+        static public IEnumerable<bool> IsFalse(this IEnumerable<bool> source)
         {
-            return enumerable.Where(b => b == false);
+            return source.Where(b => b == false);
         }
-        static public IEnumerable<bool> IsTrue(this IEnumerable<bool> enumerable)
+        static public IEnumerable<bool> IsTrue(this IEnumerable<bool> source)
         {
-            return enumerable.Where(b => b == true);
+            return source.Where(b => b == true);
         }
     }
 

@@ -29,7 +29,10 @@ public class Combat : NetworkBehaviour
     public void Construct(CombatView combatView)
     {
         this.combatView = combatView;
+    }
 
+    public override void OnStartClient()
+    {
         isOngoingReactive
             .Subscribe(combatView.SetVisible);
     }

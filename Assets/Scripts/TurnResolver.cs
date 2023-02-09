@@ -29,7 +29,7 @@ public class TurnResolver : NetworkBehaviour
     public void CmdStartMockupCombat()
     {
         var units =
-            GetComponents<Character>()
+            FindObjectsOfType<Character>()
             .Select(ch => ch.combatUnit)
             .ToArray();
 

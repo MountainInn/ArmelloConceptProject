@@ -24,8 +24,7 @@ public class TurnResolver : NetworkBehaviour
             .AddTo(this);
     }
 
-    [Server]
-    [Command]
+    [Command(requiresAuthority = false)]
     public void CmdStartMockupCombat()
     {
         var units =
@@ -43,8 +42,7 @@ public class TurnResolver : NetworkBehaviour
     }
 
 
-    [Server]
-    [Command]
+    [Command(requiresAuthority = false)]
     public void CmdStartCombat(params CombatUnit[] units)
     {
         combat.CmdStartCombat(units);

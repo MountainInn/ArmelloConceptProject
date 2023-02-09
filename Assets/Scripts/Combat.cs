@@ -35,8 +35,7 @@ public class Combat : NetworkBehaviour
     }
 
 
-    [Server]
-    [Command]
+    [Command(requiresAuthority=false)]
     public void CmdStartCombat(params CombatUnit[] units)
     {
         RpcInitCombatViews(units);
@@ -50,7 +49,7 @@ public class Combat : NetworkBehaviour
         combatView.InitStatsView(units);
     }
 
-    [Command]
+    [Command(requiresAuthority=false)]
     public void CmdStartCombatSimulation(params CombatUnit[] units)
     {
         CompositeDisposable combatDisposables = new CompositeDisposable();

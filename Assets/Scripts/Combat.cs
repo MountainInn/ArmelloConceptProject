@@ -59,7 +59,10 @@ public class Combat : NetworkBehaviour
             .Where(u => u.AttackTimerTick(Time.deltaTime))
             .Subscribe(u =>
             {
-                var target = units.NotEqual(u).GetRandom();
+                var target =
+                    units
+                    .NotEqual(u)
+                    .GetRandom();
 
                 var damage =
                     (int)Mathf.Max(1, u.attack / target.defense );

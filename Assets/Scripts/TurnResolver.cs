@@ -7,14 +7,13 @@ using System.Linq;
 
 public class TurnResolver : NetworkBehaviour
 {
-    CubeMap cubeMap;
     Combat combat;
+    CubeMap cubeMap;
 
-    [Inject]
-    public void Construct(CubeMap cubeMap, Combat combat)
+    private void Start()
     {
-        this.cubeMap = cubeMap;
-        this.combat = combat;
+        cubeMap = FindObjectOfType<CubeMap>();
+        combat = FindObjectOfType<Combat>();
     }
 
     private void Awake()

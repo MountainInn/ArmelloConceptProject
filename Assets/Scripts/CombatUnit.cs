@@ -8,10 +8,10 @@ using UniRx.Triggers;
 public class CombatUnit : NetworkBehaviour
 {
     public ReactiveProperty<int>
-        healthReactive = new ReactiveProperty<int>(0);
+        healthReactive = new ReactiveProperty<int>();
 
     public ReactiveProperty<float>
-        attackTimerRatioReactive = new ReactiveProperty<float>(0);
+        attackTimerRatioReactive = new ReactiveProperty<float>();
 
     [SyncVar(hook = nameof(OnHealthSync))]
     public int health;
@@ -24,6 +24,12 @@ public class CombatUnit : NetworkBehaviour
         defense,
         attack,
         speed;
+
+    private void Awake()
+    {
+        healthReactive.Value = health;
+        attackTimerRatioReactive.Value = attackTimerRatio;
+    }
 
     public bool AttackTimerTick(float delta)
     {

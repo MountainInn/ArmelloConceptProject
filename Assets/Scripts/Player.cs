@@ -15,6 +15,9 @@ public class Player : NetworkBehaviour
     private CubeMap cubeMap;
     private Character.Factory characterFactory;
 
+    private PlayerCustomizationView playerCustomizationView;
+    public Color clientCharacterColor => playerCustomizationView.playerColor;
+
     [Inject]
     public void Construct(CubeMap cubeMap, Character.Factory characterFactory)
     {
@@ -31,6 +34,7 @@ public class Player : NetworkBehaviour
         }
 
         NetworkClient.RegisterSpawnHandler((uint)3611098826, SpawnCharacter, (o)=> Destroy(o));
+        playerCustomizationView = FindObjectOfType<PlayerCustomizationView>();
     }
 
     public override void OnStartServer()
@@ -63,13 +67,14 @@ public class Player : NetworkBehaviour
     }
 
     [Command]
-    private void CmdCreateCharacter()
+    private void CmdCreateCharacter(Color characterColor)
     {
         // if (this.character != null)
         //     NetworkServer.Destroy(this.character.gameObject);
 
         this.character = characterFactory.Create();
         InitializeCharacter(this.character);
+        this.character.characterColor = characterColor;
 
         NetworkServer.Spawn(this.character.gameObject, this.connectionToClient);
     }

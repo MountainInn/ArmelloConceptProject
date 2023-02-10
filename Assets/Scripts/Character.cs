@@ -4,16 +4,21 @@ using DG.Tweening;
 using Zenject;
 using System.Linq;
 using System;
+using TMPro;
 
 public class Character : NetworkBehaviour
 {
     [SyncVar(hook = nameof(CoordinatesSyncedHook))]
     public Vector3Int coordinates;
 
+    [SyncVar(hook = nameof(ColorSyncHook))]
+    public Color characterColor;
+
     [Range(1, 10)]
     public int moveRadius = 1;
     public CubeMap cubeMap;
     public CombatUnit combatUnit => GetComponent<CombatUnit>();
+    public TextMeshPro textMeshPro => GetComponent<TextMeshPro>();
     public event Action<Character> onCharacterMoved;
 
     [Inject]
@@ -89,6 +94,11 @@ public class Character : NetworkBehaviour
 
         // Проблемы с авторитетом клиента при командовании
         // InvokeOnCharacterMoved();
+    }
+
+    private void ColorSyncHook(Color oldc, Color newc)
+    {
+        textMeshPro.color = newc;
     }
 
     [Command(requiresAuthority = false)]

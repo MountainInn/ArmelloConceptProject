@@ -69,12 +69,11 @@ namespace MountainInn
 
     static public class IEnumerableExt
     {
-        static public IEnumerable<T> LookAt<T>(this IEnumerable<T> source, Action<T> lookingAction)
+        static public IEnumerable<T> LookAt<T>(this IEnumerable<T> source, Action<T> action)
         {
-            Debug.Log("LookAt");
             foreach (var item in source)
             {
-                lookingAction.Invoke(item);
+                action.Invoke(item);
                 yield return item;
             }
         }

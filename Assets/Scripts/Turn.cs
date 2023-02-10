@@ -13,14 +13,14 @@ public class Turn
         movementPhaseComplete = new ReactiveProperty<bool>(false),
         combatPhaseComplete = new ReactiveProperty<bool>(false);
 
-    public IObservable<bool>
-        started;
-    public IReadOnlyReactiveProperty<bool>
+    public ReactiveProperty<bool>
+        started,
         completed;
 
     public Turn(uint playerNetId, IObservable<uint> playerNetIdObservable)
     {
         completed =
+            (ReactiveProperty<bool>)
             Observable
             .CombineLatest(explorationPhaseComplete,
                            movementPhaseComplete,
@@ -39,20 +39,14 @@ public class Turn
 
 
         started =
+            (ReactiveProperty<bool>)
             playerNetIdObservable
-            .Select(id =>
-            {
-                return id == playerNetId;
-            });
+            .Select(id => id == playerNetId);
 
         started
             .Where(b => b == true)
-            .Subscribe(_ =>
-            {
-                Debug.Log($"Player {playerNetId} Turn START");
-            })
+            .Subscribe(_ => Debug.Log($"Player {playerNetId} Turn START"))
             .AddTo(disposables);
-
     }
 
     private void ResetPhases()

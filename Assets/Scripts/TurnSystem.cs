@@ -20,30 +20,27 @@ public class TurnSystem : NetworkBehaviour
 
     IDisposable turnDisposable;
 
+    [Server]
     public void RegisterPlayers(List<Player> newPlayers)
     {
-        players.Clear();
-
-        newPlayers
+            newPlayers
             .Shuffle()
-            .ToList()
-            .ForEach((p) =>
+            .LookAt((p) =>
             {
                 p.turn = new Turn(p.netId, playerNetIdStream);
                 players.Add(p.netId, p);
             });
 
-
-        StartNextPlayerTurn();
+        CmdStartNextPlayerTurn();
     }
 
 
-    public void StartNextPlayerTurn()
+    [Command]
+    public void CmdStartNextPlayerTurn()
     {
         currentPlayerIndex = (currentPlayerIndex+1) % players.Count;
 
         (uint nextNetId, Player nextPlayer) = players.ElementAt(currentPlayerIndex);
-
 
         turnDisposable?.Dispose();
         turnDisposable =
@@ -52,17 +49,14 @@ public class TurnSystem : NetworkBehaviour
             {
                 if (b)
                 {
-                    StartNextPlayerTurn();
+                    CmdStartNextPlayerTurn();
                 }
             });
 
         currentPlayer = nextPlayer;
 
-        if (isServer)
-        {
-            playerNetIdStream.SetValueAndForceNotify(nextNetId);
-            currentPlayerNetId = nextNetId;
-        }
+        playerNetIdStream.SetValueAndForceNotify(nextNetId);
+        currentPlayerNetId = nextNetId;
     }
 
     private void SetPlayerNetIdStreamValue(uint oldNetId, uint newNetId)

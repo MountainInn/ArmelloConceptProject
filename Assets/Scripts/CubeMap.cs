@@ -15,12 +15,10 @@ public class CubeMap : NetworkBehaviour
     public int hexagonSize = 1;
     private HexTile[] hexagonPrefabs;
 
-    public event Action onGenerated;
-
     public Dictionary<Vector3Int, HexTile> tiles { get; private set; }
     public Dictionary<Vector3Int, Vector3> positions { get; private set; }
 
-    private HashSet<Vector3Int> pickedPositions = new HashSet<Vector3Int>();
+    private HashSet<Vector3Int> pickedPositions;
 
     [Inject]
     public void Construct(EOSLobbyUI lobbyUI)
@@ -28,40 +26,11 @@ public class CubeMap : NetworkBehaviour
         lobbyUI.onStartGameButtonClicked += () => Generate(mapRadius);
     }
 
-    // public void AddHex(HexTile tile)
-    // {
-    //     var coord = tile.coordinates;
-
-    //     tiles.TryAdd(coord, tile);
-
-    //     bool fullMapSpawned = (tiles.Count == (MathExt.Fact(mapRadius) * 6 + 1));
-    //     if (fullMapSpawned)
-    //     {
-    //         var player =
-    //             NetworkClient.connection.owned
-    //             .First(netid => netid.gameObject.GetComponent<Player>())
-    //             .GetComponent<Player>();
-
-    //         Debug.Log("Full map");
-
-    //         tiles.Values
-    //             .ToList()
-    //             .ForEach(t => t.onClicked += player.MoveCharacter);
-    //     }
-    // }
-
-    [ClientRpc]
-    private void RpcOnGeneratedInvoke()
+    public override void OnStartServer()
     {
-        onGenerated?.Invoke();
-    }
-
-    public void OnEnable()
-    {
-        Debug.Log("Enable");
         tiles = new Dictionary<Vector3Int, HexTile>();
         positions = new Dictionary<Vector3Int, Vector3>();
-
+        pickedPositions = new HashSet<Vector3Int>();
         hexagonPrefabs = (HexTile[])Resources.LoadAll<HexTile>("Prefabs/Tiles/");
     }
 
@@ -99,9 +68,8 @@ public class CubeMap : NetworkBehaviour
             ;
 
         tiles.Values
-            .Select(tile => tile.gameObject)
             .ToList()
-            .ForEach(go => NetworkServer.Spawn(go))
+            .ForEach(tile => NetworkServer.Spawn(tile.gameObject))
             ;
     }
 

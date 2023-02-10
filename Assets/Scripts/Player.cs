@@ -10,6 +10,7 @@ public class Player : NetworkBehaviour
 {
     public Character character;
     public Turn turn;
+    // public TurnView turnView;
 
     private CubeMap cubeMap;
     private Character.Factory characterFactory;
@@ -32,6 +33,15 @@ public class Player : NetworkBehaviour
         NetworkClient.RegisterSpawnHandler((uint)3611098826, SpawnCharacter, (o)=> Destroy(o));
     }
 
+    public override void OnStartServer()
+    {
+        // turn.started
+        //     .Subscribe(b =>
+        //     {
+
+        //         });
+    }
+
     public override void OnStartLocalPlayer()
     {
         CmdCreateCharacter();
@@ -39,13 +49,17 @@ public class Player : NetworkBehaviour
 
         MessageBroker.Default
             .Receive<HexTile>()
-            .Subscribe(hex => MoveCharacter(hex.coordinates));
+            .Subscribe(hex =>
+            {
+                CmdMoveCharacter(hex.coordinates);
+            });
     }
 
-    private void MoveCharacter(Vector3Int coord)
+    [Command]
+    private void CmdMoveCharacter(Vector3Int coord)
     {
-        Debug.Log("Player.MoveCharacter");
-        character.CmdMove(coord);
+        if (turn.started.Value)
+            character.CmdMove(coord);
     }
 
     [Command]

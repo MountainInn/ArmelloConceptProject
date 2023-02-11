@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using Mirror;
-using MountainInn;
 using UnityEngine;
 using Zenject;
 using UniRx;
@@ -10,7 +9,7 @@ public class Player : NetworkBehaviour
 {
     public Character character;
     public Turn turn;
-    // public TurnView turnView;
+    public TurnView turnView;
 
     private CubeMap cubeMap;
     private Character.Factory characterFactory;
@@ -33,30 +32,33 @@ public class Player : NetworkBehaviour
             installer.GetContainer().Inject(this);
         }
 
-        NetworkClient.RegisterSpawnHandler((uint)3611098826, SpawnCharacter, (o)=> Destroy(o));
+        turnView = FindObjectOfType<TurnView>();
         playerCustomizationView = FindObjectOfType<PlayerCustomizationView>();
-    }
-
-    public override void OnStartServer()
-    {
-        // turn.started
-        //     .Subscribe(b =>
-        //     {
-
-        //         });
     }
 
     public override void OnStartLocalPlayer()
     {
-        CmdCreateCharacter();
-        CmdCreateCharacter();
+        CmdCreateCharacter(clientCharacterColor);
+        CmdCreateCharacter(clientCharacterColor);
 
         MessageBroker.Default
             .Receive<HexTile>()
-            .Subscribe(hex =>
-            {
-                CmdMoveCharacter(hex.coordinates);
-            });
+            .Select(hex => hex.coordinates)
+            .Subscribe(CmdMoveCharacter);
+
+        turnView.onEndTurnClicked += CmdEndTurn;
+    }
+
+    [Command]
+    private void CmdEndTurn()
+    {
+        turn.forceTurnCompletion.Value = true;
+    }
+
+    [TargetRpc]
+    public void TargetToggleTurnView(bool turnStarted)
+    {
+        turnView.Toggle(turnStarted);
     }
 
     [Command]
@@ -73,41 +75,10 @@ public class Player : NetworkBehaviour
         //     NetworkServer.Destroy(this.character.gameObject);
 
         this.character = characterFactory.Create();
-        InitializeCharacter(this.character);
         this.character.characterColor = characterColor;
 
         NetworkServer.Spawn(this.character.gameObject, this.connectionToClient);
     }
-
-    [Client]
-    GameObject SpawnCharacter(Vector3 position, uint assetId)
-    {
-        this.character = characterFactory.Create();
-        InitializeCharacter(this.character);
-
-        return character.gameObject;
-    }
-
-    private void InitializeCharacter(Character character)
-    {
-        var netId = character.GetComponent<NetworkIdentity>().netId;
-        character.name = $"Character [netId={netId}]";
-        if (isLocalPlayer)
-        {
-            character.name = $"My Character [netId={netId}]";
-
-            // character.onCharacterMoved +=
-            //     (chara) =>
-            //     {
-            //         turn.CompleteExplorationPhase();
-            //         turn.CompleteMovementPhase();
-            //         turn.CompleteCombatPhase();
-            //     };
-
-
-        }
-    }
-
 
     public class Factory : PlaceholderFactory<Player>
     {

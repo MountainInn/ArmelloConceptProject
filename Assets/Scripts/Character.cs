@@ -21,10 +21,9 @@ public class Character : NetworkBehaviour
     public TextMeshPro textMeshPro => GetComponent<TextMeshPro>();
     public event Action<Character> onCharacterMoved;
 
-    [Inject]
-    public void Construct(CubeMap cubeMap)
+    private void Awake()
     {
-        this.cubeMap = cubeMap;
+        cubeMap = FindObjectOfType<CubeMap>();
     }
 
     private void Start()
@@ -86,8 +85,8 @@ public class Character : NetworkBehaviour
     [Client]
     private void CoordinatesSyncedHook(Vector3Int oldCoord, Vector3Int newCoord)
     {
-        ///Даёт null-reference
-        // Временно закоментировал
+        /// Даёт null-reference
+        /// Временно закоментировал
         //
         // if (isOwned)
         //     ClearWarscreen();

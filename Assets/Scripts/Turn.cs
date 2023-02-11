@@ -8,40 +8,36 @@ public class Turn
     CompositeDisposable
         disposables = new CompositeDisposable();
 
-    ReactiveProperty<bool>
+    public ReactiveProperty<bool>
         explorationPhaseComplete = new ReactiveProperty<bool>(false),
         movementPhaseComplete = new ReactiveProperty<bool>(false),
-        combatPhaseComplete = new ReactiveProperty<bool>(false);
+        combatPhaseComplete = new ReactiveProperty<bool>(false),
+        forceTurnCompletion = new ReactiveProperty<bool>(false);
 
-    public ReactiveProperty<bool>
+    public IReadOnlyReactiveProperty<bool>
         started,
         completed;
 
     public Turn(uint playerNetId, IObservable<uint> playerNetIdObservable)
     {
         completed =
-            (ReactiveProperty<bool>)
-            Observable
-            .CombineLatest(explorationPhaseComplete,
-                           movementPhaseComplete,
-                           combatPhaseComplete,
-                           BoolExt.All)
-            .ToReactiveProperty();
+            forceTurnCompletion
+            .ToReadOnlyReactiveProperty();
 
         completed
             .Where(b => b == true)
             .Subscribe(_ =>
             {
                 Debug.Log($"Player {playerNetId} Turn END");
-                ResetPhases();
+                forceTurnCompletion.Value = false;
             })
             .AddTo(disposables);
 
 
         started =
-            (ReactiveProperty<bool>)
             playerNetIdObservable
-            .Select(id => id == playerNetId);
+            .Select(id => id == playerNetId)
+            .ToReadOnlyReactiveProperty();
 
         started
             .Where(b => b == true)

@@ -10,31 +10,31 @@ public class ArmelloNetworkManager : NetworkManager
     private TurnSystem turnSystem;
 
     [Inject]
-    public void Construct(Player.Factory playerFactory, TurnSystem turnSystem, EOSLobbyUI lobbyUI)
+    public void Construct(Player.Factory playerFactory, EOSLobbyUI lobbyUI)
     {
         this.playerFactory = playerFactory;
-        this.turnSystem = turnSystem;
 
-        lobbyUI.onStartGameButtonClicked += RegisterPlayersWithTurnSystem;
+        lobbyUI.onStartGameButtonClicked += StartNextPlayerTurn;
     }
 
     public override void OnStartServer()
     {
         base.OnStartServer();
 
-        var  turnResolver = Instantiate(spawnPrefabs.Find(prefab => prefab.name == "Turn Resolver"));
+        var turnResolver = Instantiate(spawnPrefabs.Find(prefab => prefab.name == "Turn Resolver"));
         NetworkServer.Spawn(turnResolver.gameObject);
+
+        turnSystem =
+            Instantiate(spawnPrefabs.Find(prefab => prefab.name == "Turn System"))
+            .GetComponent<TurnSystem>();
+
+        NetworkServer.Spawn(turnSystem.gameObject);
     }
 
-
     [Server]
-    private void RegisterPlayersWithTurnSystem()
+    private void StartNextPlayerTurn()
     {
-        var players =
-            GameObject.FindObjectsOfType<Player>()
-            .ToList();
-
-        turnSystem.RegisterPlayers(players);
+        turnSystem.CmdStartNextPlayerTurn();
     }
 
     public override void OnServerAddPlayer(NetworkConnectionToClient conn)
@@ -44,4 +44,10 @@ public class ArmelloNetworkManager : NetworkManager
         player.name = $"Player [connId={conn.connectionId}]";
         NetworkServer.AddPlayerForConnection(conn, player);
     }
+
+    public override void OnServerDisconnect(NetworkConnectionToClient conn)
+    {
+        turnSystem.RenewPlayers();
+    }
+
 }

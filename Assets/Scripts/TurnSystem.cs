@@ -1,10 +1,11 @@
-using UnityEngine;
 using System.Linq;
 using Mirror;
 using System;
 using System.Collections.Generic;
 using UniRx;
+using UniRx.Triggers;
 using MountainInn;
+using UnityEngine;
 
 public class TurnSystem : NetworkBehaviour
 {
@@ -20,22 +21,55 @@ public class TurnSystem : NetworkBehaviour
 
     IDisposable turnDisposable;
 
-    [Server]
-    public void RegisterPlayers(List<Player> newPlayers)
+    public override void OnStartClient()
     {
-            newPlayers
-            .Shuffle()
-            .LookAt((p) =>
-            {
-                p.turn = new Turn(p.netId, playerNetIdStream);
-                players.Add(p.netId, p);
-            });
-
-        CmdStartNextPlayerTurn();
+        CmdRenewPlayers();
     }
 
+    [Command(requiresAuthority =false)]
+    public void CmdRenewPlayers()
+    {
+        RenewPlayers();
+    }
 
-    [Command]
+    public void RenewPlayers()
+    {
+        HashSet<Player>
+            oldPlayers = players.Values.ToHashSet(),
+            newPlayers = FindObjectsOfType<Player>().ToHashSet();
+
+        IEnumerable<Player>
+            addedPlayers = newPlayers.Except(oldPlayers),
+            removedPlayers = oldPlayers.Except(newPlayers);
+
+
+        removedPlayers.Log("Removed Players");
+        removedPlayers.ToList()
+            .ForEach(player => players.Remove(player.netId));
+
+        addedPlayers.Log("Added Players");
+        addedPlayers.ToList()
+            .ForEach(player =>
+            {
+                player.turn = new Turn(player.netId, playerNetIdStream);
+                player.turn.started
+                    .Subscribe(player.TargetToggleTurnView);
+
+                players.Add(player.netId, player);
+            });
+
+
+        var removedCurrentPlayer =
+            removedPlayers
+            .FirstOrDefault(player => (player.netId == currentPlayerNetId));
+
+        if (removedCurrentPlayer != default)
+            CmdStartNextPlayerTurn();
+
+        Debug.Log($"Player count: {players.Count()}");
+    }
+
+    [Command(requiresAuthority=false)]
     public void CmdStartNextPlayerTurn()
     {
         currentPlayerIndex = (currentPlayerIndex+1) % players.Count;
@@ -45,13 +79,8 @@ public class TurnSystem : NetworkBehaviour
         turnDisposable?.Dispose();
         turnDisposable =
             nextPlayer.turn.completed
-            .Subscribe((b) =>
-            {
-                if (b)
-                {
-                    CmdStartNextPlayerTurn();
-                }
-            });
+            .IsTrue()
+            .Subscribe((b) => CmdStartNextPlayerTurn());
 
         currentPlayer = nextPlayer;
 

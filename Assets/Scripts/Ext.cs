@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
+using UniRx;
 
 namespace MountainInn
 {
@@ -95,13 +96,16 @@ namespace MountainInn
         {
             return source.Where(item => !item.Equals(other));
         }
-        static public IEnumerable<T> Write<T>(this IEnumerable<T> source)
+        static public IEnumerable<T> Log<T>(this IEnumerable<T> source, string prefixMessage="")
         {
-            var str = source
+            string str =
+                (!source.Any())
+                ? "Empty"
+                : source
                 .Select(item => item.ToString())
                 .Aggregate((a, b) => a + ", " + b);
 
-            Debug.Log(str);
+            Debug.Log(prefixMessage + ": " + str);
 
             return source;
         }
@@ -142,5 +146,15 @@ namespace MountainInn
         }
     }
 
-
+    static public class IObservableExt
+    {
+        static public IObservable<bool> IsTrue(this IObservable<bool> source)
+        {
+            return source.Where(b => b == true);
+        }
+        static public IObservable<bool> IsFalse(this IObservable<bool> source)
+        {
+            return source.Where(b => b == false);
+        }
+    }
 }

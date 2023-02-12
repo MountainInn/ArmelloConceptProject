@@ -36,11 +36,11 @@ public class CombatView : MonoBehaviour
         canvasGroup.blocksRaycasts = visible;
     }
 
-    public void InitStatsView(params CombatUnit[] units)
+    public void InitStatsView(params HitLog[] hitlogs)
     {
-        float angleInterval = Mathf.PI * 2 / units.Length;
+        float angleInterval = Mathf.PI * 2 / hitlogs.Length;
 
-        units.Length
+        hitlogs.Length
             .ForLoop(i =>
             {
                 float a = i * angleInterval;
@@ -55,7 +55,7 @@ public class CombatView : MonoBehaviour
                     .Where(b => b == false)
                     .Subscribe(_ => statViewPool.Return(statView));
 
-                statView.Initialize(units[i], combatOngoingDisposable);
+                statView.Initialize(hitlogs[i], combatOngoingDisposable);
             });
     }
 

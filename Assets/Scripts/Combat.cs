@@ -41,60 +41,57 @@ public class Combat : NetworkBehaviour
     [Command(requiresAuthority=false)]
     public void CmdStartCombat(params CombatUnit[] units)
     {
-        RpcInitCombatViews(units);
+        HitLog[] hitLogs = CmdSimulateCombat(units);
 
-        CmdStartCombatSimulation(units);
+        units
+            .Select(u => u.netIdentity.connectionToClient)
+            .ToList()
+            .ForEach(conn => TargetInitCombatViews(conn, hitLogs));
     }
 
-    [ClientRpc]
-    public void RpcInitCombatViews(params CombatUnit[] units)
+    [TargetRpc]
+    public void TargetInitCombatViews(NetworkConnection target, params HitLog[] hitlogs)
     {
         combatView.InitStatsView(units);
     }
 
     [Command(requiresAuthority=false)]
-    public void CmdStartCombatSimulation(params CombatUnit[] units)
+    public HitLog[] CmdSimulateCombat(params CombatUnit[] units)
     {
-        CompositeDisposable combatDisposables = new CompositeDisposable();
-
-        this.UpdateAsObservable()
-            .SelectMany(_ => units)
-            .Where(u => u.AttackTimerTick(Time.deltaTime))
-            .Subscribe(u =>
+        HitLog[] hitlogs =
+            units.Select(u =>
             {
-                var target =
-                    units
-                    .NotEqual(u)
-                    .Where(t => t.health > 0)
-                    .GetRandom();
+                float attacksPerBattle =
+                    u.stats.attackTimerRatio + combatDurationInSeconds * (u.stats.speed / 100f);
+                int  fullAttacks = (int)MathF.Floor(attacksPerBattle);
 
-                var damage =
-                    (int)Mathf.Max(1, u.attack / target.defense );
+                u.stats.attackTimerRatio = attacksPerBattle - fullAttacks;
 
-                target.health -= damage;
+                Hit[] hits =
+                    fullAttacks.ToRange()
+                    .Select(i =>
+                    {
+                        CombatUnit target =
+                            units
+                            .NotEqual(u)
+                            .Where(t => t.stats.health > 0)
+                            .GetRandom();
+
+                        int damage = (int)MathF.Max(1, u.stats.attack / target.stats.defense);
+                        target.stats.health -= damage;
+
+                        return new Hit(){ target = target, targetStatsAfterHit = target.stats };
+                    })
+                    .ToArray();
+
+                return new HitLog(){ unit = u, hits = hits };
             })
-            .AddTo(combatDisposables);
+            .ToArray();
 
-        float combatDuration = this.combatDurationInSeconds;
-
-        this.UpdateAsObservable()
-            .Where(_ =>
-            {
-                bool
-                    combatEnded = (combatDuration -= Time.deltaTime) <= 0,
-                    onlyOneUnitLeftAlive = units.Count(u => u.health > 0) == 1;
-
-                return combatEnded || onlyOneUnitLeftAlive;
-            })
-            .Subscribe(_ =>
-            {
-                isOngoing = false;
-                combatDisposables.Dispose();
-            })
-            .AddTo(combatDisposables);
-
-        isOngoing = true;
+        return hitlogs;
     }
+
+
 }
 
 
@@ -106,8 +103,6 @@ public struct HitLog
 
 public struct Hit
 {
-    public CombatUnit
-        target;
-    public int
-        damage;
+    public CombatUnit target;
+    public CombatUnit.Stats targetStatsAfterHit;
 }

@@ -7,6 +7,17 @@ using UniRx.Triggers;
 
 public class CombatUnit : NetworkBehaviour
 {
+    public struct Stats
+    {
+        public int
+            health,
+            defense,
+            attack,
+            speed;
+        public float
+            attackTimerRatio;
+    }
+
     public ReactiveProperty<int>
         healthReactive = new ReactiveProperty<int>();
 
@@ -25,10 +36,24 @@ public class CombatUnit : NetworkBehaviour
         attack,
         speed;
 
+    [SyncVar]
+    public Stats stats;
+
     private void Awake()
     {
         healthReactive.Value = health;
         attackTimerRatioReactive.Value = attackTimerRatio;
+    }
+
+    public Stats GetStatsStruct()
+    {
+        return new Stats()
+        {
+            health = health,
+            defense = defense,
+            attack = attack,
+            speed = speed
+        };
     }
 
     public bool AttackTimerTick(float delta)

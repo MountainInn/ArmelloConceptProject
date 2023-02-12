@@ -1,9 +1,12 @@
 using UniRx;
+using UniRx.Triggers;
 using MountainInn;
 using UnityEngine;
 using UnityEngine.UI;
 using System;
+using System.Linq;
 using TMPro;
+using System.Collections.Generic;
 
 public class StatView : MonoBehaviour
 {
@@ -14,11 +17,34 @@ public class StatView : MonoBehaviour
 
     CompositeDisposable disposables;
 
-    public void Initialize(CombatUnit unit, IDisposable combatOngoingDisposable)
+    public void Initialize(HitLog hitlog, IDisposable combatOngoingDisposable)
     {
         disposables = new CompositeDisposable();
 
-        unit.healthReactive
+        CombatUnit unit = hitlog.unit;
+
+        Queue<Hit> hits =
+            new Queue<Hit>(hitlog.hits.ToList());
+
+
+        this.UpdateAsObservable()
+            .Where(_ =>
+                   hits.Any() &&
+                   unit.AttackTimerTick(Time.deltaTime))
+            .Subscribe(_ =>
+            {
+                Hit hit = hits.Dequeue();
+
+
+            });
+
+        // attackStream
+        //     .Where(_ => !hits.Any())
+        //     .Subscribe(_ => )
+
+
+
+            unit.healthReactive
             .Subscribe(val =>{
                 healthText.text = val.ToString();
             })

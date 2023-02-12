@@ -21,6 +21,34 @@ public class TurnSystem : NetworkBehaviour
 
     IDisposable turnDisposable;
 
+    private void Awake()
+    {
+        FindObjectOfType<EOSLobbyUI>()
+            .onPreLeaveLobbySuccess += SendPlayerUnregisterMessage;
+    }
+
+    public override void OnStartServer()
+    {
+        NetworkServer.RegisterHandler<PlayerUnregisterMessage>(OnPlayerUnregister);
+    }
+
+    [Server]
+    private void OnPlayerUnregister(NetworkConnectionToClient conn, PlayerUnregisterMessage msg)
+    {
+        players.Remove(msg.disconnectedPlayerNetId);
+      
+        Debug.Log($"-OnPlayerUnregister");
+        Debug.Log($"-Player count: {players.Count()}");
+    }
+
+    public void SendPlayerUnregisterMessage()
+    {
+        var playerNetId = NetworkClient.spawned.First(kv => kv.Value.GetComponent<Player>()).Key;
+        NetworkClient.Send(new PlayerUnregisterMessage(){ disconnectedPlayerNetId = playerNetId });
+
+        Debug.Log("+OnDisable");
+    }
+
     public override void OnStartClient()
     {
         CmdRenewPlayers();
@@ -91,5 +119,10 @@ public class TurnSystem : NetworkBehaviour
     private void SetPlayerNetIdStreamValue(uint oldNetId, uint newNetId)
     {
         playerNetIdStream.Value = newNetId;
+    }
+
+    public struct PlayerUnregisterMessage : NetworkMessage
+    {
+        public uint disconnectedPlayerNetId;
     }
 }

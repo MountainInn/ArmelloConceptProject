@@ -8,6 +8,8 @@ public class EOSLobbyUI : EOSLobby
 {
     public event System.Action onStartGameButtonClicked;
 
+    public event System.Action onPreLeaveLobbySuccess;
+
     private string lobbyName = "My Lobby";
     private bool showLobbyList = false;
     private bool showPlayerList = false;
@@ -70,6 +72,8 @@ public class EOSLobbyUI : EOSLobby
     //when the lobby was left successfully, stop the host/client
     private void OnLeaveLobbySuccess()
     {
+        onPreLeaveLobbySuccess?.Invoke();
+
         NetworkManager netManager = GetComponent<NetworkManager>();
         netManager.StopHost();
         netManager.StopClient();

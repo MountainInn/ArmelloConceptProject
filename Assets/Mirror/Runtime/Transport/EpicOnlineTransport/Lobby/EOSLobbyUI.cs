@@ -8,6 +8,7 @@ public class EOSLobbyUI : EOSLobby
 {
     public event System.Action onStartGameButtonClicked;
 
+    public event System.Action onJoinLobbySuccess;
     public event System.Action onPreLeaveLobbySuccess;
 
     private string lobbyName = "My Lobby";
@@ -59,6 +60,8 @@ public class EOSLobbyUI : EOSLobby
         NetworkManager netManager = GetComponent<NetworkManager>();
         netManager.networkAddress = attributes.Find((x) => x.Data.Key == hostAddressKey).Data.Value.AsUtf8;
         netManager.StartClient();
+
+        onJoinLobbySuccess?.Invoke();
     }
 
     //callback for FindLobbiesSucceeded

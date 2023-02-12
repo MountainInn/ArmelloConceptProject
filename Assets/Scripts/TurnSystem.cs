@@ -23,78 +23,49 @@ public class TurnSystem : NetworkBehaviour
 
     private void Awake()
     {
-        FindObjectOfType<EOSLobbyUI>()
-            .onPreLeaveLobbySuccess += SendPlayerUnregisterMessage;
-    }
-
-    public override void OnStartServer()
-    {
-        NetworkServer.RegisterHandler<PlayerUnregisterMessage>(OnPlayerUnregister);
-    }
-
-    [Server]
-    private void OnPlayerUnregister(NetworkConnectionToClient conn, PlayerUnregisterMessage msg)
-    {
-        players.Remove(msg.disconnectedPlayerNetId);
-      
-        Debug.Log($"-OnPlayerUnregister");
-        Debug.Log($"-Player count: {players.Count()}");
-    }
-
-    public void SendPlayerUnregisterMessage()
-    {
-        var playerNetId = NetworkClient.spawned.First(kv => kv.Value.GetComponent<Player>()).Key;
-        NetworkClient.Send(new PlayerUnregisterMessage(){ disconnectedPlayerNetId = playerNetId });
-
-        Debug.Log("+OnDisable");
-    }
-
-    public override void OnStartClient()
-    {
-        CmdRenewPlayers();
+        var lobbyUI = FindObjectOfType<EOSLobbyUI>();
+        lobbyUI.onJoinLobbySuccess += CmdRegisterLocalPlayer;
+        lobbyUI.onPreLeaveLobbySuccess += CmdUnregisterLocalPlayer;
+        lobbyUI.onStartGameButtonClicked += CmdStartNextPlayerTurn;
     }
 
     [Command(requiresAuthority =false)]
-    public void CmdRenewPlayers()
+    public void CmdRegisterLocalPlayer()
     {
-        RenewPlayers();
+        var localPlayer =
+            FindObjectsOfType<Player>()
+            .Single(p => p.isLocalPlayer);
+      
+        CmdRegisterPlayer(localPlayer);
     }
 
-    public void RenewPlayers()
+    [Command(requiresAuthority =false)]
+    public void CmdRegisterPlayer(Player player)
     {
-        HashSet<Player>
-            oldPlayers = players.Values.ToHashSet(),
-            newPlayers = FindObjectsOfType<Player>().ToHashSet();
+        player.turn = new Turn(player.netId, playerNetIdStream);
+        player.turn.started
+            .Subscribe(player.TargetToggleTurnView);
 
-        IEnumerable<Player>
-            addedPlayers = newPlayers.Except(oldPlayers),
-            removedPlayers = oldPlayers.Except(newPlayers);
+        players.Add(player.netId, player);
+    }
 
+    [Command(requiresAuthority =false)]
+    public void CmdUnregisterLocalPlayer()
+    {
+        var localPlayer =
+            FindObjectsOfType<Player>()
+            .Single(p => p.isLocalPlayer);
+       
+        CmdUnregisterPlayer(localPlayer);
+    }
 
-        removedPlayers.Log("Removed Players");
-        removedPlayers.ToList()
-            .ForEach(player => players.Remove(player.netId));
+    [Command(requiresAuthority =false)]
+    public void CmdUnregisterPlayer(Player player)
+    {
+        players.Remove(player.netId);
 
-        addedPlayers.Log("Added Players");
-        addedPlayers.ToList()
-            .ForEach(player =>
-            {
-                player.turn = new Turn(player.netId, playerNetIdStream);
-                player.turn.started
-                    .Subscribe(player.TargetToggleTurnView);
-
-                players.Add(player.netId, player);
-            });
-
-
-        var removedCurrentPlayer =
-            removedPlayers
-            .FirstOrDefault(player => (player.netId == currentPlayerNetId));
-
-        if (removedCurrentPlayer != default)
+        if (currentPlayer == player)
             CmdStartNextPlayerTurn();
-
-        Debug.Log($"Player count: {players.Count()}");
     }
 
     [Command(requiresAuthority=false)]
@@ -119,10 +90,5 @@ public class TurnSystem : NetworkBehaviour
     private void SetPlayerNetIdStreamValue(uint oldNetId, uint newNetId)
     {
         playerNetIdStream.Value = newNetId;
-    }
-
-    public struct PlayerUnregisterMessage : NetworkMessage
-    {
-        public uint disconnectedPlayerNetId;
     }
 }

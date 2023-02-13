@@ -19,6 +19,8 @@ public class TurnSystem : NetworkBehaviour
 
     ReactiveProperty<uint> playerNetIdStream = new ReactiveProperty<uint>(uint.MaxValue);
 
+    private Player localPlayer;
+
     IDisposable turnDisposable;
 
     private void Awake()
@@ -29,13 +31,16 @@ public class TurnSystem : NetworkBehaviour
         lobbyUI.onStartGameButtonClicked += CmdStartNextPlayerTurn;
     }
 
+    private void Start()
+    {
+        localPlayer =
+            FindObjectsOfType<Player>()
+            .Single(p => p.isLocalPlayer);
+    }
+
     [Command(requiresAuthority =false)]
     public void CmdRegisterLocalPlayer()
     {
-        var localPlayer =
-            FindObjectsOfType<Player>()
-            .Single(p => p.isLocalPlayer);
-      
         CmdRegisterPlayer(localPlayer);
     }
 
@@ -52,10 +57,6 @@ public class TurnSystem : NetworkBehaviour
     [Command(requiresAuthority =false)]
     public void CmdUnregisterLocalPlayer()
     {
-        var localPlayer =
-            FindObjectsOfType<Player>()
-            .Single(p => p.isLocalPlayer);
-       
         CmdUnregisterPlayer(localPlayer);
     }
 

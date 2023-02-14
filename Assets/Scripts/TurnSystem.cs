@@ -24,23 +24,36 @@ public class TurnSystem : NetworkBehaviour
     private void Awake()
     {
         var lobbyUI = FindObjectOfType<EOSLobbyUI>();
-        lobbyUI.onJoinLobbySuccess += CmdRegisterLocalPlayer;
-        lobbyUI.onPreLeaveLobbySuccess += CmdUnregisterLocalPlayer;
+
         lobbyUI.onStartGameButtonClicked += CmdStartNextPlayerTurn;
     }
 
     [Command(requiresAuthority =false)]
-    public void CmdRegisterLocalPlayer()
+    public void CmdRegisterPlayer(Player player)
     {
-        var localPlayer =
-            FindObjectsOfType<Player>()
-            .Single(p => p.isLocalPlayer);
-      
-        CmdRegisterPlayer(localPlayer);
+        RegisterPlayer(player);
     }
 
     [Command(requiresAuthority =false)]
-    public void CmdRegisterPlayer(Player player)
+    public void CmdUnregisterPlayer(Player player)
+    {
+        UnregisterPlayer(player);
+    }
+
+    [Server]
+    public void UnregisterPlayer(Player player)
+    {
+        Debug.Log($"UnRegisterPlayer");
+        players.Remove(player.netId);
+
+        player.turn = null;
+
+        if (currentPlayer == player)
+            CmdStartNextPlayerTurn();
+    }
+
+    [Server]
+    public void RegisterPlayer(Player player)
     {
         player.turn = new Turn(player.netId, playerNetIdStream);
         player.turn.started
@@ -49,28 +62,11 @@ public class TurnSystem : NetworkBehaviour
         players.Add(player.netId, player);
     }
 
-    [Command(requiresAuthority =false)]
-    public void CmdUnregisterLocalPlayer()
-    {
-        var localPlayer =
-            FindObjectsOfType<Player>()
-            .Single(p => p.isLocalPlayer);
-       
-        CmdUnregisterPlayer(localPlayer);
-    }
-
-    [Command(requiresAuthority =false)]
-    public void CmdUnregisterPlayer(Player player)
-    {
-        players.Remove(player.netId);
-
-        if (currentPlayer == player)
-            CmdStartNextPlayerTurn();
-    }
-
-    [Command(requiresAuthority=false)]
+    [Server]
     public void CmdStartNextPlayerTurn()
     {
+        if (players.Count == 0) return;
+       
         currentPlayerIndex = (currentPlayerIndex+1) % players.Count;
 
         (uint nextNetId, Player nextPlayer) = players.ElementAt(currentPlayerIndex);

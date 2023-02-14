@@ -4,12 +4,14 @@ using Mirror;
 using UnityEngine;
 using Zenject;
 using UniRx;
+using MountainInn;
 
 public class Player : NetworkBehaviour
 {
     public Character character;
     public Turn turn;
     public TurnView turnView;
+    public TurnSystem turnSystem;
 
     private CubeMap cubeMap;
     private Character.Factory characterFactory;
@@ -49,9 +51,16 @@ public class Player : NetworkBehaviour
         turnView.onEndTurnClicked += CmdEndTurn;
     }
 
+    public override void OnStopLocalPlayer()
+    {
+        turnView.onEndTurnClicked -= CmdEndTurn;
+    }
+
     [Command]
     private void CmdEndTurn()
     {
+        if (turn == null) return;
+                             
         turn.forceTurnCompletion.Value = true;
     }
 

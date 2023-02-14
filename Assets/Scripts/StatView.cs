@@ -15,55 +15,26 @@ public class StatView : MonoBehaviour
     [SerializeField] private Image attackProgressShadow;
     [SerializeField] private Image attackProgress;
 
-    CompositeDisposable disposables;
+    float attackRatio;
 
-    public void Initialize(HitLog hitlog, IDisposable combatOngoingDisposable)
+    public void InitUnit(CombatUnit unit)
     {
-        disposables = new CompositeDisposable();
-
-        CombatUnit unit = hitlog.unit;
-
-        Queue<Hit> hits =
-            new Queue<Hit>(hitlog.hits.ToList());
-
-
-        this.UpdateAsObservable()
-            .Where(_ =>
-                   hits.Any() &&
-                   unit.AttackTimerTick(Time.deltaTime))
-            .Subscribe(_ =>
-            {
-                Hit hit = hits.Dequeue();
-
-
-            });
-
-        // attackStream
-        //     .Where(_ => !hits.Any())
-        //     .Subscribe(_ => )
-
-
-
-            unit.healthReactive
-            .Subscribe(val =>{
-                healthText.text = val.ToString();
-            })
-            .AddTo(disposables);
-
-
-        unit.attackTimerRatioReactive
-            .Subscribe(val =>{
-                attackProgressShadow.fillAmount = val;
-                attackProgress.fillAmount = val;
-            })
-            .AddTo(disposables);
-
-        combatOngoingDisposable
-            .AddTo(disposables);
+        attackRatio = unit.attackTimerRatio;
     }
 
-    public void OnDisable()
+    public void SetStats(CombatUnit.Stats stats)
     {
-        disposables.Dispose();
+        healthText.text = stats.health.ToString();
+    }
+
+    public void TickAttackProgress(float delta)
+    {
+        attackRatio += delta;
+
+        if (attackRatio >= 1f)
+            attackRatio -= 1f;
+
+        attackProgressShadow.fillAmount = attackRatio;
+        attackProgress.fillAmount = attackRatio;
     }
 }

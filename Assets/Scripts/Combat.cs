@@ -38,71 +38,110 @@ public class Combat : NetworkBehaviour
     }
 
 
-    [Command(requiresAuthority=false)]
-    public void CmdStartCombat(params CombatUnit[] units)
+    [Server]
+    public void StartCombat(params CombatUnit[] units)
     {
-        HitLog[] hitLogs = CmdSimulateCombat(units);
+        var hits = SimulateCombat(units);
 
         units
             .Select(u => u.netIdentity.connectionToClient)
+            .Distinct()
             .ToList()
-            .ForEach(conn => TargetInitCombatViews(conn, hitLogs));
+            .ForEach(conn => TargetInitCombatViews(conn, units, hits));
     }
 
     [TargetRpc]
-    public void TargetInitCombatViews(NetworkConnection target, params HitLog[] hitlogs)
+    public void TargetInitCombatViews(NetworkConnection target, CombatUnit[] units, Hit[] hits)
     {
-        combatView.InitStatsView(units);
+        combatView.InitCombatView(units);
+        combatView.SetVisible(true);
+        combatView.StartCombatView(hits);
     }
 
-    [Command(requiresAuthority=false)]
-    public HitLog[] CmdSimulateCombat(params CombatUnit[] units)
+    [Server]
+    public Hit[] SimulateCombat(params CombatUnit[] units)
     {
-        HitLog[] hitlogs =
-            units.Select(u =>
+        List<Hit> hits = new List<Hit>();
+
+        units.ToList()
+            .ForEach(u =>
             {
                 float attacksPerBattle =
-                    u.stats.attackTimerRatio + combatDurationInSeconds * (u.stats.speed / 100f);
-                int  fullAttacks = (int)MathF.Floor(attacksPerBattle);
+                    u.attackTimerRatio + combatDurationInSeconds / u.GetAttackIntervalInSeconds();
 
-                u.stats.attackTimerRatio = attacksPerBattle - fullAttacks;
+                int fullAttacks = (int)MathF.Floor(attacksPerBattle);
 
-                Hit[] hits =
-                    fullAttacks.ToRange()
-                    .Select(i =>
-                    {
-                        CombatUnit target =
-                            units
-                            .NotEqual(u)
-                            .Where(t => t.stats.health > 0)
-                            .GetRandom();
+                fullAttacks.ForLoop(i =>
+                {
+                    float time = (i + 1) * u.GetAttackIntervalInSeconds() - u.attackTimerRatio;
 
-                        int damage = (int)MathF.Max(1, u.stats.attack / target.stats.defense);
-                        target.stats.health -= damage;
+                    hits.Add(new Hit() { time = time, attacker = u });
+                });
 
-                        return new Hit(){ target = target, targetStatsAfterHit = target.stats };
-                    })
-                    .ToArray();
+                u.attackTimerRatio = attacksPerBattle - fullAttacks;
+            });
 
-                return new HitLog(){ unit = u, hits = hits };
+        hits = hits.OrderBy(h => h.time).ToList();
+
+        var hitArray =
+            hits
+            .Select(hit =>
+            {
+                CombatUnit attacker = hit.attacker;
+
+                if (attacker.health <= 0)
+                    return new Hit() { time = -1 };
+
+                CombatUnit target =
+                    units
+                    .NotEqual(attacker)
+                    .Where(t => t.health > 0)
+                    .GetRandomOrDefault();
+
+                if (target == default)
+                    return new Hit() { time = -1 };
+
+                int damage = (int)MathF.Max(1, attacker.attack / target.defense);
+
+                target.health -= damage;
+
+                Hit updHit = new Hit()
+                {
+                    time = hit.time,
+                    attacker = hit.attacker,
+                    attackerStats = attacker.GetStatsSnapshot(),
+                    defendant = target,
+                    defendantStats = target.GetStatsSnapshot()
+                };
+
+                return updHit;
             })
+            .Where(hit => hit.time >= 0)
             .ToArray();
 
-        return hitlogs;
+        return hitArray;
     }
 
 
-}
-
-
-public struct HitLog
-{
-    public  CombatUnit unit;
-    public  Hit[] hits;
 }
 
 public struct Hit
 {
-    public CombatUnit target;
-    public CombatUnit.Stats targetStatsAfterHit;
+    public float time;
+    public CombatUnit attacker, defendant;
+    public CombatUnit.Stats attackerStats, defendantStats;
+
+    public override string ToString()
+    {
+        string res = "";
+        res += "t: " + time.ToString();
+        res += " | attacker: " + attacker.netId.ToString();
+        // res += defendantStats.ToString();
+        // res += defendant.ToString();
+        // res += defendantStats.ToString();
+        res += "\n";
+
+        return res;
+    }
+
 }

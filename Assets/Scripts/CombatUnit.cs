@@ -1,9 +1,5 @@
-using UnityEngine;
 using Mirror;
-using System.Linq;
-using System;
 using UniRx;
-using UniRx.Triggers;
 
 public class CombatUnit : NetworkBehaviour
 {
@@ -36,25 +32,24 @@ public class CombatUnit : NetworkBehaviour
         attack,
         speed;
 
-    [SyncVar]
-    public Stats stats;
-
     private void Awake()
     {
         healthReactive.Value = health;
         attackTimerRatioReactive.Value = attackTimerRatio;
     }
 
-    public Stats GetStatsStruct()
+    public Stats GetStatsSnapshot()
     {
         return new Stats()
         {
             health = health,
-            defense = defense,
-            attack = attack,
-            speed = speed
-        };
+                defense = defense,
+                attack = attack,
+                speed = speed
+                };
     }
+
+    public float GetAttackIntervalInSeconds() => speed / 100f;
 
     public bool AttackTimerTick(float delta)
     {
@@ -68,6 +63,17 @@ public class CombatUnit : NetworkBehaviour
         return res;
     }
 
+    public bool FakeAttackTimerTick(ref float timer, float delta)
+    {
+        timer += speed / 100f * delta;
+
+        bool res = timer >= 1f;
+
+        if (res)
+            timer -= 1f;
+
+        return res;
+    }
 
     private void OnAttackTimerRatioSync(float oldR, float newR)
     {

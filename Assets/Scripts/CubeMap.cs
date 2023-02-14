@@ -118,7 +118,7 @@ public class CubeMap : NetworkBehaviour
         Vector3Int randomCoordinates;
         do
         {
-            randomCoordinates = coords.GetRandom();
+            randomCoordinates = coords.GetRandomOrDefault();
         }
         while (pickedPositions.Contains(randomCoordinates));
 

@@ -66,6 +66,12 @@ public class Combat : NetworkBehaviour
         units.ToList()
             .ForEach(u =>
             {
+                hits.Add(new Hit() { time = 0, attacker = u, attackerStats = u.GetStatsSnapshot() });
+            });
+
+        units.ToList()
+            .ForEach(u =>
+            {
                 float attacksPerBattle =
                     u.attackTimerRatio + combatDurationInSeconds / u.GetAttackIntervalInSeconds();
 

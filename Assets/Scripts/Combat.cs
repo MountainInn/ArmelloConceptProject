@@ -81,7 +81,10 @@ public class Combat : NetworkBehaviour
                 u.attackTimerRatio = attacksPerBattle - fullAttacks;
             });
 
-        hits = hits.OrderBy(h => h.time).ToList();
+        hits =
+            hits
+            .OrderBy(h => h.time)
+            .ToList();
 
         var hitArray =
             hits

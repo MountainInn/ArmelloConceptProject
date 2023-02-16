@@ -67,9 +67,10 @@ public class Player : NetworkBehaviour
         turnView.onEndTurnClicked -= CmdEndTurn;
     }
 
-    [Server]
-    public void ResetActionPoints()
+    [Command]
+    public void CmdResetActionPoints()
     {
+        Debug.Log("Reset Points");
         actionPoints = 5;
     }
 

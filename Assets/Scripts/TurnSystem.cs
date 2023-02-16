@@ -60,6 +60,10 @@ public class TurnSystem : NetworkBehaviour
             .Subscribe(b =>
             {
                 player.TargetToggleTurnView(b);
+
+                if (b)
+                    player.CmdResetActionPoints();
+            })
             .AddTo(player);
 
         players.Add(player.netId, player);
@@ -69,8 +73,10 @@ public class TurnSystem : NetworkBehaviour
     public void CmdStartNextPlayerTurn()
     {
         if (players.Count == 0) return;
-       
-        currentPlayerIndex = (currentPlayerIndex+1) % players.Count;
+
+        currentPlayerNetId = uint.MaxValue;
+
+        currentPlayerIndex = (currentPlayerIndex + 1) % players.Count;
 
         (uint nextNetId, Player nextPlayer) = players.ElementAt(currentPlayerIndex);
 
@@ -82,7 +88,6 @@ public class TurnSystem : NetworkBehaviour
 
         currentPlayer = nextPlayer;
 
-        playerNetIdStream.SetValueAndForceNotify(nextNetId);
         currentPlayerNetId = nextNetId;
     }
 

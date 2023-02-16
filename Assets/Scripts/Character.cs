@@ -8,10 +8,10 @@ using TMPro;
 
 public class Character : NetworkBehaviour
 {
-    [SyncVar(hook = nameof(CoordinatesSyncedHook))]
+    [SyncVar(hook = nameof(OnCoordinatesSync))]
     public Vector3Int coordinates;
 
-    [SyncVar(hook = nameof(ColorSyncHook))]
+    [SyncVar(hook = nameof(OnColorSync))]
     public Color characterColor;
 
     [Range(1, 10)]
@@ -86,7 +86,7 @@ public class Character : NetworkBehaviour
     }
 
     [Client]
-    private void CoordinatesSyncedHook(Vector3Int oldCoord, Vector3Int newCoord)
+    private void OnCoordinatesSync(Vector3Int oldCoord, Vector3Int newCoord)
     {
         /// Даёт null-reference
         /// Временно закоментировал
@@ -98,7 +98,7 @@ public class Character : NetworkBehaviour
         // InvokeOnCharacterMoved();
     }
 
-    private void ColorSyncHook(Color oldc, Color newc)
+    private void OnColorSync(Color oldc, Color newc)
     {
         textMeshPro.color = newc;
     }

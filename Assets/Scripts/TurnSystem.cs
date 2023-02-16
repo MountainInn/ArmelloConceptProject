@@ -57,7 +57,11 @@ public class TurnSystem : NetworkBehaviour
     {
         player.turn = new Turn(player.netId, playerNetIdStream);
         player.turn.started
-            .Subscribe(player.TargetToggleTurnView);
+            .Subscribe(b =>
+            {
+                player.TargetToggleTurnView(b);
+                player.ResetActionPoints();
+            });
 
         players.Add(player.netId, player);
     }

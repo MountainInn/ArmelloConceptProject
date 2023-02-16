@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using MountainInn;
 using UniRx;
+using DG.Tweening;
 
 public partial class HexTile : NetworkBehaviour, IPointerClickHandler, IPointerEnterHandler, IPointerExitHandler
 {
@@ -14,10 +15,13 @@ public partial class HexTile : NetworkBehaviour, IPointerClickHandler, IPointerE
     public event Action<Vector3Int> onPointerEnter;
     public event Action<Vector3Int> onPointerExit;
 
-    [SyncVar]
-    public Vector3Int coordinates;
-    [SyncVar]
-    public HexType baseType, currentType;
+    [SyncVar(hook=nameof(OnLevelSync))] public int level = 0;
+
+    private void OnLevelSync(int oldv, int newv)
+    {
+        transform.DOScaleY(1 + level, .3f);
+    }
+
     public bool isVisible = false;
 
     public Transform Top;
@@ -80,6 +84,17 @@ public partial class HexTile : NetworkBehaviour, IPointerClickHandler, IPointerE
         RemoveHighlight();
         onPointerExit?.Invoke(coordinates);
     }
+
+    public void IncreaseLevel(int inc = 1)
+    {
+        level = level + inc;
+    }
+
+    public void DecreaseLevel(int dec = 1)
+    {
+        level = Math.Max(0, level - dec);
+    }
+
 
     public void RemoveHighlight()
     {

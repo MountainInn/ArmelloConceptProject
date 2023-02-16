@@ -5,6 +5,7 @@ using UnityEngine;
 using Zenject;
 using UniRx;
 using MountainInn;
+using System;
 
 public class Player : NetworkBehaviour
 {
@@ -18,6 +19,16 @@ public class Player : NetworkBehaviour
 
     private PlayerCustomizationView playerCustomizationView;
     public Color clientCharacterColor => playerCustomizationView.playerColor;
+
+    private ResourcesView resourcesView;
+
+    [SyncVar(hook = nameof(OnActionPointsSync))]
+    private int actionPoints;
+
+    private void OnActionPointsSync(int ol, int ne)
+    {
+        resourcesView.UpdateActionPoints(ne);
+    }
 
     [Inject]
     public void Construct(CubeMap cubeMap, Character.Factory characterFactory)
@@ -41,12 +52,10 @@ public class Player : NetworkBehaviour
     public override void OnStartLocalPlayer()
     {
         CmdCreateCharacter(clientCharacterColor);
-        CmdCreateCharacter(clientCharacterColor);
 
         MessageBroker.Default
             .Receive<HexTile>()
-            .Select(hex => hex.coordinates)
-            .Subscribe(CmdMoveCharacter);
+            .Subscribe(OnHexClicked);
 
         turnView.onEndTurnClicked += CmdEndTurn;
     }
@@ -54,6 +63,20 @@ public class Player : NetworkBehaviour
     public override void OnStopLocalPlayer()
     {
         turnView.onEndTurnClicked -= CmdEndTurn;
+    }
+
+    [Server]
+    public void ResetActionPoints()
+    {
+        actionPoints = 5;
+    }
+
+    private void OnHexClicked(HexTile hex)
+    {
+        if (turn.started.Value == false) return;
+        if (actionPoints < hex.level) return;
+
+        CmdMoveCharacter(hex);
     }
 
     [Command]
@@ -71,17 +94,23 @@ public class Player : NetworkBehaviour
     }
 
     [Command]
-    private void CmdMoveCharacter(Vector3Int coord)
+    private void CmdMoveCharacter(HexTile hex)
     {
-        if (turn.started.Value)
-            character.CmdMove(coord);
+        character.CmdMove(hex.coordinates);
+        CmdSpendActionPoints(hex.level);
+    }
+
+    [Command]
+    private void CmdSpendActionPoints(int amount)
+    {
+        actionPoints -= amount;
     }
 
     [Command]
     private void CmdCreateCharacter(Color characterColor)
     {
-        // if (this.character != null)
-        //     NetworkServer.Destroy(this.character.gameObject);
+        if (this.character != null)
+            NetworkServer.Destroy(this.character.gameObject);
 
         this.character = characterFactory.Create();
         this.character.characterColor = characterColor;

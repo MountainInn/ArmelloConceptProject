@@ -2,20 +2,18 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using Mirror;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using MountainInn;
 using UniRx;
 using DG.Tweening;
 
 public partial class HexTile : NetworkBehaviour, IPointerClickHandler, IPointerEnterHandler, IPointerExitHandler
 {
-
     public event Action<Vector3Int> onClicked;
     public event Action<Vector3Int> onPointerEnter;
     public event Action<Vector3Int> onPointerExit;
 
-    [SyncVar(hook=nameof(OnLevelSync))] public int level = 0;
+    [SyncVar] public Vector3Int coordinates;
+    [SyncVar] public HexType baseType, currentType;
+    [SyncVar(hook = nameof(OnLevelSync))] public int level = 0;
 
     private void OnLevelSync(int oldv, int newv)
     {
@@ -49,7 +47,7 @@ public partial class HexTile : NetworkBehaviour, IPointerClickHandler, IPointerE
             .Publish(new HexTileSpawned());
     }
 
-    public struct HexTileSpawned {}
+    public struct HexTileSpawned { }
 
     private void OnDestroy()
     {
@@ -61,7 +59,7 @@ public partial class HexTile : NetworkBehaviour, IPointerClickHandler, IPointerE
     public void Initialize(HexSyncData syncData)
     {
         this.coordinates = syncData.coord;
-        baseType = (HexType) syncData.hexSubtype;
+        baseType = (HexType)syncData.hexSubtype;
 
         SetDirty();
     }
@@ -129,10 +127,4 @@ public partial class HexTile : NetworkBehaviour, IPointerClickHandler, IPointerE
 public enum HexType
 {
     Forest, Mountain, Lake, Sand
-}
-
-public struct SpawnHexTileMessage : NetworkMessage
-{
-    public SpawnMessage spawnMessage;
-    public Vector3Int coordinates;
 }

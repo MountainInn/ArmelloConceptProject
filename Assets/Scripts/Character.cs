@@ -24,8 +24,8 @@ public class Character : NetworkBehaviour
     private void Awake()
     {
         cubeMap = FindObjectOfType<CubeMap>();
-    }
 
+    }
     private void Start()
     {
         if (isOwned)
@@ -116,7 +116,7 @@ public class Character : NetworkBehaviour
     }
 
     public bool OutOfReach(Vector3Int target)
-    {        
+    {
         return moveRadius < cubeMap.Distance(coordinates, target);
     }
 

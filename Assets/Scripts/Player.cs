@@ -83,7 +83,7 @@ public class Player : NetworkBehaviour
     private void CmdEndTurn()
     {
         if (turn == null) return;
-                             
+
         turn.forceTurnCompletion.Value = true;
     }
 

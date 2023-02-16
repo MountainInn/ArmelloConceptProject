@@ -47,6 +47,7 @@ public class Player : NetworkBehaviour
 
         turnView = FindObjectOfType<TurnView>();
         playerCustomizationView = FindObjectOfType<PlayerCustomizationView>();
+        resourcesView = FindObjectOfType<ResourcesView>();
     }
 
     public override void OnStartLocalPlayer()

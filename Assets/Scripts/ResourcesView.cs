@@ -1,7 +1,8 @@
 using System;
 using TMPro;
+using UnityEngine;
 
-public class ResourcesView
+public class ResourcesView : MonoBehaviour
 {
     public TextMeshProUGUI actionPointLabel;
 

@@ -34,7 +34,7 @@ public partial class HexTile : NetworkBehaviour, IPointerClickHandler, IPointerE
     {
         meshRenderer = GetComponent<MeshRenderer>();
 
-        baseColor = UnityEngine.Random.ColorHSV() * 0.2f;
+        baseColor = UnityEngine.Random.ColorHSV() * .4f + new Color(.4f, .4f, .4f);
         warScreenColor = baseColor * .5f;
 
         meshRenderer.material.color = baseColor;

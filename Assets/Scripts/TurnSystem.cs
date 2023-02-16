@@ -12,7 +12,7 @@ public class TurnSystem : NetworkBehaviour
     readonly SyncDictionary<uint, Player> players = new SyncDictionary<uint, Player>();
     [SyncVar] int currentPlayerIndex = -1;
 
-    [SyncVar(hook = nameof(SetPlayerNetIdStreamValue))]
+    [SyncVar(hook = nameof(OnCurrentPlayerNetIdSync))]
     uint currentPlayerNetId = uint.MaxValue;
 
     [SyncVar] Player currentPlayer;
@@ -28,13 +28,13 @@ public class TurnSystem : NetworkBehaviour
         lobbyUI.onStartGameButtonClicked += CmdStartNextPlayerTurn;
     }
 
-    [Command(requiresAuthority =false)]
+    [Command(requiresAuthority = false)]
     public void CmdRegisterPlayer(Player player)
     {
         RegisterPlayer(player);
     }
 
-    [Command(requiresAuthority =false)]
+    [Command(requiresAuthority = false)]
     public void CmdUnregisterPlayer(Player player)
     {
         UnregisterPlayer(player);
@@ -86,7 +86,7 @@ public class TurnSystem : NetworkBehaviour
         currentPlayerNetId = nextNetId;
     }
 
-    private void SetPlayerNetIdStreamValue(uint oldNetId, uint newNetId)
+    private void OnCurrentPlayerNetIdSync(uint oldNetId, uint newNetId)
     {
         playerNetIdStream.Value = newNetId;
     }

@@ -102,8 +102,8 @@ public class CubeMap : NetworkBehaviour
         return new HexSyncData()
         {
             coord = coord,
-                hexSubtype = Hex.GetRandomType()
-                };
+            hexSubtype = Hex.GetRandomType()
+        };
     }
 
     HexTile CreateHex(HexSyncData syncData)
@@ -180,11 +180,11 @@ public class CubeMap : NetworkBehaviour
                 .ToList()
                 .ForEach(next =>
                 {
-// graph.cost - Возвращает цену движения от текущего тайла
-// к следующему, может пригодиться если разные типы тайлов
-// будут иметь разную проходимость.
-// Пока что просто поставлю 1.
-// new_cost = cost_so_far[current] + graph.cost(current, next)
+                    // graph.cost - Возвращает цену движения от текущего тайла
+                    // к следующему, может пригодиться если разные типы тайлов
+                    // будут иметь разную проходимость.
+                    // Пока что просто поставлю 1.
+                    // new_cost = cost_so_far[current] + graph.cost(current, next)
                     var newCost = costSoFar[current] + 1;
 
                     if (!costSoFar.ContainsKey(next) || newCost < costSoFar[next])

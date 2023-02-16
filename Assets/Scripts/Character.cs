@@ -18,7 +18,7 @@ public class Character : NetworkBehaviour
     public int moveRadius = 1;
     public CubeMap cubeMap;
     public CombatUnit combatUnit => GetComponent<CombatUnit>();
-    public TextMeshPro textMeshPro => GetComponent<TextMeshPro>();
+    public TextMeshPro textMeshPro;
     public event Action<Character> onCharacterMoved;
 
     private void Awake()

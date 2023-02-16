@@ -106,7 +106,7 @@ public class Player : NetworkBehaviour
     private void CmdSpendActionPoints(int amount)
     {
         actionPoints -= amount;
-        Debug.Assert(actionPoints > 0);
+        Debug.Assert(actionPoints >= 0);
     }
 
     [Command]

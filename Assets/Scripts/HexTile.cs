@@ -13,7 +13,10 @@ public partial class HexTile : NetworkBehaviour, IPointerClickHandler, IPointerE
 
     [SyncVar] public Vector3Int coordinates;
     [SyncVar] public HexType baseType, currentType;
-    [SyncVar(hook = nameof(OnLevelSync))] public int level = 0;
+
+    [SyncVar(hook = nameof(OnLevelSync))]
+    public int level = 0;
+    public int moveCost => level + 1;
 
     private void OnLevelSync(int oldv, int newv)
     {

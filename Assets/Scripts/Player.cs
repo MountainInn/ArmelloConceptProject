@@ -74,7 +74,8 @@ public class Player : NetworkBehaviour
     private void OnHexClicked(HexTile hex)
     {
         if (turn.started.Value == false) return;
-        if (actionPoints < hex.level) return;
+        if (actionPoints < hex.moveCost) return;
+        if (actionPoints == 0) return;
 
         CmdMoveCharacter(hex);
     }
@@ -97,13 +98,14 @@ public class Player : NetworkBehaviour
     private void CmdMoveCharacter(HexTile hex)
     {
         character.CmdMove(hex.coordinates);
-        CmdSpendActionPoints(hex.level);
+        CmdSpendActionPoints(hex.moveCost);
     }
 
     [Command]
     private void CmdSpendActionPoints(int amount)
     {
         actionPoints -= amount;
+        Debug.Assert(actionPoints > 0);
     }
 
     [Command]

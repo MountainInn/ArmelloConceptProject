@@ -454,6 +454,7 @@ MonoBehaviour:
   - {fileID: 6635377679985840410, guid: bce7515a2f7ec0a4fbb397968ad6011f, type: 3}
   - {fileID: 7278258989069780905, guid: da19f582c1e609d42997898e875d788a, type: 3}
   - {fileID: 2995948742179404381, guid: cf001d308bde47242b9b0803570cdce6, type: 3}
+  - {fileID: 5913888825258297133, guid: e2f0dc3b636218b4ba20bb0ea2e5641e, type: 3}
   timeInterpolationGui: 0
 --- !u!1 &138563463
 GameObject:

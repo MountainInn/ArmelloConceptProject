@@ -45,7 +45,8 @@ public class CubeMap : NetworkBehaviour
                     spawnedTileCount = 0;
                     Debug.Log($"OnFullySpawned");
                 }
-            });
+            })
+            .AddTo(this);
     }
     public override void OnStartServer()
     {

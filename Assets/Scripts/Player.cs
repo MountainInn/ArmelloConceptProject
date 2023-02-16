@@ -56,7 +56,8 @@ public class Player : NetworkBehaviour
 
         MessageBroker.Default
             .Receive<HexTile>()
-            .Subscribe(OnHexClicked);
+            .Subscribe(OnHexClicked)
+            .AddTo(this);
 
         turnView.onEndTurnClicked += CmdEndTurn;
     }

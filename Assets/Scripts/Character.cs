@@ -88,11 +88,8 @@ public class Character : NetworkBehaviour
     [Client]
     private void OnCoordinatesSync(Vector3Int oldCoord, Vector3Int newCoord)
     {
-        /// Даёт null-reference
-        /// Временно закоментировал
-        //
-        // if (isOwned)
-        //     ClearWarscreen();
+        if (isOwned)
+            ClearWarscreen();
 
         // Проблемы с авторитетом клиента при командовании
         // InvokeOnCharacterMoved();

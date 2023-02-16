@@ -36,7 +36,11 @@ public partial class HexTile : NetworkBehaviour, IPointerClickHandler, IPointerE
 
     public void Start()
     {
+        MessageBroker.Default
+            .Publish(new HexTileSpawned());
     }
+
+    public struct HexTileSpawned {}
 
     private void OnDestroy()
     {

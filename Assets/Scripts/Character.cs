@@ -29,9 +29,7 @@ public class Character : NetworkBehaviour
     private void Start()
     {
         if (isOwned)
-        {
-            CmdInitializeCoordinates();
-        }
+            cubeMap.onFullySpawned += CmdInitializeCoordinates;
     }
 
     [Command(requiresAuthority = false)]

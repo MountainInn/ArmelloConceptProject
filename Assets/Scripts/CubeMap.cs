@@ -13,6 +13,9 @@ public class CubeMap : NetworkBehaviour
     [Range(1, 3)]
     public int mapRadius;
     public int hexagonSize = 1;
+
+    public event Action onFullySpawned;
+
     private HexTile[] hexagonPrefabs;
 
     public Dictionary<Vector3Int, HexTile> tiles { get; private set; }
@@ -20,12 +23,30 @@ public class CubeMap : NetworkBehaviour
 
     private HashSet<Vector3Int> pickedPositions;
 
+    [SyncVar]
+    int expectedTileCount;
+    int spawnedTileCount;
+
     [Inject]
     public void Construct(EOSLobbyUI lobbyUI)
     {
         lobbyUI.onStartGameButtonClicked += () => Generate(mapRadius);
     }
 
+    public void Awake()
+    {
+        MessageBroker.Default
+            .Receive<HexTile.HexTileSpawned>()
+            .Subscribe(_ =>
+            {
+                if (++spawnedTileCount == expectedTileCount)
+                {
+                    onFullySpawned?.Invoke();
+                    spawnedTileCount = 0;
+                    Debug.Log($"OnFullySpawned");
+                }
+            });
+    }
     public override void OnStartServer()
     {
         tiles = new Dictionary<Vector3Int, HexTile>();
@@ -48,6 +69,8 @@ public class CubeMap : NetworkBehaviour
     [Server]
     public void Generate(int radius)
     {
+        expectedTileCount = MathExt.Fact(mapRadius) * 6 + 1;
+
         if (tiles != null && tiles.Count > 0)
         {
             tiles.Values

@@ -52,7 +52,7 @@ public class CubeMap : NetworkBehaviour
         tiles = new Dictionary<Vector3Int, HexTile>();
         positions = new Dictionary<Vector3Int, Vector3>();
         pickedPositions = new HashSet<Vector3Int>();
-        hexagonPrefabs = (HexTile[])Resources.LoadAll<HexTile>("Prefabs/Tiles/");
+        hexagonPrefabs = (HexTile[])Resources.LoadAll<HexTile>("Prefabs/3D Tiles/");
     }
 
     public HexTile this[Vector3Int v3]
@@ -111,8 +111,9 @@ public class CubeMap : NetworkBehaviour
 
         var position = PositionFromCoordinates(coordinates);
 
-        HexTile prefab = (HexTile)hexagonPrefabs
-            .First(sr => sr.name == syncData.hexSubtype.ToString());
+        position = new Vector3(position.x, 0, position.y);
+
+        HexTile prefab = (HexTile)hexagonPrefabs.First();
 
         var hexagon = Instantiate(prefab, position, Quaternion.identity, transform)
             .GetComponent<HexTile>();

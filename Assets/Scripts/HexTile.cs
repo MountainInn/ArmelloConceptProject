@@ -20,14 +20,19 @@ public partial class HexTile : NetworkBehaviour, IPointerClickHandler, IPointerE
     public HexType baseType, currentType;
     public bool isVisible = false;
 
-    private SpriteRenderer spriteRenderer;
+    public Transform Top;
+
+    private MeshRenderer meshRenderer;
     private Color baseColor, highlightColor, warScreenColor;
 
     private void Awake()
     {
-        spriteRenderer = GetComponent<SpriteRenderer>();
-        baseColor = spriteRenderer.color;
+        meshRenderer = GetComponent<MeshRenderer>();
+
+        baseColor = UnityEngine.Random.ColorHSV() * 0.2f;
         warScreenColor = baseColor * .5f;
+
+        meshRenderer.material.color = baseColor;
 
         ToggleVisibility(false);
 
@@ -78,31 +83,31 @@ public partial class HexTile : NetworkBehaviour, IPointerClickHandler, IPointerE
 
     public void RemoveHighlight()
     {
-        spriteRenderer.color = (isVisible) ? baseColor : warScreenColor;
+        meshRenderer.material.color = (isVisible) ? baseColor : warScreenColor;
     }
 
     public void ToggleVisibility(bool toggle)
     {
         isVisible = toggle;
-        spriteRenderer.color = (isVisible) ? baseColor : warScreenColor;
+        meshRenderer.material.color = (isVisible) ? baseColor : warScreenColor;
     }
 
     public void HighlightMouseOver()
     {
-        spriteRenderer.color = ((isVisible) ? baseColor : warScreenColor) * 1.1f;
+        meshRenderer.material.color = ((isVisible) ? baseColor : warScreenColor) * 1.1f;
     }
 
     public void HighlightPath()
     {
-        spriteRenderer.color = Color.yellow * 0.15f;
+        meshRenderer.material.color = Color.yellow * 0.15f;
     }
     public void HighlightNeighbour()
     {
-        spriteRenderer.color = Color.blue * 0.15f;
+        meshRenderer.material.color = Color.blue * 0.15f;
     }
     public void HighlightStart()
     {
-        spriteRenderer.color = Color.blue * 0.15f;
+        meshRenderer.material.color = Color.blue * 0.15f;
     }
 }
 

@@ -39,7 +39,7 @@ public class Character : NetworkBehaviour
 
         var position = cubeMap.PositionFromCoordinates(coord);
 
-        RpcMove(coord, position, useTween: false);
+        RpcMove(coord, useTween: false);
     }
 
     [Command(requiresAuthority = false)]
@@ -55,21 +55,26 @@ public class Character : NetworkBehaviour
 
         Vector3 position = cubeMap.PositionFromCoordinates(coordinates);
 
-        RpcMove(coordinates, position, true);
+        RpcMove(coordinates, true);
     }
 
     [ClientRpc]
-    public void RpcMove(Vector3Int coordinates, Vector3 position, bool useTween)
+    public void RpcMove(Vector3Int coordinates, bool useTween)
     {
+        Transform top = cubeMap[coordinates].Top;
+        Vector3 position = top.position;
+
         if (useTween)
         {
             transform
                 .DOMove(position, .5f)
+                .OnComplete(() => transform.SetParent(top, true))
                 .OnKill(() => CmdSetCoordinates(coordinates));
         }
         else
         {
             transform.position = position;
+            transform.SetParent(top, true);
             CmdSetCoordinates(coordinates);
         }
     }

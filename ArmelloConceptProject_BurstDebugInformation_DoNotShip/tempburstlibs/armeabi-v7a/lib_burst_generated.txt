@@ -162,6 +162,13 @@ Library: lib_burst_generated
 --compilation-defines=MODULE_PHYSICS_2D_EXISTS
 --compilation-defines=MODULE_PARTICLE_SYSTEM_EXISTS
 --compilation-defines=ENABLE_ANIMATION_BURST
+--compilation-defines=CINEMACHINE_TIMELINE
+--compilation-defines=CINEMACHINE_PHYSICS_2D
+--compilation-defines=CINEMACHINE_PHYSICS
+--compilation-defines=CINEMACHINE_UGUI
+--compilation-defines=CINEMACHINE_PIXEL_PERFECT_2_0_3
+--compilation-defines=CINEMACHINE_UNITY_ANIMATION
+--compilation-defines=CINEMACHINE_UNITY_IMGUI
 --compilation-defines=ENABLE_SPRITESHAPE_BURST
 --compilation-defines=TIMELINE_FRAMEACCURATE
 --generate-link-xml=Temp\burst.link.xml
@@ -181,6 +188,7 @@ Library: lib_burst_generated
 --root-assembly=C:\Users\User\projects\unity\ArmelloConceptProject\Temp\StagingArea\Data\Managed\Unity.2D.Animation.Runtime.dll
 --root-assembly=C:\Users\User\projects\unity\ArmelloConceptProject\Temp\StagingArea\Data\Managed\Unity.TextMeshPro.dll
 --root-assembly=C:\Users\User\projects\unity\ArmelloConceptProject\Temp\StagingArea\Data\Managed\Unity.Burst.dll
+--root-assembly=C:\Users\User\projects\unity\ArmelloConceptProject\Temp\StagingArea\Data\Managed\Cinemachine.dll
 --root-assembly=C:\Users\User\projects\unity\ArmelloConceptProject\Temp\StagingArea\Data\Managed\Unity.Services.Core.Environments.dll
 --root-assembly=C:\Users\User\projects\unity\ArmelloConceptProject\Temp\StagingArea\Data\Managed\Mirror.Transports.dll
 --root-assembly=C:\Users\User\projects\unity\ArmelloConceptProject\Temp\StagingArea\Data\Managed\Telepathy.dll

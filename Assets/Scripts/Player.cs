@@ -100,6 +100,13 @@ public class Player : NetworkBehaviour
     [Command]
     private void CmdMoveCharacter(HexTile hex)
     {
+        if (character.coordinates == hex.coordinates ||
+            character.OutOfReach(hex.coordinates)
+        )
+        {
+            return;
+        }
+
         character.CmdMove(hex.coordinates);
         CmdSpendActionPoints(hex.moveCost);
     }

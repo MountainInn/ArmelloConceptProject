@@ -45,14 +45,6 @@ public class Character : NetworkBehaviour
     [Command(requiresAuthority = false)]
     public void CmdMove(Vector3Int coordinates)
     {
-        if (this.coordinates == coordinates ||
-            OutOfReach(coordinates)
-        )
-        {
-            Debug.Log($"Character: {this.coordinates} Target: {coordinates}");
-            return;
-        }
-
         Vector3 position = cubeMap.PositionFromCoordinates(coordinates);
 
         RpcMove(coordinates, true);

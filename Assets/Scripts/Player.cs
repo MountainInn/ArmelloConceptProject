@@ -11,6 +11,7 @@ public class Player : NetworkBehaviour
 {
     public Character character;
     public Turn turn;
+    public bool turnStarted;
     public TurnView turnView;
     public TurnSystem turnSystem;
 
@@ -67,7 +68,7 @@ public class Player : NetworkBehaviour
         turnView.onEndTurnClicked -= CmdEndTurn;
     }
 
-    [Command]
+    [Command(requiresAuthority=false)]
     public void CmdResetActionPoints()
     {
         Debug.Log("Reset Points");
@@ -76,14 +77,14 @@ public class Player : NetworkBehaviour
 
     private void OnHexClicked(HexTile hex)
     {
-        if (turn.started.Value == false) return;
+        if (!turnStarted) return;
         if (actionPoints < hex.moveCost) return;
         if (actionPoints == 0) return;
 
         CmdMoveCharacter(hex);
     }
 
-    [Command]
+    [Command(requiresAuthority=false)]
     private void CmdEndTurn()
     {
         if (turn == null) return;
@@ -92,12 +93,17 @@ public class Player : NetworkBehaviour
     }
 
     [TargetRpc]
-    public void TargetToggleTurnView(bool turnStarted)
+    public void TargetToggleTurnStarted(bool turnStarted)
     {
+        this.turnStarted = turnStarted;
+
+        if (turnStarted)
+            CmdResetActionPoints();
+
         turnView.Toggle(turnStarted);
     }
 
-    [Command]
+    [Command(requiresAuthority=false)]
     private void CmdMoveCharacter(HexTile hex)
     {
         if (character.coordinates == hex.coordinates ||
@@ -111,14 +117,14 @@ public class Player : NetworkBehaviour
         CmdSpendActionPoints(hex.moveCost);
     }
 
-    [Command]
+    [Command(requiresAuthority=false)]
     private void CmdSpendActionPoints(int amount)
     {
         actionPoints -= amount;
         Debug.Assert(actionPoints >= 0);
     }
 
-    [Command]
+    [Command(requiresAuthority=false)]
     private void CmdCreateCharacter(Color characterColor)
     {
         if (this.character != null)

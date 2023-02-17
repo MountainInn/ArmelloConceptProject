@@ -59,10 +59,7 @@ public class TurnSystem : NetworkBehaviour
         player.turn.started
             .Subscribe(b =>
             {
-                player.TargetToggleTurnView(b);
-
-                if (b)
-                    player.CmdResetActionPoints();
+                player.TargetToggleTurnStarted(b);
             })
             .AddTo(player);
 

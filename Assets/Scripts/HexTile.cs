@@ -44,13 +44,13 @@ public partial class HexTile : NetworkBehaviour, IPointerClickHandler, IPointerE
         gameObject.name = $"{baseType} {coordinates}";
     }
 
-    public void Start()
+    public override void OnStartClient()
     {
         MessageBroker.Default
-            .Publish(new HexTileSpawned());
+            .Publish(new HexTileSpawned(){ Value = this });
     }
 
-    public struct HexTileSpawned { }
+    public struct HexTileSpawned { public HexTile Value; }
 
     private void OnDestroy()
     {

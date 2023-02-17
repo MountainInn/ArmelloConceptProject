@@ -19,7 +19,6 @@ public class CubeMap : NetworkBehaviour
     private HexTile[] hexagonPrefabs;
 
     public Dictionary<Vector3Int, HexTile> tiles { get; private set; }
-    public Dictionary<Vector3Int, Vector3> positions { get; private set; }
 
     private HashSet<Vector3Int> pickedPositions;
 
@@ -35,10 +34,18 @@ public class CubeMap : NetworkBehaviour
 
     public void Awake()
     {
+        tiles = new Dictionary<Vector3Int, HexTile>();
+
+        expectedTileCount = GetTileCount();
+       
         MessageBroker.Default
             .Receive<HexTile.HexTileSpawned>()
-            .Subscribe(_ =>
+            .Subscribe(spawned =>
             {
+                var hex = spawned.Value;
+
+                tiles.TryAdd(hex.coordinates, hex);
+               
                 if (++spawnedTileCount == expectedTileCount)
                 {
                     onFullySpawned?.Invoke();
@@ -48,10 +55,9 @@ public class CubeMap : NetworkBehaviour
             })
             .AddTo(this);
     }
+
     public override void OnStartServer()
     {
-        tiles = new Dictionary<Vector3Int, HexTile>();
-        positions = new Dictionary<Vector3Int, Vector3>();
         pickedPositions = new HashSet<Vector3Int>();
         hexagonPrefabs = (HexTile[])Resources.LoadAll<HexTile>("Prefabs/3D Tiles/");
     }
@@ -70,9 +76,9 @@ public class CubeMap : NetworkBehaviour
     [Server]
     public void Generate(int radius)
     {
-        expectedTileCount = MathExt.Fact(mapRadius) * 6 + 1;
+        expectedTileCount = GetTileCount() ;
 
-        if (tiles != null && tiles.Count > 0)
+        if (tiles.Any())
         {
             tiles.Values
                 .NotEqual(null)
@@ -83,18 +89,16 @@ public class CubeMap : NetworkBehaviour
             tiles.Clear();
         }
 
-        tiles =
-            TileCoordinates(radius)
+        TileCoordinates(radius)
             .Select(CreateSyncData)
             .Select(CreateHex)
-            .ToDictionary(hex => hex.coordinates,
-                          hex => hex)
-            ;
-
-        tiles.Values
             .ToList()
-            .ForEach(tile => NetworkServer.Spawn(tile.gameObject))
-            ;
+            .ForEach(tile => NetworkServer.Spawn(tile.gameObject));
+    }
+
+    private int GetTileCount()
+    {
+        return MathExt.Fact(mapRadius) * 6 + 1;
     }
 
     HexSyncData CreateSyncData(Vector3Int coord)
@@ -128,13 +132,13 @@ public class CubeMap : NetworkBehaviour
 
     public Vector3 PositionFromCoordinates(Vector3Int coordinates)
     {
-        if (positions.TryGetValue(coordinates, out Vector3 position))
-            return position;
+        if (tiles.TryGetValue(coordinates, out HexTile tile))
+            return tile.transform.position;
 
         float x = hexagonSize * (MathF.Sqrt(3) * coordinates.x + MathF.Sqrt(3) / 2 * coordinates.y);
         float y = hexagonSize * 3f / 2 * coordinates.y;
 
-        return positions[coordinates] = new Vector3(x, y, 0) / 2;
+        return new Vector3(x, y, 0) / 2;
     }
 
     public Vector3Int GetRandomCoordinates()

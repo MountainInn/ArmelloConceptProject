@@ -20,6 +20,7 @@ public class TurnSystem : NetworkBehaviour
     ReactiveProperty<uint> playerNetIdStream = new ReactiveProperty<uint>(uint.MaxValue);
 
     IDisposable turnDisposable;
+    public event Action onRoundEnd;
 
     private void Awake()
     {
@@ -73,7 +74,14 @@ public class TurnSystem : NetworkBehaviour
 
         currentPlayerNetId = uint.MaxValue;
 
-        currentPlayerIndex = (currentPlayerIndex + 1) % players.Count;
+        currentPlayerIndex = (currentPlayerIndex + 1);
+
+        if (currentPlayerIndex == players.Count)
+        {
+            currentPlayerIndex %= players.Count;
+
+            onRoundEnd?.Invoke();
+        }
 
         (uint nextNetId, Player nextPlayer) = players.ElementAt(currentPlayerIndex);
 

@@ -81,7 +81,27 @@ public class Player : NetworkBehaviour
         if (actionPoints < hex.moveCost) return;
         if (actionPoints == 0) return;
 
-        CmdMoveCharacter(hex);
+
+        if (hex.character is null)
+        {
+            CmdMoveCharacter(hex);
+        }
+        else
+        {
+            CmdAttackOtherCharacter(hex);
+        }
+    }
+
+    [Command(requiresAuthority=false)]
+    private void CmdAttackOtherCharacter(HexTile hex)
+    {
+        CombatUnit[] units =
+            new [] { character, hex.character }
+            .Select(ch => ch.combatUnit)
+            .ToArray();
+
+        MessageBroker.Default
+            .Publish<CombatUnit[]>(units);
     }
 
     [Command(requiresAuthority=false)]
@@ -113,7 +133,8 @@ public class Player : NetworkBehaviour
             return;
         }
 
-        character.CmdMove(hex.coordinates);
+        hex.character = null;
+        character.CmdMove(hex);
         CmdSpendActionPoints(hex.moveCost);
     }
 

@@ -17,13 +17,13 @@ public class Combat : NetworkBehaviour
     public bool isOngoing;
     public ReactiveProperty<bool> isOngoingReactive = new ReactiveProperty<bool>(false);
 
-    CombatView combatView;
-
-
     private void OnIsOngoingSync(bool oldb, bool newb)
     {
         isOngoingReactive.Value = newb;
     }
+
+    CombatView combatView;
+    private List<CombatUnit[]> combatList;
 
     [Inject]
     public void Construct(CombatView combatView)
@@ -37,17 +37,49 @@ public class Combat : NetworkBehaviour
             .Subscribe(combatView.SetVisible);
     }
 
-
-    [Command(requiresAuthority=false)]
-    public void CmdStartCombat(params CombatUnit[] units)
+    public override void OnStartServer()
     {
-        RpcInitCombatViews(units);
+        MessageBroker.Default
+            .Receive<CombatUnit[]>()
+            .Subscribe(AddCombatToList);
 
+        FindObjectOfType<TurnSystem>()
+            .onRoundEnd += StartAllCombats;
+    }
+
+    [Server]
+    private void AddCombatToList(CombatUnit[] units)
+    {
+        combatList.Add(units);
+    }
+
+    [Server]
+    public void StartAllCombats()
+    {
+        combatList
+            .ForEach(StartCombat);
+
+        combatList.Clear();
+    }
+
+    [Server]
+    public void StartCombat(params CombatUnit[] units)
+    {
+        InitCombatViews(units);
         CmdStartCombatSimulation(units);
     }
 
-    [ClientRpc]
-    public void RpcInitCombatViews(params CombatUnit[] units)
+    [Server]
+    private void InitCombatViews(CombatUnit[] units)
+    {
+        units
+            .Select(u => u.netIdentity.connectionToClient)
+            .ToList()
+            .ForEach(conn => TargetInitCombatViews(conn, units));
+    }
+
+    [TargetRpc]
+    public void TargetInitCombatViews(NetworkConnectionToClient conn, CombatUnit[] units)
     {
         combatView.InitStatsView(units);
     }

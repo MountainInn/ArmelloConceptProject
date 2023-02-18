@@ -48,6 +48,6 @@ public class TurnResolver : NetworkBehaviour
     [Command(requiresAuthority = false)]
     public void CmdStartCombat(params CombatUnit[] units)
     {
-        combat.CmdStartCombat(units);
+        combat.StartCombat(units);
     }
 }

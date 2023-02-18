@@ -40,35 +40,44 @@ public class Character : NetworkBehaviour
 
         var position = cubeMap.PositionFromCoordinates(coord);
 
-        RpcMove(coord, useTween: false);
-    }
+        var hex = cubeMap[coord];
+
+        RpcMove(hex, useTween: false);
+    }   
 
     [Command(requiresAuthority = false)]
-    public void CmdMove(Vector3Int coordinates)
+    public void CmdMove(HexTile hex)
     {
+        Vector3Int coordinates = hex.coordinates;
         Vector3 position = cubeMap.PositionFromCoordinates(coordinates);
 
-        RpcMove(coordinates, true);
+        RpcMove(hex, true);
     }
 
     [ClientRpc]
-    public void RpcMove(Vector3Int coordinates, bool useTween)
+    public void RpcMove(HexTile hex, bool useTween)
     {
-        Transform top = cubeMap[coordinates].Top;
+        Transform top = cubeMap[hex.coordinates].Top;
         Vector3 position = top.position;
+        Vector3Int coordinates = hex.coordinates;
 
         if (useTween)
         {
             transform
                 .DOMove(position, .5f)
-                .OnComplete(() => transform.SetParent(top, true))
-                .OnKill(() => CmdSetCoordinates(coordinates));
+                .OnKill(EndTransition);
         }
         else
         {
             transform.position = position;
+            EndTransition();
+        }
+
+        void EndTransition()
+        {
             transform.SetParent(top, true);
             CmdSetCoordinates(coordinates);
+            hex.character = this;
         }
     }
 

@@ -25,8 +25,9 @@ public partial class HexTile : NetworkBehaviour, IPointerClickHandler, IPointerE
     }
 
     public bool isVisible = false;
-
     public Transform Top;
+    public Character character;
+
 
     private MeshRenderer meshRenderer;
     private Color baseColor, highlightColor, warScreenColor;

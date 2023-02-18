@@ -106,7 +106,7 @@ public class CubeMap : NetworkBehaviour
         return new HexSyncData()
         {
             coord = coord,
-            hexSubtype = Hex.GetRandomType()
+            hexSubtype = HexTile.GetRandomType()
         };
     }
 

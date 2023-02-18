@@ -4,6 +4,7 @@ using Mirror;
 using System;
 using UniRx;
 using DG.Tweening;
+using MountainInn;
 
 public partial class HexTile : NetworkBehaviour, IPointerClickHandler, IPointerEnterHandler, IPointerExitHandler
 {
@@ -109,6 +110,11 @@ public partial class HexTile : NetworkBehaviour, IPointerClickHandler, IPointerE
         meshRenderer.material.color = (isVisible) ? baseColor : warScreenColor;
     }
 
+    public static HexType GetRandomType()
+    {
+        return System.Enum.GetValues(typeof(HexType)).ArrayGetRandom<HexType>();
+    }
+
     public void HighlightMouseOver()
     {
         meshRenderer.material.color = ((isVisible) ? baseColor : warScreenColor) * 1.1f;
@@ -131,4 +137,10 @@ public partial class HexTile : NetworkBehaviour, IPointerClickHandler, IPointerE
 public enum HexType
 {
     Forest, Mountain, Lake, Sand
+}
+
+public struct HexSyncData
+{
+    public Vector3Int coord;
+    public HexType hexSubtype;
 }

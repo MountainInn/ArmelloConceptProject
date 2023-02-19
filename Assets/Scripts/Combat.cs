@@ -57,6 +57,9 @@ public class Combat : NetworkBehaviour
     [Server]
     private void AddCombatToList(CombatUnit[] units)
     {
+        if (combatList.Any(c => units.All(u => c.Contains(u))))
+            return;
+       
         combatList.Add(units);
 
         var attackerConn = units[0].netIdentity.connectionToClient;

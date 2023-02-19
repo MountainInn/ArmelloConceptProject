@@ -95,7 +95,7 @@ public class Player : NetworkBehaviour
 
             CmdMoveCharacter(hex);
         }
-        else if (hex.character == this)
+        else if (hex.character == character)
         {
             if (actionPoints < 1) return;
 

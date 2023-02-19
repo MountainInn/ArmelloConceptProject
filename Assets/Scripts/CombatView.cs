@@ -69,6 +69,16 @@ public class CombatView : MonoBehaviour
         combatDisposable?.Dispose();
         combatDisposable = null;
 
+        hits
+            .Where(hit => hit.time == 0)
+            .ToList()
+            .ForEach(hit => unitViews[hit.attacker].SetStats(hit.attackerStats));
+
+        hits =
+            hits
+            .Where(hit => hit.time > 0)
+            .ToArray();
+
         var hitQueue = new Queue<Hit>(hits);
 
         var nextHit = hitQueue.Peek();

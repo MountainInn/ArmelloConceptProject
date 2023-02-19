@@ -25,6 +25,10 @@ public class StatView : MonoBehaviour
     public void SetStats(CombatUnit.Stats stats)
     {
         healthText.text = stats.health.ToString();
+        attackRatio = stats.attackTimerRatio;
+
+        UpdateAttackTimer();
+
     }
 
     public void TickAttackProgress(float delta)
@@ -34,6 +38,11 @@ public class StatView : MonoBehaviour
         if (attackRatio >= 1f)
             attackRatio -= 1f;
 
+        UpdateAttackTimer();
+    }
+
+    private void UpdateAttackTimer()
+    {
         attackProgressShadow.fillAmount = attackRatio;
         attackProgress.fillAmount = attackRatio;
     }

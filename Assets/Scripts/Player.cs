@@ -25,7 +25,6 @@ public class Player : NetworkBehaviour
 
     [SyncVar(hook = nameof(OnActionPointsSync))]
     private int actionPoints;
-
     private void OnActionPointsSync(int ol, int ne)
     {
         resourcesView.UpdateActionPoints(ne);
@@ -33,12 +32,12 @@ public class Player : NetworkBehaviour
 
     [SyncVar(hook = nameof(OnMovementPointsSync))]
     private int movementPoints;
-
     private void OnMovementPointsSync(int ol, int ne)
     {
         resourcesView.UpdateMovementPoints(ne);
     }
 
+    readonly SyncDictionary<ResourceType, int> resources = new SyncDictionary<ResourceType, int>();
 
     [Inject]
     public void Construct(CubeMap cubeMap, Character.Factory characterFactory)
@@ -70,12 +69,51 @@ public class Player : NetworkBehaviour
             .AddTo(this);
 
         turnView.onEndTurnClicked += CmdEndTurn;
+
+        resources.Callback += OnResourcesSync;
+    }
+
+    private void OnResourcesSync(SyncIDictionary<ResourceType, int>.Operation op, ResourceType key, int item)
+    {
+        switch (op)
+        {
+            case SyncIDictionary<ResourceType, int>.Operation.OP_ADD:
+                break;
+            case SyncIDictionary<ResourceType, int>.Operation.OP_SET:
+                break;
+            case SyncIDictionary<ResourceType, int>.Operation.OP_REMOVE:
+                break;
+            case SyncIDictionary<ResourceType, int>.Operation.OP_CLEAR:
+                break;
+        }
+
+        resourcesView.SetResource(key, item);
+    }
+
+    public override void OnStartServer()
+    {
+        System.Enum.GetValues(typeof(ResourceType))
+            .Cast<ResourceType>()
+            .ToList()
+            .ForEach(r => resources.Add(r, 0));
+
+        MessageBroker.Default
+            .Receive<MiningTile.TileMinedMsg>()
+            .Subscribe(msg =>
+            {
+                if (!resources.ContainsKey(msg.resourceType))
+                    resources.Add(msg.resourceType, msg.amount);
+                else
+                    resources[msg.resourceType] += msg.amount;
+            })
+            .AddTo(this);
     }
 
     public override void OnStopLocalPlayer()
     {
         turnView.onEndTurnClicked -= CmdEndTurn;
     }
+
 
     [Command(requiresAuthority=false)]
     public void CmdResetPoints()
@@ -99,7 +137,7 @@ public class Player : NetworkBehaviour
         {
             if (actionPoints < 1) return;
 
-            CmdMineHex(hex);
+            CmdUseTile(hex);
         }
         else
         {
@@ -109,9 +147,10 @@ public class Player : NetworkBehaviour
         }
     }
 
-    private void CmdMineHex(HexTile hex)
+    [Command(requiresAuthority=false)]
+    private void CmdUseTile(HexTile hex)
     {
-        Debug.Log("Mine Hex");
+        hex.UseTile(this);
     }
 
     [Command(requiresAuthority=false)]

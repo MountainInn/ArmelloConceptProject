@@ -103,10 +103,14 @@ public class CubeMap : NetworkBehaviour
 
     HexSyncData CreateSyncData(Vector3Int coord)
     {
+        var tileActionType =
+            System.Enum.GetValues(typeof(TileActionType)).ArrayGetRandom<TileActionType>();
+
         return new HexSyncData()
         {
             coord = coord,
-            hexSubtype = HexTile.GetRandomType()
+            hexSubtype = HexTile.GetRandomType(),
+            tileActionType = tileActionType
         };
     }
 

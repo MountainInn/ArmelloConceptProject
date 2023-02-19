@@ -14,7 +14,6 @@ public partial class HexTile : NetworkBehaviour, IPointerClickHandler, IPointerE
 
     [SyncVar] public Vector3Int coordinates;
     [SyncVar] public HexType baseType, currentType;
-
     [SyncVar(hook = nameof(OnLevelSync))]
     public int level = 0;
     public int moveCost => level + 1;
@@ -32,14 +31,17 @@ public partial class HexTile : NetworkBehaviour, IPointerClickHandler, IPointerE
     private MeshRenderer meshRenderer;
     private Color baseColor, highlightColor, warScreenColor;
 
+    [SyncVar(hook=nameof(OnTileActionTypeSync))] private TileActionType tileActionType;
+    private void OnTileActionTypeSync(TileActionType oldv, TileActionType newv)
+    {
+        SetTileAction(newv);
+        SetColors();
+    }
+    private ITileAction tileAction;
+
     private void Awake()
     {
         meshRenderer = GetComponent<MeshRenderer>();
-
-        baseColor = UnityEngine.Random.ColorHSV() * .4f + new Color(.4f, .4f, .4f);
-        warScreenColor = baseColor * .5f;
-
-        meshRenderer.material.color = baseColor;
 
         ToggleVisibility(false);
 
@@ -65,8 +67,35 @@ public partial class HexTile : NetworkBehaviour, IPointerClickHandler, IPointerE
     {
         this.coordinates = syncData.coord;
         baseType = (HexType)syncData.hexSubtype;
+        this.tileActionType = syncData.tileActionType;
+
+        SetTileAction(syncData.tileActionType);
+
+        SetColors();
 
         SetDirty();
+    }
+
+    private void SetTileAction(TileActionType tileActionType)
+    {
+        Debug.Log($"SetTileAction");
+        tileAction = tileActionType switch
+        {
+            TileActionType.Mining => new MiningTile(ResourceType.GenericResource),
+            _ => throw new System.Exception("Not all TileActionTypes are handled")
+        };
+    }
+
+    private void SetColors()
+    {
+        baseColor = tileActionType switch
+            {
+                (TileActionType.Mining) => Color.green,
+                (_) => Color.magenta
+            };
+        warScreenColor = baseColor * .5f;
+
+        meshRenderer.material.color = baseColor;
     }
 
     public void OnPointerClick(PointerEventData eventData)
@@ -75,6 +104,13 @@ public partial class HexTile : NetworkBehaviour, IPointerClickHandler, IPointerE
 
         if (isClient)
             MessageBroker.Default.Publish(this);
+    }
+
+    [Server]
+    public void UseTile(Player player)
+    {
+        Debug.Assert(tileAction != null);
+        tileAction.TileAction(player);
     }
 
     public void OnPointerEnter(PointerEventData eventData)
@@ -135,6 +171,7 @@ public partial class HexTile : NetworkBehaviour, IPointerClickHandler, IPointerE
     }
 }
 
+
 public enum HexType
 {
     Forest, Mountain, Lake, Sand
@@ -144,4 +181,43 @@ public struct HexSyncData
 {
     public Vector3Int coord;
     public HexType hexSubtype;
+    public TileActionType tileActionType;
+}
+
+
+public enum TileActionType
+{
+    Mining
+}
+
+public interface ITileAction
+{
+    void TileAction(Player player);
+}
+
+public enum ResourceType
+{
+    GenericResource
+}
+
+public class MiningTile : ITileAction
+{
+    ResourceType resourceType;
+
+    public MiningTile(ResourceType resourceType)
+    {
+        this.resourceType = resourceType;
+    }
+
+    public void TileAction(Player player=null)
+    {
+        MessageBroker.Default
+            .Publish(new TileMinedMsg(){ resourceType = resourceType, amount = 1 });
+    }
+
+    public struct TileMinedMsg
+    {
+        public ResourceType resourceType;
+        public int amount;
+    }
 }

@@ -29,6 +29,8 @@ public class StatView : MonoBehaviour
 
         UpdateAttackTimer();
 
+        if (stats.health <= 0)
+            gameObject.SetActive(false);
     }
 
     public void TickAttackProgress(float delta)

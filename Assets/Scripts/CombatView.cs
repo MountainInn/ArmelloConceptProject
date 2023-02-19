@@ -58,6 +58,7 @@ public class CombatView : MonoBehaviour
 
                 var statView = GetStatView(unit);
 
+                statView.gameObject.SetActive(true);
                 statView.InitUnit(unit);
                 statView.transform.SetParent(transform);
                 statView.transform.localPosition = localPosition;

@@ -82,7 +82,7 @@ public class Player : NetworkBehaviour
     {
         Debug.Log("Reset Points");
         actionPoints = 5;
-        movementPoints = 2;
+        movementPoints = 5;
     }
 
     private void OnHexClicked(HexTile hex)

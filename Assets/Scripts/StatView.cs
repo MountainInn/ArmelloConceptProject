@@ -1,9 +1,12 @@
 using UniRx;
+using UniRx.Triggers;
 using MountainInn;
 using UnityEngine;
 using UnityEngine.UI;
 using System;
+using System.Linq;
 using TMPro;
+using System.Collections.Generic;
 
 public class StatView : MonoBehaviour
 {
@@ -12,32 +15,37 @@ public class StatView : MonoBehaviour
     [SerializeField] private Image attackProgressShadow;
     [SerializeField] private Image attackProgress;
 
-    CompositeDisposable disposables;
+    float attackRatio;
 
-    public void Initialize(CombatUnit unit, IDisposable combatOngoingDisposable)
+    public void InitUnit(CombatUnit unit)
     {
-        disposables = new CompositeDisposable();
-
-        unit.healthReactive
-            .Subscribe(val =>{
-                healthText.text = val.ToString();
-            })
-            .AddTo(disposables);
-
-
-        unit.attackTimerRatioReactive
-            .Subscribe(val =>{
-                attackProgressShadow.fillAmount = val;
-                attackProgress.fillAmount = val;
-            })
-            .AddTo(disposables);
-
-        combatOngoingDisposable
-            .AddTo(disposables);
+        attackRatio = unit.attackTimerRatio;
     }
 
-    public void OnDisable()
+    public void SetStats(CombatUnit.Stats stats)
     {
-        disposables.Dispose();
+        healthText.text = stats.health.ToString();
+        attackRatio = stats.attackTimerRatio;
+
+        UpdateAttackTimer();
+
+        if (stats.health <= 0)
+            gameObject.SetActive(false);
+    }
+
+    public void TickAttackProgress(float delta)
+    {
+        attackRatio += delta;
+
+        if (attackRatio >= 1f)
+            attackRatio -= 1f;
+
+        UpdateAttackTimer();
+    }
+
+    private void UpdateAttackTimer()
+    {
+        attackProgressShadow.fillAmount = attackRatio;
+        attackProgress.fillAmount = attackRatio;
     }
 }

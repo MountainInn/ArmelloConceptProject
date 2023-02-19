@@ -33,11 +33,12 @@ public class TurnResolver : NetworkBehaviour
         var units =
             FindObjectsOfType<Character>()
             .Select(ch => ch.combatUnit)
+            .Where(u => u.health > 0)
             .ToArray();
 
         if (units.Length < 2)
         {
-            Debug.Log("Not enough players to start combat");
+            Debug.Log("Not enough alive characters to start combat");
             return;
         }
 

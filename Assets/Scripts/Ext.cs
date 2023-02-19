@@ -70,6 +70,15 @@ namespace MountainInn
 
     static public class IEnumerableExt
     {
+        static public IEnumerable<( int, T )> Enumerate<T>(this IEnumerable<T> source)
+        {
+            int i = 0;
+            foreach (var item in source)
+            {
+                yield return (i, item);
+                i++;
+            }
+        }
         static public IEnumerable<T> LookAt<T>(this IEnumerable<T> source, Action<T> action)
         {
             foreach (var item in source)
@@ -86,9 +95,14 @@ namespace MountainInn
         {
             return source.OrderBy(_ => UnityEngine.Random.value);
         }
-        static public T GetRandom<T>(this IEnumerable<T> source)
+        static public T GetRandomOrDefault<T>(this IEnumerable<T> source)
         {
-            int id = UnityEngine.Random.Range(0, source.Count());
+            int count = source.Count();
+
+            if (count == 0)
+                return default;
+
+            int id = UnityEngine.Random.Range(0, count);
 
             return source.ElementAt(id);
         }

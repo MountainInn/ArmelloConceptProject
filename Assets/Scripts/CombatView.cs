@@ -1,9 +1,11 @@
 using UnityEngine;
 using System.Linq;
 using UniRx;
-using UniRx.Toolkit;
+using UniRx.Triggers;
 using Zenject;
 using MountainInn;
+using System.Collections.Generic;
+using System;
 
 public class CombatView : MonoBehaviour
 {
@@ -13,12 +15,15 @@ public class CombatView : MonoBehaviour
     RectTransform rect;
     CanvasGroup canvasGroup;
 
-    StatViewPool statViewPool;
+    StatView statViewPrefab;
+    Dictionary<CombatUnit, StatView> unitViews = new Dictionary<CombatUnit, StatView>();
+
+    IDisposable combatDisposable;
 
     [Inject]
     public void Construct(StatView prefab)
     {
-        statViewPool = new StatViewPool(prefab, GetComponent<RectTransform>());
+        statViewPrefab = prefab;
     }
 
     private void Awake()
@@ -36,46 +41,96 @@ public class CombatView : MonoBehaviour
         canvasGroup.blocksRaycasts = visible;
     }
 
-    public void InitStatsView(params CombatUnit[] units)
+    public void InitCombatView(CombatUnit[] units)
     {
         float angleInterval = Mathf.PI * 2 / units.Length;
 
-        units.Length
-            .ForLoop(i =>
+        units
+            .Enumerate()
+            .ToList()
+            .ForEach(tup =>
             {
+                (int i, CombatUnit unit) = tup;
+
                 float a = i * angleInterval;
                 Vector2 localPosition = new Vector2(Mathf.Cos(a), Mathf.Sin(a));
                 localPosition.Scale(rect.rect.size * 0.75f * 0.5f);
 
-                var statView = statViewPool.Rent();
+                var statView = GetStatView(unit);
+
+                statView.gameObject.SetActive(true);
+                statView.InitUnit(unit);
+                statView.transform.SetParent(transform);
                 statView.transform.localPosition = localPosition;
-
-                var combatOngoingDisposable =
-                    combat.isOngoingReactive
-                    .Where(b => b == false)
-                    .Subscribe(_ => statViewPool.Return(statView));
-
-                statView.Initialize(units[i], combatOngoingDisposable);
             });
     }
 
-    public class StatViewPool : ObjectPool<StatView>
+    public void StartCombatView(Hit[] hits)
     {
-        StatView prefab;
-        RectTransform parent;
+        combatDisposable?.Dispose();
+        combatDisposable = null;
 
-        public StatViewPool(StatView prefab, RectTransform parent)
-        {
-            this.prefab = prefab;
-            this.parent = parent;
-        }
+        hits
+            .Where(hit => hit.time == 0)
+            .ToList()
+            .ForEach(hit => unitViews[hit.attacker].SetStats(hit.attackerStats));
 
-        protected override StatView CreateInstance()
-        {
-            var newStatView = GameObject.Instantiate(prefab, parent);
+        hits =
+            hits
+            .Where(hit => hit.time > 0)
+            .ToArray();
 
-            return newStatView;
-        }
+        var hitQueue = new Queue<Hit>(hits);
+
+        var nextHit = hitQueue.Peek();
+        float battleTimer = 0f;
+
+        combatDisposable =
+            this.UpdateAsObservable()
+            .TakeWhile((_) => hitQueue.Any())
+            .DoOnCompleted(() => SetVisible(false))
+            .Subscribe((_) =>
+            {
+                float delta = Time.deltaTime;
+
+                battleTimer += delta;
+
+                unitViews.Values
+                    .ToList()
+                    .ForEach(view => view.TickAttackProgress(delta));
+
+                while (battleTimer >= nextHit.time)
+                {
+                    Hit hit = hitQueue.Dequeue();
+
+                    StatView
+                        attackerView = unitViews[hit.attacker],
+                        defendantView = unitViews[hit.defendant];
+
+                    attackerView.SetStats(hit.attackerStats);
+                    defendantView.SetStats(hit.defendantStats);
+
+                    if (!hitQueue.Any())
+                        break;
+
+                    nextHit = hitQueue.Peek();
+                }
+            });
     }
+
+    private StatView GetStatView(CombatUnit unit)
+    {
+        Debug.Log($"GetStatView");
+        if (unitViews.ContainsKey(unit))
+            return unitViews[unit];
+
+        Debug.Log($"+Init New");
+        StatView newUnitView = Instantiate(statViewPrefab);
+
+        unitViews.Add(unit, newUnitView);
+
+        return newUnitView;
+    }
+
 }
 

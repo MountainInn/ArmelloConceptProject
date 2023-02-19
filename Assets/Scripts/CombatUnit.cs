@@ -1,12 +1,19 @@
-using UnityEngine;
 using Mirror;
-using System.Linq;
-using System;
 using UniRx;
-using UniRx.Triggers;
 
 public class CombatUnit : NetworkBehaviour
 {
+    public struct Stats
+    {
+        public int
+            health,
+            defense,
+            attack,
+            speed;
+        public float
+            attackTimerRatio;
+    }
+
     public ReactiveProperty<int>
         healthReactive = new ReactiveProperty<int>();
 
@@ -31,6 +38,19 @@ public class CombatUnit : NetworkBehaviour
         attackTimerRatioReactive.Value = attackTimerRatio;
     }
 
+    public Stats GetStatsSnapshot()
+    {
+        return new Stats()
+        {
+            health = health,
+                defense = defense,
+                attack = attack,
+                speed = speed
+                };
+    }
+
+    public float GetAttackIntervalInSeconds() => speed / 100f;
+
     public bool AttackTimerTick(float delta)
     {
         attackTimerRatio += speed / 100f * delta;
@@ -43,6 +63,17 @@ public class CombatUnit : NetworkBehaviour
         return res;
     }
 
+    public bool FakeAttackTimerTick(ref float timer, float delta)
+    {
+        timer += speed / 100f * delta;
+
+        bool res = timer >= 1f;
+
+        if (res)
+            timer -= 1f;
+
+        return res;
+    }
 
     private void OnAttackTimerRatioSync(float oldR, float newR)
     {

@@ -31,6 +31,15 @@ public class Player : NetworkBehaviour
         resourcesView.UpdateActionPoints(ne);
     }
 
+    [SyncVar(hook = nameof(OnMovementPointsSync))]
+    private int movementPoints;
+
+    private void OnMovementPointsSync(int ol, int ne)
+    {
+        resourcesView.UpdateMovementPoints(ne);
+    }
+
+
     [Inject]
     public void Construct(CubeMap cubeMap, Character.Factory characterFactory)
     {
@@ -69,32 +78,47 @@ public class Player : NetworkBehaviour
     }
 
     [Command(requiresAuthority=false)]
-    public void CmdResetActionPoints()
+    public void CmdResetPoints()
     {
         Debug.Log("Reset Points");
         actionPoints = 5;
+        movementPoints = 2;
     }
 
     private void OnHexClicked(HexTile hex)
     {
         if (!turnStarted) return;
-        if (actionPoints < hex.moveCost) return;
-        if (actionPoints == 0) return;
-
 
         if (hex.character is null)
         {
+            if (movementPoints < hex.moveCost) return;
+
             CmdMoveCharacter(hex);
+        }
+        else if (hex.character == this)
+        {
+            if (actionPoints < 1) return;
+
+            CmdMineHex(hex);
         }
         else
         {
+            if (movementPoints < 1) return;
+
             CmdAttackOtherCharacter(hex);
         }
+    }
+
+    private void CmdMineHex(HexTile hex)
+    {
+        Debug.Log("Mine Hex");
     }
 
     [Command(requiresAuthority=false)]
     private void CmdAttackOtherCharacter(HexTile hex)
     {
+        CmdSpendMovementPoints(1);
+
         CombatUnit[] units =
             new [] { character, hex.character }
             .Select(ch => ch.combatUnit)
@@ -118,7 +142,7 @@ public class Player : NetworkBehaviour
         this.turnStarted = turnStarted;
 
         if (turnStarted)
-            CmdResetActionPoints();
+            CmdResetPoints();
 
         turnView.Toggle(turnStarted);
     }
@@ -135,11 +159,17 @@ public class Player : NetworkBehaviour
 
         hex.character = null;
         character.CmdMove(hex);
-        CmdSpendActionPoints(hex.moveCost);
+        CmdSpendMovementPoints(hex.moveCost);
     }
 
     [Command(requiresAuthority=false)]
-    private void CmdSpendActionPoints(int amount)
+    private void CmdSpendMovementPoints(int amount)
+    {
+        movementPoints -= amount;
+        Debug.Assert(movementPoints >= 0);
+    }
+    [Command(requiresAuthority=false)]
+    private void CmdSpendActiongPoints(int amount)
     {
         actionPoints -= amount;
         Debug.Assert(actionPoints >= 0);

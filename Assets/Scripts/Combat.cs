@@ -16,7 +16,6 @@ public class Combat : NetworkBehaviour
     [SyncVar(hook=nameof(OnIsOngoingSync))]
     public bool isOngoing;
     public ReactiveProperty<bool> isOngoingReactive = new ReactiveProperty<bool>(false);
-
     private void OnIsOngoingSync(bool oldb, bool newb)
     {
         isOngoingReactive.Value = newb;
@@ -24,6 +23,9 @@ public class Combat : NetworkBehaviour
 
     CombatView combatView;
     private List<CombatUnit[]> combatList;
+    private AttackMarkerPool attackMarkerPool;
+    private List<LineRenderer> attackMarkers;
+
 
     [Inject]
     public void Construct(CombatView combatView)
@@ -35,6 +37,9 @@ public class Combat : NetworkBehaviour
     {
         isOngoingReactive
             .Subscribe(combatView.SetVisible);
+
+        attackMarkerPool = new AttackMarkerPool(Resources.Load<LineRenderer>("Prefabs/Attack Marker"));
+        attackMarkers = new List<LineRenderer>();
     }
 
     public override void OnStartServer()
@@ -51,6 +56,22 @@ public class Combat : NetworkBehaviour
     private void AddCombatToList(CombatUnit[] units)
     {
         combatList.Add(units);
+
+        var attackerConn = units[0].netIdentity.connectionToClient;
+        TargetSpawnAttackMarker(attackerConn, units);
+    }
+
+    [TargetRpc]
+    private void TargetSpawnAttackMarker(NetworkConnectionToClient conn, CombatUnit[] units)
+    {
+        var attackMarker = attackMarkerPool.Rent();
+
+        var positions =
+            units.Select(u => u.transform.position).ToArray();
+
+        attackMarker.SetPositions(positions);
+
+        attackMarkers.Add(attackMarker);
     }
 
     [Server]
@@ -60,8 +81,19 @@ public class Combat : NetworkBehaviour
             .ForEach(StartCombat);
 
         combatList.Clear();
+
+        RpcDespawnAttackMarkers();
     }
 
+    [ClientRpc]
+    private void RpcDespawnAttackMarkers()
+    {
+        if (!attackMarkers.Any())
+            return;
+
+        attackMarkers.ForEach(attackMarkerPool.Return);
+        attackMarkers.Clear();
+    }
 
     [Server]
     public void StartCombat(params CombatUnit[] units)

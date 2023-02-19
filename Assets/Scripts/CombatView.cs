@@ -56,11 +56,10 @@ public class CombatView : MonoBehaviour
                 Vector2 localPosition = new Vector2(Mathf.Cos(a), Mathf.Sin(a));
                 localPosition.Scale(rect.rect.size * 0.75f * 0.5f);
 
-                var statView = GetStatView(unit);
+                var statView = GetStatView(unit, transform);
 
                 statView.gameObject.SetActive(true);
                 statView.InitUnit(unit);
-                statView.transform.SetParent(transform);
                 statView.transform.localPosition = localPosition;
                 statView.transform.localEulerAngles = Vector3.zero;
             });
@@ -119,14 +118,12 @@ public class CombatView : MonoBehaviour
             });
     }
 
-    private StatView GetStatView(CombatUnit unit)
+    private StatView GetStatView(CombatUnit unit, Transform parent)
     {
-        Debug.Log($"GetStatView");
         if (unitViews.ContainsKey(unit))
             return unitViews[unit];
 
-        Debug.Log($"+Init New");
-        StatView newUnitView = Instantiate(statViewPrefab);
+        StatView newUnitView = Instantiate(statViewPrefab, Vector3.zero, Quaternion.identity, parent);
 
         unitViews.Add(unit, newUnitView);
 

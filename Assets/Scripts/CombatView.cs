@@ -62,6 +62,7 @@ public class CombatView : MonoBehaviour
                 statView.InitUnit(unit);
                 statView.transform.SetParent(transform);
                 statView.transform.localPosition = localPosition;
+                statView.transform.localEulerAngles = Vector3.zero;
             });
     }
 

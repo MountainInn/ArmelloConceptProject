@@ -14,7 +14,7 @@ public class EOSLobbyUI : EOSLobby
     private string lobbyName = "My Lobby";
     private bool showLobbyList = false;
     private bool showPlayerList = false;
-
+    private bool isHost = false;
     private List<LobbyDetails> foundLobbies = new List<LobbyDetails>();
     private List<Attribute> lobbyData = new List<Attribute>();
 
@@ -47,6 +47,8 @@ public class EOSLobbyUI : EOSLobby
         showPlayerList = true;
         showLobbyList = false;
 
+        isHost = true;
+
         GetComponent<NetworkManager>().StartHost();
     }
 
@@ -76,6 +78,8 @@ public class EOSLobbyUI : EOSLobby
     private void OnLeaveLobbySuccess()
     {
         onPreLeaveLobbySuccess?.Invoke();
+
+        isHost = false;
 
         NetworkManager netManager = GetComponent<NetworkManager>();
         netManager.StopHost();
@@ -110,10 +114,11 @@ public class EOSLobbyUI : EOSLobby
             DrawLobbyMenu();
         }
 
-        if (GUILayout.Button("Start Game", GUILayout.MinHeight(buttonHeight)))
-        {
-            onStartGameButtonClicked?.Invoke();
-        }
+        if (isHost)
+            if (GUILayout.Button("Start Game", GUILayout.MinHeight(buttonHeight)))
+            {
+                onStartGameButtonClicked?.Invoke();
+            }
 
         GUILayout.EndScrollView();
 

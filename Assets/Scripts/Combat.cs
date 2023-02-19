@@ -44,6 +44,8 @@ public class Combat : NetworkBehaviour
 
     public override void OnStartServer()
     {
+        combatList = new List<CombatUnit[]>();
+       
         MessageBroker.Default
             .Receive<CombatUnit[]>()
             .Subscribe(AddCombatToList);

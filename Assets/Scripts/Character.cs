@@ -24,13 +24,17 @@ public class Character : NetworkBehaviour
     private void Awake()
     {
         cubeMap = FindObjectOfType<CubeMap>();
-
     }
 
     public override void OnStartClient()
     {
-        cubeMap.onFullySpawned += CmdInitializeCoordinates;
-        cubeMap.onFullySpawned += () => { Debug.Log($"OnFullySpawned On Client"); };
+        if (isOwned)
+        {
+            if (cubeMap.isFullySpawned)
+                CmdInitializeCoordinates();
+            else
+                cubeMap.onFullySpawned += CmdInitializeCoordinates;
+        }
     }
 
     [Command(requiresAuthority = false)]

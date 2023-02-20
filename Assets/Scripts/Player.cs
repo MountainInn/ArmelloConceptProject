@@ -64,7 +64,7 @@ public class Player : NetworkBehaviour
     public override void OnStartLocalPlayer()
     {
         CmdCreateCharacter(clientCharacterColor);
-        CmdCreateCharacter(clientCharacterColor);
+        // CmdCreateCharacter(clientCharacterColor);
 
         MessageBroker.Default
             .Receive<HexTile>()
@@ -221,8 +221,8 @@ public class Player : NetworkBehaviour
     [Command(requiresAuthority=false)]
     private void CmdCreateCharacter(Color characterColor)
     {
-        // if (this.character != null)
-        //     NetworkServer.Destroy(this.character.gameObject);
+        if (this.character != null)
+            NetworkServer.Destroy(this.character.gameObject);
 
         this.character = characterFactory.Create();
         this.character.characterColor = characterColor;

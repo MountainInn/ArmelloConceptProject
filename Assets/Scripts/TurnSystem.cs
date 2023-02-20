@@ -23,7 +23,7 @@ public class TurnSystem : NetworkBehaviour
     private void Awake()
     {
         var lobbyUI = FindObjectOfType<EOSLobbyUI>();
-        lobbyUI.onStartGameButtonClicked += CmdStartNextPlayerTurn;
+        lobbyUI.onStartGameButtonClicked += StartNextPlayerTurn;
     }
 
     [Server]
@@ -34,7 +34,7 @@ public class TurnSystem : NetworkBehaviour
         player.turn = null;
 
         if (currentPlayer == player)
-            CmdStartNextPlayerTurn();
+            StartNextPlayerTurn();
     }
 
     [Server]
@@ -53,7 +53,7 @@ public class TurnSystem : NetworkBehaviour
     }
 
     [Server]
-    public void CmdStartNextPlayerTurn()
+    public void StartNextPlayerTurn()
     {
         if (players.Count == 0) return;
 
@@ -74,7 +74,7 @@ public class TurnSystem : NetworkBehaviour
         turnDisposable =
             nextPlayer.turn.completed
             .IsTrue()
-            .Subscribe((b) => CmdStartNextPlayerTurn());
+            .Subscribe((b) => StartNextPlayerTurn());
 
         currentPlayer = nextPlayer;
         currentPlayerNetId = nextPlayer.netId;

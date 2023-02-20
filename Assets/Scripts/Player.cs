@@ -33,6 +33,8 @@ public class Player : NetworkBehaviour
 
     [SyncVar(hook = nameof(OnMovementPointsSync))]
     private int movementPoints;
+    private List<InfluenceTile> influenceTiles;
+
     private void OnMovementPointsSync(int ol, int ne)
     {
         if (isOwned)
@@ -104,11 +106,39 @@ public class Player : NetworkBehaviour
         MessageBroker.Default
             .Receive<MiningTile.TileMinedMsg>()
             .Where(msg => msg.player == this)
-            .Subscribe(msg =>
-            {
-                resources[msg.resourceType] += msg.amount;
-            })
+            .Subscribe(CmdAddResource)
             .AddTo(this);
+
+
+        influenceTiles = new List<InfluenceTile>();
+
+        MessageBroker.Default
+            .Receive<InfluenceTile.TileTakenMsg>()
+            .Subscribe(OnInfluenceTileTaken)
+            .AddTo(this);
+
+        turnSystem.onRoundEnd += () =>
+            influenceTiles
+            .ForEach(t => t.InfluenceEffect(this));
+    }
+
+    private void OnInfluenceTileTaken(InfluenceTile.TileTakenMsg msg)
+    {
+        if (msg.previousOwner == this)
+        {
+            Debug.Log("You lost Influence Tile");
+            influenceTiles.Remove(msg.tile);
+        }
+        else if (msg.newOwner == this)
+        {
+            Debug.Log("You took Influence Tile");
+            influenceTiles.Add(msg.tile);
+        }
+    }
+
+    public void CmdAddResource(MiningTile.TileMinedMsg msg)
+    {
+        resources[msg.resourceType] += msg.amount;
     }
 
     public override void OnStopLocalPlayer()

@@ -43,7 +43,7 @@ public partial class HexTile : NetworkBehaviour, IPointerClickHandler, IPointerE
         SetTileAction(newv);
         SetColors(newv);
     }
-    private ITileAction tileAction;
+    private UsableTile usableTile;
 
     private void Awake()
     {
@@ -88,11 +88,12 @@ public partial class HexTile : NetworkBehaviour, IPointerClickHandler, IPointerE
 
     private void SetTileAction(TileActionType tileActionType)
     {
-        tileAction = tileActionType switch
-        {
-            TileActionType.Mining => new MiningTile(ResourceType.GenericResource),
-            _ => throw new System.Exception("Not all TileActionTypes are handled")
-        };
+        usableTile = tileActionType switch
+            {
+                TileActionType.Mining => new MiningTile(ResourceType.GenericResource),
+                TileActionType.Influence => new InfluenceTileResource(ResourceType.GenericResource),
+                _ => throw new System.Exception("Not all TileActionTypes are handled")
+            };
     }
 
     private void SetColors(TileActionType tileActionType)
@@ -100,6 +101,7 @@ public partial class HexTile : NetworkBehaviour, IPointerClickHandler, IPointerE
         baseColor = tileActionType switch
             {
                 (TileActionType.Mining) => Color.green,
+                (TileActionType.Influence) => Color.cyan,
                 (_) => Color.magenta
             };
         warScreenColor = baseColor * .5f;
@@ -118,8 +120,8 @@ public partial class HexTile : NetworkBehaviour, IPointerClickHandler, IPointerE
     [Server]
     public void UseTile(Player player)
     {
-        Debug.Assert(tileAction != null);
-        tileAction.TileAction(player);
+        Debug.Assert(usableTile != null);
+        usableTile.UseTile(player);
     }
 
     public void OnPointerEnter(PointerEventData eventData)
@@ -194,9 +196,14 @@ public struct HexSyncData
 }
 
 
+public abstract class UsableTile
+{
+    abstract public void UseTile(Player player);
+}
+
 public enum TileActionType
 {
-    Mining
+    Mining, Influence
 }
 
 public interface ITileAction
@@ -209,7 +216,7 @@ public enum ResourceType
     GenericResource
 }
 
-public class MiningTile : ITileAction
+public class MiningTile : UsableTile
 {
     ResourceType resourceType;
 
@@ -218,7 +225,7 @@ public class MiningTile : ITileAction
         this.resourceType = resourceType;
     }
 
-    public void TileAction(Player player)
+    public override void UseTile(Player player)
     {
         MessageBroker.Default
             .Publish(new TileMinedMsg(){ player = player, resourceType = resourceType, amount = 1 });
@@ -229,5 +236,43 @@ public class MiningTile : ITileAction
         public Player player;
         public ResourceType resourceType;
         public int amount;
+    }
+}
+
+abstract public class InfluenceTile : UsableTile
+{
+    Player owner;
+
+    public InfluenceTile() {}
+
+    public override void UseTile(Player player)
+    {
+        MessageBroker.Default
+            .Publish(new TileTakenMsg(){ previousOwner = owner, newOwner = player, tile = this});
+
+        owner = player;
+    }
+
+    abstract public void InfluenceEffect(Player player);
+
+    public struct TileTakenMsg
+    {
+        public Player previousOwner, newOwner;
+        public InfluenceTile tile;
+    }
+}
+
+public class InfluenceTileResource : InfluenceTile
+{
+    MiningTile miningTile;
+
+    public InfluenceTileResource(ResourceType resourceType)
+    {
+        this.miningTile = new MiningTile(resourceType);
+    }
+
+    public override void InfluenceEffect(Player player)
+    {
+        miningTile.UseTile(player);
     }
 }

@@ -14,6 +14,7 @@ public class CubeMap : NetworkBehaviour
     public int mapRadius;
     public int hexagonSize = 1;
 
+    public bool isFullySpawned { get; private set; }
     public event Action onFullySpawned;
 
     private HexTile[] hexagonPrefabs;
@@ -45,12 +46,11 @@ public class CubeMap : NetworkBehaviour
                 var hex = spawned.Value;
 
                 tiles.TryAdd(hex.coordinates, hex);
-               
-                if (++spawnedTileCount == expectedTileCount)
+             
+                if (isFullySpawned = (++spawnedTileCount == expectedTileCount))
                 {
                     onFullySpawned?.Invoke();
                     spawnedTileCount = 0;
-                    Debug.Log($"OnFullySpawned");
                 }
             })
             .AddTo(this);

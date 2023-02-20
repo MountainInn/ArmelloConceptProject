@@ -45,7 +45,7 @@ public class CubeMap : NetworkBehaviour
             {
                 var hex = spawned.Value;
 
-                tiles.TryAdd(hex.coordinates, hex);
+                tiles.Add(hex.coordinates, hex);
              
                 if (isFullySpawned = (++spawnedTileCount == expectedTileCount))
                 {
@@ -60,6 +60,13 @@ public class CubeMap : NetworkBehaviour
     {
         pickedPositions = new HashSet<Vector3Int>();
         hexagonPrefabs = (HexTile[])Resources.LoadAll<HexTile>("Prefabs/3D Tiles/");
+    }
+
+    public override void OnStopClient()
+    {
+        isFullySpawned = false;
+        spawnedTileCount = 0;
+        tiles.Clear();
     }
 
     public HexTile this[Vector3Int v3]

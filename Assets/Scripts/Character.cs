@@ -61,7 +61,7 @@ public class Character : NetworkBehaviour
     [ClientRpc]
     public void RpcMove(HexTile hex, bool useTween)
     {
-        Vector3 position = cubeMap[hex.coordinates].Top;
+        Vector3 position = hex.Top;
         Vector3Int coordinates = hex.coordinates;
 
         if (useTween)

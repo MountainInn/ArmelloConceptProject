@@ -21,6 +21,9 @@ public partial class HexTile : NetworkBehaviour, IPointerClickHandler, IPointerE
     private void OnLevelSync(int oldv, int newv)
     {
         transform.DOScaleY(1 + level, .3f);
+
+        if (character)
+            character.transform.DOMoveY(1 + level + 0.5f, .3f);
     }
 
     public bool isVisible = false;

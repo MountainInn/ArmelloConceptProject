@@ -141,6 +141,7 @@ public class Player : NetworkBehaviour
             if (actionPoints < 1) return;
 
             CmdUseTile(hex);
+            CmdSpendActiongPoints(1);
         }
         else
         {

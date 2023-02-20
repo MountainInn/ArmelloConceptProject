@@ -1,39 +1,35 @@
 using System.Linq;
 using Mirror;
 using System;
-using System.Collections.Generic;
 using UniRx;
-using UniRx.Triggers;
 using MountainInn;
 using UnityEngine;
+using System.Collections.Generic;
 
 public class TurnSystem : NetworkBehaviour
 {
-    readonly SyncDictionary<uint, Player> players = new SyncDictionary<uint, Player>();
     [SyncVar] int currentPlayerIndex = -1;
 
     [SyncVar(hook = nameof(OnCurrentPlayerNetIdSync))]
     uint currentPlayerNetId = uint.MaxValue;
 
+    public List<Player> players = new List<Player>();
     [SyncVar] Player currentPlayer;
 
     ReactiveProperty<uint> playerNetIdStream = new ReactiveProperty<uint>(uint.MaxValue);
-
     IDisposable turnDisposable;
     public event Action onRoundEnd;
 
     private void Awake()
     {
         var lobbyUI = FindObjectOfType<EOSLobbyUI>();
-
         lobbyUI.onStartGameButtonClicked += CmdStartNextPlayerTurn;
     }
 
     [Server]
     public void UnregisterPlayer(Player player)
     {
-        Debug.Log($"UnRegisterPlayer");
-        players.Remove(player.netId);
+        players.Remove(player);
 
         player.turn = null;
 
@@ -52,7 +48,8 @@ public class TurnSystem : NetworkBehaviour
             })
             .AddTo(player);
 
-        players.Add(player.netId, player);
+        players.Add(player);
+        players = players.Shuffle().ToList();
     }
 
     [Server]
@@ -71,7 +68,7 @@ public class TurnSystem : NetworkBehaviour
             onRoundEnd?.Invoke();
         }
 
-        (uint nextNetId, Player nextPlayer) = players.ElementAt(currentPlayerIndex);
+        Player nextPlayer = players.ElementAt(currentPlayerIndex);
 
         turnDisposable?.Dispose();
         turnDisposable =
@@ -80,8 +77,7 @@ public class TurnSystem : NetworkBehaviour
             .Subscribe((b) => CmdStartNextPlayerTurn());
 
         currentPlayer = nextPlayer;
-
-        currentPlayerNetId = nextNetId;
+        currentPlayerNetId = nextPlayer.netId;
     }
 
     private void OnCurrentPlayerNetIdSync(uint oldNetId, uint newNetId)

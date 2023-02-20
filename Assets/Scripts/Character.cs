@@ -57,8 +57,7 @@ public class Character : NetworkBehaviour
     [ClientRpc]
     public void RpcMove(HexTile hex, bool useTween)
     {
-        Transform top = cubeMap[hex.coordinates].Top;
-        Vector3 position = top.position;
+        Vector3 position = cubeMap[hex.coordinates].Top;
         Vector3Int coordinates = hex.coordinates;
 
         if (useTween)
@@ -75,7 +74,6 @@ public class Character : NetworkBehaviour
 
         void EndTransition()
         {
-            transform.SetParent(top, true);
             CmdSetCoordinates(coordinates);
             hex.character = this;
         }

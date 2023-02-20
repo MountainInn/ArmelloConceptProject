@@ -27,7 +27,7 @@ public partial class HexTile : NetworkBehaviour, IPointerClickHandler, IPointerE
     }
 
     public bool isVisible = false;
-    public Transform Top;
+    public Vector3 Top => GetComponentInChildren<Transform>().position + new Vector3(0, 0.5f, 0);
     [SyncVar] public Character character;
 
 

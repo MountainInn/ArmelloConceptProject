@@ -33,7 +33,7 @@ public class TurnSystem : NetworkBehaviour
 
         player.turn = null;
 
-        if (currentPlayer == player)
+        if (currentPlayerNetId == player.netId)
             StartNextPlayerTurn();
     }
 

@@ -136,7 +136,7 @@ public class Player : NetworkBehaviour
 
             CmdMoveCharacter(hex);
         }
-        else if (hex.character == character)
+        else if (hex.character.isOwned)
         {
             if (actionPoints < 1) return;
 

@@ -27,14 +27,16 @@ public class Player : NetworkBehaviour
     private int actionPoints;
     private void OnActionPointsSync(int ol, int ne)
     {
-        resourcesView.UpdateActionPoints(ne);
+        if (isOwned)
+            resourcesView.UpdateActionPoints(ne);
     }
 
     [SyncVar(hook = nameof(OnMovementPointsSync))]
     private int movementPoints;
     private void OnMovementPointsSync(int ol, int ne)
     {
-        resourcesView.UpdateMovementPoints(ne);
+        if (isOwned)
+            resourcesView.UpdateMovementPoints(ne);
     }
 
     readonly SyncDictionary<ResourceType, int> resources = new SyncDictionary<ResourceType, int>();

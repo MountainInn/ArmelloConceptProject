@@ -61,7 +61,7 @@ public class TurnSystem : NetworkBehaviour
 
         currentPlayerIndex = (currentPlayerIndex + 1);
 
-        if (currentPlayerIndex == players.Count)
+        if (currentPlayerIndex >= players.Count)
         {
             currentPlayerIndex %= players.Count;
 

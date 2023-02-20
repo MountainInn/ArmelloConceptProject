@@ -167,5 +167,7 @@ MonoBehaviour:
   coordinates: {x: 0, y: 0, z: 0}
   baseType: 0
   currentType: 0
+  level: 0
+  topTransform: {fileID: 6424657900700059651}
   isVisible: 0
-  Top: {fileID: 6424657900700059651}
+  character: {fileID: 0}

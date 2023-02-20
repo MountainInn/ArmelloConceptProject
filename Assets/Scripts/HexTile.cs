@@ -26,8 +26,11 @@ public partial class HexTile : NetworkBehaviour, IPointerClickHandler, IPointerE
             character.transform.DOMoveY(1 + level + 0.5f, .3f);
     }
 
+    [SerializeField]
+    private Transform topTransform;
+
     public bool isVisible = false;
-    public Vector3 Top => GetComponentInChildren<Transform>().position + new Vector3(0, 0.5f, 0);
+    public Vector3 Top => topTransform.position + new Vector3(0, 0.5f, 0);
     [SyncVar] public Character character;
 
 

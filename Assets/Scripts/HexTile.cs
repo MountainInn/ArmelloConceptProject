@@ -218,14 +218,15 @@ public class MiningTile : ITileAction
         this.resourceType = resourceType;
     }
 
-    public void TileAction(Player player=null)
+    public void TileAction(Player player)
     {
         MessageBroker.Default
-            .Publish(new TileMinedMsg(){ resourceType = resourceType, amount = 1 });
+            .Publish(new TileMinedMsg(){ player = player, resourceType = resourceType, amount = 1 });
     }
 
     public struct TileMinedMsg
     {
+        public Player player;
         public ResourceType resourceType;
         public int amount;
     }

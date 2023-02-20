@@ -90,7 +90,8 @@ public class Player : NetworkBehaviour
                 break;
         }
 
-        resourcesView.SetResource(key, item);
+        if (isOwned)
+            resourcesView.SetResource(key, item);
     }
 
     public override void OnStartServer()
@@ -102,12 +103,10 @@ public class Player : NetworkBehaviour
 
         MessageBroker.Default
             .Receive<MiningTile.TileMinedMsg>()
+            .Where(msg => msg.player == this)
             .Subscribe(msg =>
             {
-                if (!resources.ContainsKey(msg.resourceType))
-                    resources.Add(msg.resourceType, msg.amount);
-                else
-                    resources[msg.resourceType] += msg.amount;
+                resources[msg.resourceType] += msg.amount;
             })
             .AddTo(this);
     }
@@ -121,7 +120,6 @@ public class Player : NetworkBehaviour
     [Command(requiresAuthority=false)]
     public void CmdResetPoints()
     {
-        Debug.Log("Reset Points");
         actionPoints = 5;
         movementPoints = 5;
     }

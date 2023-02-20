@@ -22,7 +22,10 @@ public class ResourcesView : MonoBehaviour
                 var newText = GameObject.Instantiate(actionPointLabel, Vector3.zero, Quaternion.identity, transform);
                 newText.transform.localEulerAngles = Vector3.zero;
                 newText.transform.localPosition = Vector3.zero;
+
                 resourceTexts.Add(r, newText);
+
+                SetResource(r, 0);
             });
     }
 

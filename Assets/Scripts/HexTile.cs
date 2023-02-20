@@ -38,7 +38,7 @@ public partial class HexTile : NetworkBehaviour, IPointerClickHandler, IPointerE
     private void OnTileActionTypeSync(TileActionType oldv, TileActionType newv)
     {
         SetTileAction(newv);
-        SetColors();
+        SetColors(newv);
     }
     private ITileAction tileAction;
 
@@ -53,6 +53,10 @@ public partial class HexTile : NetworkBehaviour, IPointerClickHandler, IPointerE
 
     public override void OnStartClient()
     {
+        SetTileAction(tileActionType);
+
+        SetColors(tileActionType);
+
         MessageBroker.Default
             .Publish(new HexTileSpawned(){ Value = this });
     }
@@ -74,7 +78,7 @@ public partial class HexTile : NetworkBehaviour, IPointerClickHandler, IPointerE
 
         SetTileAction(syncData.tileActionType);
 
-        SetColors();
+        SetColors(syncData.tileActionType);
 
         SetDirty();
     }
@@ -89,7 +93,7 @@ public partial class HexTile : NetworkBehaviour, IPointerClickHandler, IPointerE
         };
     }
 
-    private void SetColors()
+    private void SetColors(TileActionType tileActionType)
     {
         baseColor = tileActionType switch
             {
@@ -98,7 +102,7 @@ public partial class HexTile : NetworkBehaviour, IPointerClickHandler, IPointerE
             };
         warScreenColor = baseColor * .5f;
 
-        meshRenderer.material.color = baseColor;
+        ToggleVisibility(false);
     }
 
     public void OnPointerClick(PointerEventData eventData)

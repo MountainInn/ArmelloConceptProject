@@ -49,9 +49,6 @@ public class Combat : NetworkBehaviour
         MessageBroker.Default
             .Receive<CombatUnit[]>()
             .Subscribe(AddCombatToList);
-
-        FindObjectOfType<TurnSystem>()
-            .onRoundEnd += StartAllCombats;
     }
 
     [Server]
@@ -64,6 +61,8 @@ public class Combat : NetworkBehaviour
 
         var attackerConn = units[0].netIdentity.connectionToClient;
         TargetSpawnAttackMarker(attackerConn, units);
+
+        StartAllCombats();
     }
 
     [TargetRpc]

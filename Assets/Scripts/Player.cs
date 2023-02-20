@@ -199,7 +199,7 @@ public class Player : NetworkBehaviour
             return;
         }
 
-        hex.character = null;
+        cubeMap[character.coordinates].character = null;
         character.CmdMove(hex);
         CmdSpendMovementPoints(hex.moveCost);
     }

@@ -1,14 +1,12 @@
 using Mirror;
 using MountainInn;
-using System;
 using System.Linq;
-using UnityEngine;
 using Zenject;
 
 public class ArmelloNetworkManager : NetworkManager
 {
     private Player.Factory playerFactory;
-    private TurnSystem srv_turnSystem;
+    private TurnSystem turnSystem;
 
     [Inject]
     public void Construct(Player.Factory playerFactory, EOSLobbyUI lobbyUI)
@@ -23,23 +21,22 @@ public class ArmelloNetworkManager : NetworkManager
         var turnResolver = Instantiate(spawnPrefabs.Find(prefab => prefab.name == "Turn Resolver"));
         NetworkServer.Spawn(turnResolver.gameObject);
 
-        srv_turnSystem =
+        turnSystem =
             Instantiate(spawnPrefabs.Find(prefab => prefab.name == "Turn System"))
             .GetComponent<TurnSystem>();
 
-        NetworkServer.Spawn(srv_turnSystem.gameObject);
+        NetworkServer.Spawn(turnSystem.gameObject);
     }
 
     public override void OnServerAddPlayer(NetworkConnectionToClient conn)
     {
-        GameObject playerGo = playerFactory.Create().gameObject;
+        Player player = playerFactory.Create();
 
-        playerGo.name = $"Player [connId={conn.connectionId}]";
-        NetworkServer.AddPlayerForConnection(conn, playerGo);
+        player.name = $"Player [connId={conn.connectionId}]";
+        NetworkServer.AddPlayerForConnection(conn, player.gameObject);
 
-        srv_turnSystem.RegisterPlayer(playerGo.GetComponent<Player>());
+        turnSystem.RegisterPlayer(player);
     }
-
 
     public override void OnServerDisconnect(NetworkConnectionToClient conn)
     {
@@ -48,7 +45,7 @@ public class ArmelloNetworkManager : NetworkManager
             .Single(netid => netid.GetComponent<Player>())
             .GetComponent<Player>();
 
-        srv_turnSystem.UnregisterPlayer(disconnectedPlayer);
+        turnSystem.UnregisterPlayer(disconnectedPlayer);
 
         base.OnServerDisconnect(conn);
     }

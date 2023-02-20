@@ -29,18 +29,6 @@ public class TurnSystem : NetworkBehaviour
         lobbyUI.onStartGameButtonClicked += CmdStartNextPlayerTurn;
     }
 
-    [Command(requiresAuthority = false)]
-    public void CmdRegisterPlayer(Player player)
-    {
-        RegisterPlayer(player);
-    }
-
-    [Command(requiresAuthority = false)]
-    public void CmdUnregisterPlayer(Player player)
-    {
-        UnregisterPlayer(player);
-    }
-
     [Server]
     public void UnregisterPlayer(Player player)
     {

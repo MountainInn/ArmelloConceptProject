@@ -85,7 +85,6 @@ public partial class HexTile : NetworkBehaviour, IPointerClickHandler, IPointerE
 
     private void SetTileAction(TileActionType tileActionType)
     {
-        Debug.Log($"SetTileAction");
         tileAction = tileActionType switch
         {
             TileActionType.Mining => new MiningTile(ResourceType.GenericResource),

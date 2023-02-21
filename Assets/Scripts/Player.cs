@@ -24,7 +24,7 @@ public class Player : NetworkBehaviour
     private ResourcesView resourcesView;
 
     [SyncVar(hook = nameof(OnActionPointsSync))]
-    private int actionPoints;
+    public int actionPoints;
     private void OnActionPointsSync(int ol, int ne)
     {
         if (isOwned)
@@ -34,6 +34,7 @@ public class Player : NetworkBehaviour
     [SyncVar(hook = nameof(OnMovementPointsSync))]
     private int movementPoints;
     private List<InfluenceTile> influenceTiles;
+    private FlagPool flagPool;
 
     private void OnMovementPointsSync(int ol, int ne)
     {
@@ -76,6 +77,7 @@ public class Player : NetworkBehaviour
         turnView.onEndTurnClicked += CmdEndTurn;
 
         resources.Callback += OnResourcesSync;
+        flagPool = FindObjectOfType<FlagPool>();
     }
 
     private void OnResourcesSync(SyncIDictionary<ResourceType, int>.Operation op, ResourceType key, int item)
@@ -109,7 +111,7 @@ public class Player : NetworkBehaviour
             .Subscribe(CmdAddResource)
             .AddTo(this);
 
-
+       
         influenceTiles = new List<InfluenceTile>();
 
         MessageBroker.Default
@@ -117,23 +119,42 @@ public class Player : NetworkBehaviour
             .Subscribe(OnInfluenceTileTaken)
             .AddTo(this);
 
-        turnSystem.onRoundEnd += () =>
-            influenceTiles
-            .ForEach(t => t.InfluenceEffect(this));
+        MessageBroker.Default
+            .Receive<TurnSystem.OnRoundEnd>()
+            .Subscribe(msg =>
+            {
+                influenceTiles
+                    .ForEach(t => t.InfluenceEffect(this));
+            })
+            .AddTo(this);
     }
 
+    [Server]
     private void OnInfluenceTileTaken(InfluenceTile.TileTakenMsg msg)
     {
-        if (msg.previousOwner == this)
-        {
-            Debug.Log("You lost Influence Tile");
-            influenceTiles.Remove(msg.tile);
-        }
-        else if (msg.newOwner == this)
+        if (msg.newOwner == this)
         {
             Debug.Log("You took Influence Tile");
             influenceTiles.Add(msg.tile);
+            RpcPutFlagOnInfluenceTile(this, msg.hexTile);
         }
+        else if (msg.previousOwner == this)
+        {
+            Debug.Log("You lost Influence Tile");
+            influenceTiles.Remove(msg.tile);
+            RpcRemoveFlagFromInfluenceTile(this, msg.hexTile);
+        }
+    }
+
+    [ClientRpc]
+    private void RpcPutFlagOnInfluenceTile(Player player, HexTile tile)
+    {
+        var flag = flagPool.Rent(player, tile);
+    }
+    [ClientRpc]
+    private void RpcRemoveFlagFromInfluenceTile(Player player, HexTile tile)
+    {
+        flagPool.Return(player, tile);
     }
 
     public void CmdAddResource(MiningTile.TileMinedMsg msg)
@@ -154,6 +175,7 @@ public class Player : NetworkBehaviour
         movementPoints = 5;
     }
 
+    [Client]
     private void OnHexClicked(HexTile hex)
     {
         if (!turnStarted) return;
@@ -163,19 +185,22 @@ public class Player : NetworkBehaviour
             if (movementPoints < hex.moveCost) return;
 
             CmdMoveCharacter(hex);
+            CmdSpendMovementPoints(hex.moveCost);
         }
         else if (hex.character.isOwned)
         {
             if (actionPoints < 1) return;
+            if (!hex.CanUseTile(this)) return;
 
             CmdUseTile(hex);
-            CmdSpendActiongPoints(1);
+            CmdSpendActionPoints(1);
         }
         else
         {
             if (movementPoints < 1) return;
 
             CmdAttackOtherCharacter(hex);
+            CmdSpendMovementPoints(1);
         }
     }
 
@@ -188,8 +213,6 @@ public class Player : NetworkBehaviour
     [Command(requiresAuthority=false)]
     private void CmdAttackOtherCharacter(HexTile hex)
     {
-        CmdSpendMovementPoints(1);
-
         CombatUnit[] units =
             new [] { character, hex.character }
             .Select(ch => ch.combatUnit)
@@ -230,7 +253,6 @@ public class Player : NetworkBehaviour
 
         cubeMap[character.coordinates].character = null;
         character.CmdMove(hex);
-        CmdSpendMovementPoints(hex.moveCost);
     }
 
     [Command(requiresAuthority=false)]
@@ -240,7 +262,7 @@ public class Player : NetworkBehaviour
         Debug.Assert(movementPoints >= 0);
     }
     [Command(requiresAuthority=false)]
-    private void CmdSpendActiongPoints(int amount)
+    private void CmdSpendActionPoints(int amount)
     {
         actionPoints -= amount;
         Debug.Assert(actionPoints >= 0);
@@ -254,6 +276,7 @@ public class Player : NetworkBehaviour
 
         this.character = characterFactory.Create();
         this.character.characterColor = characterColor;
+        this.character.player = this;
 
         NetworkServer.Spawn(this.character.gameObject, this.connectionToClient);
     }

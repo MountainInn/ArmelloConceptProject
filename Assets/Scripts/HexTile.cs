@@ -20,17 +20,22 @@ public partial class HexTile : NetworkBehaviour, IPointerClickHandler, IPointerE
 
     private void OnLevelSync(int oldv, int newv)
     {
-        transform.DOScaleY(1 + level, .3f);
+        transform.DOScaleY(tileScale, .3f);
 
         if (character)
-            character.transform.DOMoveY(1 + level + 0.5f, .3f);
+            character.transform.DOMoveY(Top.y, .3f);
+
+        if (flag)
+            flag.transform.DOMoveY(Top.y, .3f);
     }
+    private float tileScale => 1 + level;
+    private float tileHeight => tileScale * 0.5f;
 
     [SerializeField]
     private Transform topTransform;
 
     public bool isVisible = false;
-    public Vector3 Top => topTransform.position + new Vector3(0, 0.5f, 0);
+    public Vector3 Top => topTransform.position;
     [SyncVar] public Character character;
 
 
@@ -43,8 +48,9 @@ public partial class HexTile : NetworkBehaviour, IPointerClickHandler, IPointerE
         SetTileAction(newv);
         SetColors(newv);
     }
-    private UsableTile usableTile;
-
+    [SyncVar]
+    public UsableTile usableTile;
+    internal Transform flag;
     private void Awake()
     {
         meshRenderer = GetComponent<MeshRenderer>();
@@ -90,8 +96,9 @@ public partial class HexTile : NetworkBehaviour, IPointerClickHandler, IPointerE
     {
         usableTile = tileActionType switch
             {
-                TileActionType.Mining => new MiningTile(ResourceType.GenericResource),
-                TileActionType.Influence => new InfluenceTileResource(ResourceType.GenericResource),
+                TileActionType.Mining => new MiningTile(this, ResourceType.GenericResource),
+                TileActionType.Influence => new InfluenceTileResource(this, ResourceType.GenericResource),
+                TileActionType.Bonus => new BonusTileCharacterHealth(this),
                 _ => throw new System.Exception("Not all TileActionTypes are handled")
             };
     }
@@ -102,6 +109,7 @@ public partial class HexTile : NetworkBehaviour, IPointerClickHandler, IPointerE
             {
                 (TileActionType.Mining) => Color.green,
                 (TileActionType.Influence) => Color.cyan,
+                (TileActionType.Bonus) => new Color(.8f, .6f, .3f),
                 (_) => Color.magenta
             };
         warScreenColor = baseColor * .5f;
@@ -176,6 +184,18 @@ public partial class HexTile : NetworkBehaviour, IPointerClickHandler, IPointerE
     {
         meshRenderer.material.color = Color.blue * 0.15f;
     }
+
+    [Client]
+    public bool CanUseTile(Player player)
+    {
+        if (usableTile is InfluenceTile influenceTile)
+        {
+            return influenceTile.owner != player;
+        }
+
+        return true;
+    }
+
     public void HighlightStart()
     {
         meshRenderer.material.color = Color.blue * 0.15f;
@@ -198,17 +218,19 @@ public struct HexSyncData
 
 public abstract class UsableTile
 {
+    public HexTile hexTile;
+
+    protected UsableTile(HexTile hexTile)
+    {
+        this.hexTile = hexTile;
+    }
+
     abstract public void UseTile(Player player);
 }
 
 public enum TileActionType
 {
-    Mining, Influence
-}
-
-public interface ITileAction
-{
-    void TileAction(Player player);
+    Mining, Influence, Bonus
 }
 
 public enum ResourceType
@@ -218,9 +240,10 @@ public enum ResourceType
 
 public class MiningTile : UsableTile
 {
-    ResourceType resourceType;
+    [SyncVar]
+    public ResourceType resourceType;
 
-    public MiningTile(ResourceType resourceType)
+    public MiningTile(HexTile hexTile, ResourceType resourceType) : base(hexTile)
     {
         this.resourceType = resourceType;
     }
@@ -241,14 +264,20 @@ public class MiningTile : UsableTile
 
 abstract public class InfluenceTile : UsableTile
 {
-    Player owner;
+    [SyncVar]
+    public Player owner;
 
-    public InfluenceTile() {}
+    protected InfluenceTile(HexTile hexTile) : base(hexTile)
+    {
+    }
 
     public override void UseTile(Player player)
     {
+        if (owner == player)
+            return;
+       
         MessageBroker.Default
-            .Publish(new TileTakenMsg(){ previousOwner = owner, newOwner = player, tile = this});
+            .Publish(new TileTakenMsg(){ previousOwner = owner, newOwner = player, tile = this, hexTile = hexTile});
 
         owner = player;
     }
@@ -259,16 +288,18 @@ abstract public class InfluenceTile : UsableTile
     {
         public Player previousOwner, newOwner;
         public InfluenceTile tile;
+        public HexTile hexTile;
     }
 }
 
 public class InfluenceTileResource : InfluenceTile
 {
-    MiningTile miningTile;
+    [SyncVar]
+    public MiningTile miningTile;
 
-    public InfluenceTileResource(ResourceType resourceType)
+    public InfluenceTileResource(HexTile hexTile, ResourceType resourceType) : base(hexTile)
     {
-        this.miningTile = new MiningTile(resourceType);
+        this.miningTile = new MiningTile(hexTile, resourceType);
     }
 
     public override void InfluenceEffect(Player player)
@@ -276,3 +307,125 @@ public class InfluenceTileResource : InfluenceTile
         miningTile.UseTile(player);
     }
 }
+
+
+abstract public class BonusTile : UsableTile
+{
+    protected BonusTile(HexTile hexTile) : base(hexTile)
+    {
+    }
+
+    public override void UseTile(Player player)
+    {
+        Bonus(player);
+    }
+
+    abstract public void Bonus(Player player);
+}
+
+public class BonusTileCharacterHealth : BonusTile
+{
+    public BonusTileCharacterHealth(HexTile hexTile) : base(hexTile)
+    {
+    }
+
+    public override void Bonus(Player player)
+    {
+        player.character.combatUnit.health += 10;
+    }
+}
+
+static public class UsableTileSerializer
+{
+    const byte
+        NO_SUBTYPE=0;
+    const byte
+        MINING=1;
+
+    const byte
+        INFLUENCE=2;
+    const byte
+        INF_RESOURCE=1;
+
+    const byte
+        BONUS=3;
+    const byte
+        BONUS_CHARACTER_HEALTH=1;
+
+    public static void WriteUsableTile(this NetworkWriter writer, UsableTile usableTile)
+    {
+        writer.WriteNetworkBehaviour(usableTile.hexTile);
+       
+        if (usableTile is MiningTile miningTile)
+        {
+            writer.WriteByte(MINING);
+            writer.WriteByte(NO_SUBTYPE);
+            writer.WriteInt((int)miningTile.resourceType);
+        }
+        else if (usableTile is InfluenceTile influenceTile)
+        {
+            writer.WriteByte(INFLUENCE);
+
+            if (influenceTile is InfluenceTileResource resTile)
+            {
+                writer.WriteByte(INF_RESOURCE);
+                writer.WriteInt((int)resTile.miningTile.resourceType);
+                writer.WriteUsableTile(resTile.miningTile);
+            }
+
+            if (influenceTile.owner)
+                writer.WriteGameObject(influenceTile.owner.gameObject);
+            else
+                writer.WriteGameObject(null);
+        }
+        else if (usableTile is BonusTile bonusTile)
+        {
+            writer.WriteByte(BONUS);
+
+            if (bonusTile is BonusTileCharacterHealth charHealth)
+            {
+                writer.WriteByte(BONUS_CHARACTER_HEALTH);
+            }
+        }
+    }
+
+    public static UsableTile ReadUsableTile(this NetworkReader reader)
+    {
+        HexTile hexTile = reader.ReadNetworkBehaviour<HexTile>();
+        byte type = reader.ReadByte();
+        byte subtype = reader.ReadByte();
+
+        switch (type)
+        {
+            case MINING:
+                return new MiningTile(hexTile, (ResourceType)reader.ReadInt());
+
+            case INFLUENCE:
+                Player owner = reader.ReadGameObject().GetComponent<Player>();
+                switch (subtype)
+                {
+                    case INF_RESOURCE:
+                        return new InfluenceTileResource(hexTile, (ResourceType)reader.ReadInt())
+                        {
+                            miningTile = (MiningTile)reader.ReadUsableTile(),
+                            owner = owner
+                        };
+                    default:
+                        throw new System.Exception($"Invalid InfluenceTile subtype");
+                }
+
+            case BONUS:
+                switch (subtype)
+                {
+                    case BONUS_CHARACTER_HEALTH:
+                        return new BonusTileCharacterHealth(hexTile);
+                    default:
+                        throw new System.Exception($"Invalid BonusTile subtype");
+                }
+
+            default:
+                throw new System.Exception($"Invalid UsableTile supertype");
+        };
+    }
+}
+

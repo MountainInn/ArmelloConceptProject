@@ -21,6 +21,8 @@ public class Character : NetworkBehaviour
     public TextMeshPro textMeshPro;
     public event Action<Character> onCharacterMoved;
 
+    public Player player;
+
     private void Awake()
     {
         cubeMap = FindObjectOfType<CubeMap>();
@@ -80,6 +82,11 @@ public class Character : NetworkBehaviour
         {
             CmdSetCoordinates(coordinates);
             hex.character = this;
+
+            if (hex.usableTile is BonusTile bonusTile)
+            {
+                bonusTile.UseTile(player);
+            }
         }
     }
 

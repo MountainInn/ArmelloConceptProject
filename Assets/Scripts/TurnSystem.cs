@@ -18,7 +18,6 @@ public class TurnSystem : NetworkBehaviour
 
     ReactiveProperty<uint> playerNetIdStream = new ReactiveProperty<uint>(uint.MaxValue);
     IDisposable turnDisposable;
-    public event Action onRoundEnd;
 
     private void Awake()
     {
@@ -65,7 +64,7 @@ public class TurnSystem : NetworkBehaviour
         {
             currentPlayerIndex %= players.Count;
 
-            onRoundEnd?.Invoke();
+            MessageBroker.Default.Publish(new OnRoundEnd());
         }
 
         Player nextPlayer = players.ElementAt(currentPlayerIndex);
@@ -84,4 +83,6 @@ public class TurnSystem : NetworkBehaviour
     {
         playerNetIdStream.Value = newNetId;
     }
+
+    public struct OnRoundEnd {}
 }

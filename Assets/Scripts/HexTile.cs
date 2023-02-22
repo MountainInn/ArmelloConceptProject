@@ -252,6 +252,8 @@ public class MiningTile : UsableTile
     {
         MessageBroker.Default
             .Publish(new TileMinedMsg(){ player = player, resourceType = resourceType, amount = 1 });
+        Debug.Log($"MiningTile: +1 Generic Resource");
+
     }
 
     public struct TileMinedMsg
@@ -305,6 +307,8 @@ public class InfluenceTileResource : InfluenceTile
     public override void InfluenceEffect(Player player)
     {
         miningTile.UseTile(player);
+        Debug.Log($"InfluenceTile: +1 Generic resource");
+
     }
 }
 
@@ -332,6 +336,7 @@ public class TriggerTileCharacterHealth : TriggerTile
     public override void Trigger(Player player)
     {
         player.character.combatUnit.health += 10;
+        Debug.Log($"TriggerTIle: +10 Health");
     }
 }
 

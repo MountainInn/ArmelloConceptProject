@@ -98,7 +98,7 @@ public partial class HexTile : NetworkBehaviour, IPointerClickHandler, IPointerE
             {
                 TileActionType.Mining => new MiningTile(this, ResourceType.GenericResource),
                 TileActionType.Influence => new InfluenceTileResource(this, ResourceType.GenericResource),
-                TileActionType.Bonus => new BonusTileCharacterHealth(this),
+                TileActionType.Trigger => new TriggerTileCharacterHealth(this),
                 _ => throw new System.Exception("Not all TileActionTypes are handled")
             };
     }
@@ -109,7 +109,7 @@ public partial class HexTile : NetworkBehaviour, IPointerClickHandler, IPointerE
             {
                 (TileActionType.Mining) => Color.green,
                 (TileActionType.Influence) => Color.cyan,
-                (TileActionType.Bonus) => new Color(.8f, .6f, .3f),
+                (TileActionType.Trigger) => new Color(.8f, .6f, .3f),
                 (_) => Color.magenta
             };
         warScreenColor = baseColor * .5f;
@@ -230,7 +230,7 @@ public abstract class UsableTile
 
 public enum TileActionType
 {
-    Mining, Influence, Bonus
+    Mining, Influence, Trigger
 }
 
 public enum ResourceType
@@ -309,27 +309,27 @@ public class InfluenceTileResource : InfluenceTile
 }
 
 
-abstract public class BonusTile : UsableTile
+abstract public class TriggerTile : UsableTile
 {
-    protected BonusTile(HexTile hexTile) : base(hexTile)
+    protected TriggerTile(HexTile hexTile) : base(hexTile)
     {
     }
 
     public override void UseTile(Player player)
     {
-        Bonus(player);
+        Trigger(player);
     }
 
-    abstract public void Bonus(Player player);
+    abstract public void Trigger(Player player);
 }
 
-public class BonusTileCharacterHealth : BonusTile
+public class TriggerTileCharacterHealth : TriggerTile
 {
-    public BonusTileCharacterHealth(HexTile hexTile) : base(hexTile)
+    public TriggerTileCharacterHealth(HexTile hexTile) : base(hexTile)
     {
     }
 
-    public override void Bonus(Player player)
+    public override void Trigger(Player player)
     {
         player.character.combatUnit.health += 10;
     }
@@ -348,9 +348,9 @@ static public class UsableTileSerializer
         INF_RESOURCE=1;
 
     const byte
-        BONUS=3;
+        TRIGGER=3;
     const byte
-        BONUS_CHARACTER_HEALTH=1;
+        TRIGGER_CHARACTER_HEALTH=1;
 
     public static void WriteUsableTile(this NetworkWriter writer, UsableTile usableTile)
     {
@@ -378,13 +378,13 @@ static public class UsableTileSerializer
             else
                 writer.WriteGameObject(null);
         }
-        else if (usableTile is BonusTile bonusTile)
+        else if (usableTile is TriggerTile triggerTile)
         {
-            writer.WriteByte(BONUS);
+            writer.WriteByte(TRIGGER);
 
-            if (bonusTile is BonusTileCharacterHealth charHealth)
+            if (triggerTile is TriggerTileCharacterHealth charHealth)
             {
-                writer.WriteByte(BONUS_CHARACTER_HEALTH);
+                writer.WriteByte(TRIGGER_CHARACTER_HEALTH);
             }
         }
     }
@@ -414,13 +414,13 @@ static public class UsableTileSerializer
                         throw new System.Exception($"Invalid InfluenceTile subtype");
                 }
 
-            case BONUS:
+            case TRIGGER:
                 switch (subtype)
                 {
-                    case BONUS_CHARACTER_HEALTH:
-                        return new BonusTileCharacterHealth(hexTile);
+                    case TRIGGER_CHARACTER_HEALTH:
+                        return new TriggerTileCharacterHealth(hexTile);
                     default:
-                        throw new System.Exception($"Invalid BonusTile subtype");
+                        throw new System.Exception($"Invalid TriggerTile subtype");
                 }
 
             default:

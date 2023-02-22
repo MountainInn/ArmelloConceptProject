@@ -83,7 +83,7 @@ public class Character : NetworkBehaviour
             CmdSetCoordinates(coordinates);
             hex.character = this;
 
-            if (hex.usableTile is BonusTile bonusTile)
+            if (hex.usableTile is TriggerTile bonusTile)
             {
                 bonusTile.UseTile(player);
             }

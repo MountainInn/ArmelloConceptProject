@@ -6,4 +6,5 @@ public class CharacterScriptableObject : ScriptableObject
     public Sprite characterSprite;
     public string characterName;
     public Character.UtilityStats utilityStats;
+    public CombatUnit.NewStats combatStats;
 }

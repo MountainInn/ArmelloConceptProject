@@ -3,6 +3,24 @@ using UniRx;
 
 public class CombatUnit : NetworkBehaviour
 {
+    public struct NewStats
+    {
+        public int
+            attack,
+            defense,
+            precision,
+            agility;
+
+        public override string ToString()
+        {
+            return
+                ("Attack: " + attack + "\n").PadLeft(18) +
+                ("Defense: " + defense + "\n").PadLeft(18) +
+                ("Precision: " + precision + "\n").PadLeft(18) +
+                ("Agility: " + agility + "\n").PadLeft(18);
+        }
+
+    }
     public struct Stats
     {
         public int

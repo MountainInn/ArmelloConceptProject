@@ -19,7 +19,10 @@ public class CharacterCardView : MonoBehaviour
 
         spriteRenderer.sprite = characterSO.characterSprite;
         characterName.text = characterSO.characterName;
-        characterStats.text = characterSO.utilityStats.ToString();
+        characterStats.text =
+            characterSO.utilityStats.ToString()
+            + "\n" +
+            characterSO.combatStats.ToString();
     }
 
     public CharacterScriptableObject GetCharacterScriptableObject()

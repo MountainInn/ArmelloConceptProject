@@ -21,6 +21,9 @@ public class Character : NetworkBehaviour
     public TextMeshPro textMeshPro;
     public event Action<Character> onCharacterMoved;
 
+    [SyncVar]
+    public UtilityStats utilityStats;
+
     public Player player;
 
     private void Awake()
@@ -121,7 +124,7 @@ public class Character : NetworkBehaviour
     {
         cubeMap.tiles[coordinates].ToggleVisibility(true);
 
-        cubeMap.NeighbourTilesInRadius(moveRadius, coordinates)
+        cubeMap.NeighbourTilesInRadius(utilityStats.perception, coordinates)
             .ToList()
             .ForEach(tile => tile.ToggleVisibility(true));
     }
@@ -135,4 +138,24 @@ public class Character : NetworkBehaviour
     {
     }
 
+    public struct UtilityStats
+    {
+        [SyncVar]
+        public int
+            health,
+            speed,
+            stamina,
+            perception,
+            thriftiness;
+
+        public override string ToString()
+        {
+            return
+                ("Health: " + health + "\n").PadLeft(18) +
+                ("Speed: " + speed + "\n").PadLeft(18) +
+                ("Stamina: " + stamina + "\n").PadLeft(18) +
+                ("Perception: " + perception + "\n").PadLeft(18) +
+                ("Thriftiness: " + thriftiness + "\n").PadLeft(18);
+        }
+    }
 }

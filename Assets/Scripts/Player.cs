@@ -4,8 +4,6 @@ using Mirror;
 using UnityEngine;
 using Zenject;
 using UniRx;
-using MountainInn;
-using System;
 
 public class Player : NetworkBehaviour
 {
@@ -171,8 +169,8 @@ public class Player : NetworkBehaviour
     [Command(requiresAuthority=false)]
     public void CmdResetPoints()
     {
-        actionPoints = 5;
-        movementPoints = 5;
+        actionPoints = character.utilityStats.stamina;
+        movementPoints = character.utilityStats.speed;
     }
 
     [Client]

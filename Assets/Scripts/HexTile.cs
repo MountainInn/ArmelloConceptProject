@@ -406,6 +406,10 @@ static public class UsableTileSerializer
                 writer.WriteByte(TRIGGER_CHARACTER_HEALTH);
             }
         }
+        else
+        {
+            Debug.Log("ELSE");
+        }
     }
 
     public static UsableTile ReadUsableTile(this NetworkReader reader)

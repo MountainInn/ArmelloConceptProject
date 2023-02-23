@@ -26,6 +26,8 @@ public class Character : NetworkBehaviour
     public UtilityStats utilityStats;
 
     public Player player;
+    public Inventory inventory;
+
 
     public void SetCharacterSO(CharacterScriptableObject characterSO)
     {

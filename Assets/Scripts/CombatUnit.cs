@@ -1,8 +1,15 @@
+using System;
 using Mirror;
 using UniRx;
 
 public class CombatUnit : NetworkBehaviour
 {
+    [SyncVar]
+    public NewStats
+        characterStats,
+        equipmentStats,
+        totalStats;
+
     public struct NewStats
     {
         public int
@@ -30,8 +37,8 @@ public class CombatUnit : NetworkBehaviour
                 ("Precision: " + precision + "\n").PadLeft(18) +
                 ("Agility: " + agility + "\n").PadLeft(18);
         }
-
     }
+
     public struct Stats
     {
         public int
@@ -114,4 +121,9 @@ public class CombatUnit : NetworkBehaviour
         healthReactive.Value = newH;
     }
 
+    public void UpdateEquipmentStats(NewStats updatedEquipmentStats)
+    {
+        this.equipmentStats = updatedEquipmentStats;
+        totalStats = characterStats + equipmentStats;
+    }
 }

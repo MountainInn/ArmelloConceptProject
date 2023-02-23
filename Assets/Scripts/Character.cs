@@ -19,6 +19,7 @@ public class Character : NetworkBehaviour
     public CubeMap cubeMap;
     public CombatUnit combatUnit => GetComponent<CombatUnit>();
     public TextMeshPro textMeshPro;
+    new public SpriteRenderer renderer;
     public event Action<Character> onCharacterMoved;
 
     [SyncVar]
@@ -26,9 +27,19 @@ public class Character : NetworkBehaviour
 
     public Player player;
 
+    public void SetCharacterSO(CharacterScriptableObject characterSO)
+    {
+        this.gameObject.name = player.name +" "+ characterSO.characterName;
+        this.renderer.sprite = characterSO.characterSprite;
+        this.combatUnit.characterStats = characterSO.combatStats;
+        this.utilityStats = characterSO.utilityStats;
+    }
+
     private void Awake()
     {
         cubeMap = FindObjectOfType<CubeMap>();
+        var characterSelectionView = FindObjectOfType<CharacterSelectionView>();
+        SetCharacterSO(characterSelectionView.GetSelectedCharacter());
     }
 
     public override void OnStartClient()

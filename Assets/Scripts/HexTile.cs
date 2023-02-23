@@ -420,7 +420,8 @@ static public class UsableTileSerializer
                 return new MiningTile(hexTile, (ResourceType)reader.ReadInt());
 
             case INFLUENCE:
-                Player owner = reader.ReadGameObject().GetComponent<Player>();
+                GameObject ownerGO = reader.ReadGameObject();
+                Player owner = (ownerGO != null) ? ownerGO.GetComponent<Player>() : null;
                 switch (subtype)
                 {
                     case INF_RESOURCE:

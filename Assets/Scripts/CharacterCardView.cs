@@ -7,7 +7,7 @@ using TMPro;
 public class CharacterCardView : MonoBehaviour
 {
     [SerializeField] public Button button;
-    [SerializeField] SpriteRenderer spriteRenderer;
+    [SerializeField] Image portrait;
     [SerializeField] TextMeshProUGUI characterName;
     [SerializeField] TextMeshProUGUI characterStats;
 
@@ -17,7 +17,7 @@ public class CharacterCardView : MonoBehaviour
     {
         this.characterSO = characterSO;
 
-        spriteRenderer.sprite = characterSO.characterSprite;
+        portrait.sprite = characterSO.characterSprite;
         characterName.text = characterSO.characterName;
         characterStats.text =
             characterSO.utilityStats.ToString()

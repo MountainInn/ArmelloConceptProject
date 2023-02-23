@@ -180,7 +180,11 @@ public class Player : NetworkBehaviour
         }
         else
         {
-            if (movementPoints < 1) return;
+            if (movementPoints < 1)
+                return;
+
+            if (cubeMap.Distance(character.coordinates, hex.coordinates) != 1)
+                return;
 
             CmdAttackOtherCharacter(hex);
             CmdSpendMovementPoints(1);

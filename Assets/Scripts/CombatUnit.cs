@@ -10,6 +10,7 @@ public class CombatUnit : NetworkBehaviour
         equipmentStats,
         totalStats;
 
+    [System.Serializable]
     public struct NewStats
     {
         public int
@@ -32,10 +33,10 @@ public class CombatUnit : NetworkBehaviour
         public override string ToString()
         {
             return
-                ("Attack: " + attack + "\n").PadLeft(18) +
-                ("Defense: " + defense + "\n").PadLeft(18) +
-                ("Precision: " + precision + "\n").PadLeft(18) +
-                ("Agility: " + agility + "\n").PadLeft(18);
+                ("Attack: " + attack + "\n").PadLeft(20, ' ') +
+                ("Defense: " + defense + "\n").PadLeft(20, ' ') +
+                ("Precision: " + precision + "\n").PadLeft(20, ' ') +
+                ("Agility: " + agility + "\n").PadLeft(20, ' ');
         }
     }
 

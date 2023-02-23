@@ -3,22 +3,39 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using System.Linq;
+using Zenject;
 
 public class CharacterSelectionView : MonoBehaviour
 {
+    [SerializeField] RectTransform content;
+
     CharacterCardView[] characterCards;
     CharacterCardView selected;
 
+    ColorBlock defaultColorBlock;
+
+    [Inject]
+    public void Construct(EOSLobbyUI lobbyUI)
+    {
+        lobbyUI.onStartGameButtonClicked += () => gameObject.SetActive(false);
+        lobbyUI.onPreLeaveLobbySuccess += () => gameObject.SetActive(true);
+    }
+
+
     void Awake()
     {
-        var characterCardPrefab = Resources.Load<CharacterCardView>("Prefabs/CharacterCard");
-        var characterSOs = Resources.LoadAll<CharacterScriptableObject>("CharacterSOs");
+        var characterCardPrefab = Resources.Load<CharacterCardView>("Prefabs/Character Card");
+        var characterSOs = Resources.LoadAll<CharacterScriptableObject>("Characters");
 
         characterSOs
             .ToList()
             .ForEach(so =>
             {
-                var newCard = GameObject.Instantiate(characterCardPrefab, Vector3.zero, Quaternion.identity, transform);
+                var newCard = GameObject.Instantiate(characterCardPrefab, Vector3.zero, Quaternion.identity, content);
+
+                newCard.transform.localEulerAngles = Vector3.zero;
+                newCard.transform.localPosition = Vector3.zero;
+                newCard.transform.localScale = Vector3.one;
 
                 newCard.SetScriptableObject(so);
                 newCard.button.onClick.AddListener(()=> RadioSelect(newCard));
@@ -28,23 +45,32 @@ public class CharacterSelectionView : MonoBehaviour
     void Start()
     {
         var firstCard = GetComponentInChildren<CharacterCardView>();
+
+        defaultColorBlock = firstCard.button.colors;
+
         RadioSelect(firstCard);
     }
 
     void RadioSelect(CharacterCardView card)
     {
-        ColorBlock colorBlock = default;
+        if (selected == card)
+            return;
+
+        ColorBlock colorBlock = defaultColorBlock;
 
         if (selected != null)
         {
-            colorBlock = selected.button.colors;
-            colorBlock.normalColor = Color.white;
             selected.button.colors = colorBlock;
         }
        
         selected = card;
 
-        colorBlock.normalColor = Color.Lerp(Color.white, Color.green, .1f);
+        colorBlock.normalColor = Color.Lerp(colorBlock.normalColor, Color.green, .3f);
+        colorBlock.pressedColor = Color.Lerp(colorBlock.pressedColor, Color.green, .3f);
+        colorBlock.disabledColor = Color.Lerp(colorBlock.disabledColor, Color.green, .3f);
+        colorBlock.selectedColor = Color.Lerp(colorBlock.selectedColor, Color.green, .3f);
+        colorBlock.highlightedColor = Color.Lerp(colorBlock.highlightedColor, Color.green, .3f);
+
         selected.button.colors = colorBlock;
     }
 

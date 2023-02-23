@@ -1,6 +1,6 @@
 using UnityEngine;
 
-[AddComponentMenu("ScriptableObjects/CharacterScriptableObject", 0)]
+[CreateAssetMenu(fileName = "CharacterSO", menuName = "ScriptableObjects/CharacterScriptableObject", order = 1)]
 public class CharacterScriptableObject : ScriptableObject
 {
     public Sprite characterSprite;

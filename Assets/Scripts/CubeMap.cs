@@ -38,7 +38,7 @@ public class CubeMap : NetworkBehaviour
         tiles = new Dictionary<Vector3Int, HexTile>();
 
         expectedTileCount = GetTileCount();
-       
+
         MessageBroker.Default
             .Receive<HexTile.HexTileSpawned>()
             .Subscribe(spawned =>
@@ -46,7 +46,7 @@ public class CubeMap : NetworkBehaviour
                 var hex = spawned.Value;
 
                 tiles.Add(hex.coordinates, hex);
-             
+
                 if (isFullySpawned = (++spawnedTileCount == expectedTileCount))
                 {
                     onFullySpawned?.Invoke();
@@ -83,7 +83,7 @@ public class CubeMap : NetworkBehaviour
     [Server]
     public void Generate(int radius)
     {
-        expectedTileCount = GetTileCount() ;
+        expectedTileCount = GetTileCount();
 
         if (tiles.Any())
         {
@@ -245,7 +245,7 @@ public class CubeMap : NetworkBehaviour
                 res = res.Concat(neighbours[i]);
             else
             {
-                res = res.Concat(TileCoordinatesRing(i));
+                res = res.Concat(TileCoordinatesRing(i + 1));
             }
         }
 

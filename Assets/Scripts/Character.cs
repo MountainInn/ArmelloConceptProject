@@ -31,8 +31,8 @@ public class Character : NetworkBehaviour
 
     public void SetCharacterSO(CharacterScriptableObject characterSO)
     {
-        this.gameObject.name = player.name +" "+ characterSO.characterName;
-        this.renderer.sprite = characterSO.characterSprite;
+        // this.gameObject.name = player.name +" "+ characterSO.characterName;
+        // this.renderer.sprite = characterSO.characterSprite;
         this.combatUnit.characterStats = characterSO.combatStats;
         this.utilityStats = characterSO.utilityStats;
     }
@@ -151,6 +151,7 @@ public class Character : NetworkBehaviour
     {
     }
 
+    [System.Serializable]
     public struct UtilityStats
     {
         [SyncVar]
@@ -164,11 +165,11 @@ public class Character : NetworkBehaviour
         public override string ToString()
         {
             return
-                ("Health: " + health + "\n").PadLeft(18) +
-                ("Speed: " + speed + "\n").PadLeft(18) +
-                ("Stamina: " + stamina + "\n").PadLeft(18) +
-                ("Perception: " + perception + "\n").PadLeft(18) +
-                ("Thriftiness: " + thriftiness + "\n").PadLeft(18);
+                ("Health: " + health + "\n").PadLeft(20, ' ') +
+                ("Speed: " + speed + "\n").PadLeft(20, ' ') +
+                ("Stamina: " + stamina + "\n").PadLeft(20, ' ') +
+                ("Perception: " + perception + "\n").PadLeft(20, ' ') +
+                ("Thriftiness: " + thriftiness + "\n").PadLeft(20, ' ');
         }
     }
 }

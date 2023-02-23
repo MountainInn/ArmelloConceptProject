@@ -188,7 +188,11 @@ public partial class HexTile : NetworkBehaviour, IPointerClickHandler, IPointerE
     [Client]
     public bool CanUseTile(Player player)
     {
-        if (usableTile is InfluenceTile influenceTile)
+        if (usableTile is TriggerTile)
+        {
+            return false;
+        }
+        else if (usableTile is InfluenceTile influenceTile)
         {
             return influenceTile.owner != player;
         }

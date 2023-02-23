@@ -11,6 +11,17 @@ public class CombatUnit : NetworkBehaviour
             precision,
             agility;
 
+        static public NewStats operator+(NewStats a, NewStats b)
+        {
+            return new NewStats()
+            {
+                attack = a.attack + b.attack,
+                defense = a.defense + b.defense,
+                precision = a.precision + b.precision,
+                agility = a.agility + b.agility,
+            };
+        }
+
         public override string ToString()
         {
             return

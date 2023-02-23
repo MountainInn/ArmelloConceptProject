@@ -266,13 +266,17 @@ public class MiningTile : UsableTile
 
 abstract public class InfluenceTile : UsableTile
 {
-    [SyncVar]
+    [SyncVar(hook=nameof(OnOwnerSync))]
     public Player owner;
+
+    static private FlagPool flagPool;
 
     protected InfluenceTile(HexTile hexTile) : base(hexTile)
     {
+        flagPool = UnityEngine.FindObjectOfType<FlagPool>();
     }
 
+    [Server]
     public override void UseTile(Player player)
     {
         if (owner == player)
@@ -282,6 +286,12 @@ abstract public class InfluenceTile : UsableTile
             .Publish(new TileTakenMsg(){ previousOwner = owner, newOwner = player, tile = this, hexTile = hexTile});
 
         owner = player;
+    }
+
+    private void OnOwnerSync(Player previousOwner, Player newOwner)
+    {
+        flagPool.Return(previousOwner, hexTile);
+        flagPool.Rent(newOwner, hexTile);
     }
 
     abstract public void InfluenceEffect(Player player);

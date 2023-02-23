@@ -32,7 +32,6 @@ public class Player : NetworkBehaviour
     [SyncVar(hook = nameof(OnMovementPointsSync))]
     private int movementPoints;
     private List<InfluenceTile> influenceTiles;
-    private FlagPool flagPool;
 
     private void OnMovementPointsSync(int ol, int ne)
     {
@@ -75,7 +74,6 @@ public class Player : NetworkBehaviour
         turnView.onEndTurnClicked += CmdEndTurn;
 
         resources.Callback += OnResourcesSync;
-        flagPool = FindObjectOfType<FlagPool>();
     }
 
     private void OnResourcesSync(SyncIDictionary<ResourceType, int>.Operation op, ResourceType key, int item)
@@ -134,25 +132,12 @@ public class Player : NetworkBehaviour
         {
             Debug.Log("You took Influence Tile");
             influenceTiles.Add(msg.tile);
-            RpcPutFlagOnInfluenceTile(this, msg.hexTile);
         }
         else if (msg.previousOwner == this)
         {
             Debug.Log("You lost Influence Tile");
             influenceTiles.Remove(msg.tile);
-            RpcRemoveFlagFromInfluenceTile(this, msg.hexTile);
         }
-    }
-
-    [ClientRpc]
-    private void RpcPutFlagOnInfluenceTile(Player player, HexTile tile)
-    {
-        var flag = flagPool.Rent(player, tile);
-    }
-    [ClientRpc]
-    private void RpcRemoveFlagFromInfluenceTile(Player player, HexTile tile)
-    {
-        flagPool.Return(player, tile);
     }
 
     public void CmdAddResource(MiningTile.TileMinedMsg msg)

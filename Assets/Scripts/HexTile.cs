@@ -42,7 +42,7 @@ public partial class HexTile : NetworkBehaviour, IPointerClickHandler, IPointerE
     private MeshRenderer meshRenderer;
     private Color baseColor, highlightColor, warScreenColor;
 
-    [SyncVar(hook=nameof(OnTileActionTypeSync))] private TileActionType tileActionType;
+    [SyncVar(hook = nameof(OnTileActionTypeSync))] private TileActionType tileActionType;
     private void OnTileActionTypeSync(TileActionType oldv, TileActionType newv)
     {
         SetTileAction(newv);
@@ -67,7 +67,7 @@ public partial class HexTile : NetworkBehaviour, IPointerClickHandler, IPointerE
         SetColors(tileActionType);
 
         MessageBroker.Default
-            .Publish(new HexTileSpawned(){ Value = this });
+            .Publish(new HexTileSpawned() { Value = this });
     }
 
     public struct HexTileSpawned { public HexTile Value; }
@@ -95,23 +95,23 @@ public partial class HexTile : NetworkBehaviour, IPointerClickHandler, IPointerE
     private void SetTileAction(TileActionType tileActionType)
     {
         usableTile = tileActionType switch
-            {
-                TileActionType.Mining => new MiningTile(this, ResourceType.GenericResource),
-                TileActionType.Influence => new InfluenceTileResource(this, ResourceType.GenericResource),
-                TileActionType.Trigger => new TriggerTileCharacterHealth(this),
-                _ => throw new System.Exception("Not all TileActionTypes are handled")
-            };
+        {
+            TileActionType.Mining => new MiningTile(this, ResourceType.GenericResource),
+            TileActionType.Influence => new InfluenceTileResource(this, ResourceType.GenericResource),
+            TileActionType.Trigger => new TriggerTileCharacterHealth(this),
+            _ => throw new System.Exception("Not all TileActionTypes are handled")
+        };
     }
 
     private void SetColors(TileActionType tileActionType)
     {
         baseColor = tileActionType switch
-            {
-                (TileActionType.Mining) => Color.green,
-                (TileActionType.Influence) => Color.cyan,
-                (TileActionType.Trigger) => new Color(.8f, .6f, .3f),
-                (_) => Color.magenta
-            };
+        {
+            (TileActionType.Mining) => Color.green,
+            (TileActionType.Influence) => Color.cyan,
+            (TileActionType.Trigger) => new Color(.8f, .6f, .3f),
+            (_) => Color.magenta
+        };
         warScreenColor = baseColor * .5f;
 
         ToggleVisibility(false);
@@ -255,7 +255,7 @@ public class MiningTile : UsableTile
     public override void UseTile(Player player)
     {
         MessageBroker.Default
-            .Publish(new TileMinedMsg(){ player = player, resourceType = resourceType, amount = 1 });
+            .Publish(new TileMinedMsg() { player = player, resourceType = resourceType, amount = 1 });
         Debug.Log($"MiningTile: +1 Generic Resource");
 
     }
@@ -270,7 +270,7 @@ public class MiningTile : UsableTile
 
 abstract public class InfluenceTile : UsableTile
 {
-    [SyncVar(hook=nameof(OnOwnerSync))]
+    [SyncVar(hook = nameof(OnOwnerSync))]
     public Player owner;
 
     static private FlagPool flagPool;
@@ -285,9 +285,9 @@ abstract public class InfluenceTile : UsableTile
     {
         if (owner == player)
             return;
-       
+
         MessageBroker.Default
-            .Publish(new TileTakenMsg(){ previousOwner = owner, newOwner = player, tile = this, hexTile = hexTile});
+            .Publish(new TileTakenMsg() { previousOwner = owner, newOwner = player, tile = this, hexTile = hexTile });
 
         owner = player;
     }
@@ -357,24 +357,24 @@ public class TriggerTileCharacterHealth : TriggerTile
 static public class UsableTileSerializer
 {
     const byte
-        NO_SUBTYPE=0;
+        NO_SUBTYPE = 0;
     const byte
-        MINING=1;
+        MINING = 1;
 
     const byte
-        INFLUENCE=2;
+        INFLUENCE = 2;
     const byte
-        INF_RESOURCE=1;
+        INF_RESOURCE = 1;
 
     const byte
-        TRIGGER=3;
+        TRIGGER = 3;
     const byte
-        TRIGGER_CHARACTER_HEALTH=1;
+        TRIGGER_CHARACTER_HEALTH = 1;
 
     public static void WriteUsableTile(this NetworkWriter writer, UsableTile usableTile)
     {
         writer.WriteNetworkBehaviour(usableTile.hexTile);
-       
+
         if (usableTile is MiningTile miningTile)
         {
             writer.WriteByte(MINING);
@@ -418,9 +418,11 @@ static public class UsableTileSerializer
         {
             case MINING:
                 return new MiningTile(hexTile, (ResourceType)reader.ReadInt());
+                break;
 
             case INFLUENCE:
-                Player owner = reader.ReadGameObject().GetComponent<Player>();
+                GameObject ownerGO = reader.ReadGameObject();
+                Player owner = (ownerGO != null) ? ownerGO.GetComponent<Player>() : null;
                 switch (subtype)
                 {
                     case INF_RESOURCE:
@@ -429,18 +431,22 @@ static public class UsableTileSerializer
                             miningTile = (MiningTile)reader.ReadUsableTile(),
                             owner = owner
                         };
+                        break;
                     default:
                         throw new System.Exception($"Invalid InfluenceTile subtype");
                 }
+                break;
 
             case TRIGGER:
                 switch (subtype)
                 {
                     case TRIGGER_CHARACTER_HEALTH:
                         return new TriggerTileCharacterHealth(hexTile);
+                        break;
                     default:
                         throw new System.Exception($"Invalid TriggerTile subtype");
                 }
+                break;
 
             default:
                 throw new System.Exception($"Invalid UsableTile supertype");

@@ -11,11 +11,24 @@ public class CharacterSelectionView : MonoBehaviour
 
     void Awake()
     {
-        characterCards = GetComponentsInChildren<CharacterCardView>();
-        characterCards
-            .Select(card => (card, card.button))
+        var characterCardPrefab = Resources.Load<CharacterCardView>("Prefabs/CharacterCard");
+        var characterSOs = Resources.LoadAll<CharacterScriptableObject>("CharacterSOs");
+
+        characterSOs
             .ToList()
-            .ForEach(tup => tup.button.onClick.AddListener(()=> RadioSelect(tup.card)));
+            .ForEach(so =>
+            {
+                var newCard = GameObject.Instantiate(characterCardPrefab, Vector3.zero, Quaternion.identity, transform);
+
+                newCard.SetScriptableObject(so);
+                newCard.button.onClick.AddListener(()=> RadioSelect(newCard));
+            });
+    }
+
+    void Start()
+    {
+        var firstCard = GetComponentInChildren<CharacterCardView>();
+        RadioSelect(firstCard);
     }
 
     void RadioSelect(CharacterCardView card)

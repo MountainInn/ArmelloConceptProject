@@ -13,9 +13,11 @@ public partial class HexTile : NetworkBehaviour, IPointerClickHandler, IPointerE
     public event Action<Vector3Int> onPointerExit;
 
     [SyncVar] public Vector3Int coordinates;
-    [SyncVar] public HexType baseType, currentType;
+    [HideInInspector] [SyncVar] public HexType baseType, currentType;
+
     [SyncVar(hook = nameof(OnLevelSync))]
     public int level = 0;
+
     public int moveCost => level + 1;
 
     private void OnLevelSync(int oldv, int newv)
@@ -34,22 +36,25 @@ public partial class HexTile : NetworkBehaviour, IPointerClickHandler, IPointerE
     [SerializeField]
     private Transform topTransform;
 
-    public bool isVisible = false;
-    public Vector3 Top => topTransform.position;
-    [SyncVar] public Character character;
+    [HideInInspector] [SyncVar] public Character character;
+    [HideInInspector] [SyncVar] public Item item;
+    [HideInInspector] [SyncVar] public UsableTile usableTile;
 
+    [HideInInspector] public bool isVisible = false;
+    [HideInInspector] public Vector3 Top => topTransform.position;
 
     private MeshRenderer meshRenderer;
     private Color baseColor, highlightColor, warScreenColor;
 
-    [SyncVar(hook=nameof(OnTileActionTypeSync))] private TileActionType tileActionType;
-    private void OnTileActionTypeSync(TileActionType oldv, TileActionType newv)
+    [SyncVar(hook=nameof(OnUsableTileTypeSync))]
+    [SerializeField]
+    private UsableTileType usableTileType;
+
+    private void OnUsableTileTypeSync(UsableTileType oldv, UsableTileType newv)
     {
-        SetTileAction(newv);
+        InitUsableTile(newv);
         SetColors(newv);
     }
-    [SyncVar]
-    public UsableTile usableTile;
     internal Transform flag;
     private void Awake()
     {
@@ -62,9 +67,11 @@ public partial class HexTile : NetworkBehaviour, IPointerClickHandler, IPointerE
 
     public override void OnStartClient()
     {
-        SetTileAction(tileActionType);
+        InitUsableTile(usableTileType);
 
-        SetColors(tileActionType);
+        SetColors(usableTileType);
+
+        gameObject.name = $"{coordinates} {usableTileType}";
 
         MessageBroker.Default
             .Publish(new HexTileSpawned(){ Value = this });
@@ -82,34 +89,34 @@ public partial class HexTile : NetworkBehaviour, IPointerClickHandler, IPointerE
     public void Initialize(HexSyncData syncData)
     {
         this.coordinates = syncData.coord;
-        baseType = (HexType)syncData.hexSubtype;
-        this.tileActionType = syncData.tileActionType;
 
-        SetTileAction(syncData.tileActionType);
+        InitUsableTile(usableTileType);
 
-        SetColors(syncData.tileActionType);
+        SetColors(usableTileType);
+
+        gameObject.name = $"{coordinates} {usableTileType}";
 
         SetDirty();
     }
 
-    private void SetTileAction(TileActionType tileActionType)
+    private void InitUsableTile(UsableTileType usableTileType)
     {
-        usableTile = tileActionType switch
+        usableTile = usableTileType switch
             {
-                TileActionType.Mining => new MiningTile(this, ResourceType.GenericResource),
-                TileActionType.Influence => new InfluenceTileResource(this, ResourceType.GenericResource),
-                TileActionType.Trigger => new TriggerTileCharacterHealth(this),
-                _ => throw new System.Exception("Not all TileActionTypes are handled")
+                UsableTileType.Mining => new MiningTile(this, ResourceType.GenericResource),
+                UsableTileType.AutoMining => new InfluenceTileResource(this, ResourceType.GenericResource),
+                UsableTileType.HealthBonus => new TriggerTileCharacterHealth(this),
+                _ => throw new System.Exception("Not all UsableTileTypes are handled")
             };
     }
 
-    private void SetColors(TileActionType tileActionType)
+    private void SetColors(UsableTileType usableTileType)
     {
-        baseColor = tileActionType switch
+        baseColor = usableTileType switch
             {
-                (TileActionType.Mining) => Color.green,
-                (TileActionType.Influence) => Color.cyan,
-                (TileActionType.Trigger) => new Color(.8f, .6f, .3f),
+                (UsableTileType.Mining) => Color.green,
+                (UsableTileType.AutoMining) => Color.cyan,
+                (UsableTileType.HealthBonus) => new Color(.8f, .6f, .3f),
                 (_) => Color.magenta
             };
         warScreenColor = baseColor * .5f;
@@ -188,6 +195,10 @@ public partial class HexTile : NetworkBehaviour, IPointerClickHandler, IPointerE
     [Client]
     public bool CanUseTile(Player player)
     {
+        if (usableTile == null)
+        {
+            return false;
+        }
         if (usableTile is TriggerTile)
         {
             return false;
@@ -205,7 +216,6 @@ public partial class HexTile : NetworkBehaviour, IPointerClickHandler, IPointerE
         meshRenderer.material.color = Color.blue * 0.15f;
     }
 }
-
 
 public enum HexType
 {

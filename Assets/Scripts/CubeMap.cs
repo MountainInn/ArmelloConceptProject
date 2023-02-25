@@ -59,7 +59,11 @@ public class CubeMap : NetworkBehaviour
     public override void OnStartServer()
     {
         pickedPositions = new HashSet<Vector3Int>();
-        hexagonPrefabs = (HexTile[])Resources.LoadAll<HexTile>("Prefabs/3D Tiles/");
+        hexagonPrefabs =
+            Resources.LoadAll("Prefabs/3D Tiles/")
+            .Where(tile => tile.name != "Base Tile")
+            .Cast<HexTile>()
+            .ToArray();
     }
 
     public override void OnStopClient()
@@ -110,14 +114,9 @@ public class CubeMap : NetworkBehaviour
 
     HexSyncData CreateSyncData(Vector3Int coord)
     {
-        var tileActionType =
-            System.Enum.GetValues(typeof(TileActionType)).ArrayGetRandom<TileActionType>();
-
         return new HexSyncData()
         {
             coord = coord,
-            hexSubtype = HexTile.GetRandomType(),
-            tileActionType = tileActionType
         };
     }
 
@@ -129,14 +128,10 @@ public class CubeMap : NetworkBehaviour
 
         position = new Vector3(position.x, 0, position.y);
 
-        HexTile prefab = (HexTile)hexagonPrefabs.First();
+        HexTile prefab = (HexTile)hexagonPrefabs.ArrayGetRandom<HexTile>();
 
         var hexagon = Instantiate(prefab, position, Quaternion.identity, transform)
             .GetComponent<HexTile>();
-
-        hexagon.Initialize(syncData);
-
-        hexagon.gameObject.name = $"{syncData.hexSubtype} {coordinates}";
 
         return hexagon;
     }

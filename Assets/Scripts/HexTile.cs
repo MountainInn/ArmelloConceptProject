@@ -237,11 +237,6 @@ public enum TileActionType
     Mining, Influence, Trigger
 }
 
-public enum ResourceType
-{
-    GenericResource
-}
-
 public class MiningTile : UsableTile
 {
     [SyncVar]

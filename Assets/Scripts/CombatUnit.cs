@@ -14,6 +14,7 @@ public class CombatUnit : NetworkBehaviour
     public struct NewStats
     {
         public int
+            health,
             attack,
             defense,
             precision,

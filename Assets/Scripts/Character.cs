@@ -18,8 +18,7 @@ public class Character : NetworkBehaviour
     public int moveRadius = 1;
     public CubeMap cubeMap;
     public CombatUnit combatUnit => GetComponent<CombatUnit>();
-    public TextMeshPro textMeshPro;
-    new public SpriteRenderer renderer;
+    new public MeshRenderer renderer;
     public event Action<Character> onCharacterMoved;
 
     [SyncVar]
@@ -32,7 +31,7 @@ public class Character : NetworkBehaviour
     public void SetCharacterSO(CharacterScriptableObject characterSO)
     {
         // this.gameObject.name = player.name +" "+ characterSO.characterName;
-        // this.renderer.sprite = characterSO.characterSprite;
+        this.renderer.material.SetTexture("_MainTex", characterSO.characterSprite.texture);
         this.combatUnit.characterStats = characterSO.combatStats;
         this.utilityStats = characterSO.utilityStats;
     }
@@ -124,7 +123,6 @@ public class Character : NetworkBehaviour
 
     private void OnColorSync(Color oldc, Color newc)
     {
-        textMeshPro.color = newc;
     }
 
     [Command(requiresAuthority = false)]

@@ -115,7 +115,7 @@ public class Player : NetworkBehaviour
             .Subscribe(CmdAddResource)
             .AddTo(this);
 
-       
+
         influenceTiles = new List<InfluenceTile>();
 
         MessageBroker.Default
@@ -172,7 +172,7 @@ public class Player : NetworkBehaviour
     }
 
 
-    [Command(requiresAuthority=false)]
+    [Command(requiresAuthority = false)]
     public void CmdResetPoints()
     {
         actionPoints = character.utilityStats.stamina;
@@ -216,17 +216,17 @@ public class Player : NetworkBehaviour
         }
     }
 
-    [Command(requiresAuthority=false)]
+    [Command(requiresAuthority = false)]
     private void CmdUseTile(HexTile hex)
     {
         hex.UseTile(this);
     }
 
-    [Command(requiresAuthority=false)]
+    [Command(requiresAuthority = false)]
     private void CmdAttackOtherCharacter(HexTile hex)
     {
         CombatUnit[] units =
-            new [] { character, hex.character }
+            new[] { character, hex.character }
             .Select(ch => ch.combatUnit)
             .ToArray();
 
@@ -234,7 +234,7 @@ public class Player : NetworkBehaviour
             .Publish<CombatUnit[]>(units);
     }
 
-    [Command(requiresAuthority=false)]
+    [Command(requiresAuthority = false)]
     private void CmdEndTurn()
     {
         if (turn == null) return;
@@ -253,7 +253,7 @@ public class Player : NetworkBehaviour
         turnView.Toggle(turnStarted);
     }
 
-    [Command(requiresAuthority=false)]
+    [Command(requiresAuthority = false)]
     private void CmdMoveCharacter(HexTile hex)
     {
         if (character.coordinates == hex.coordinates ||
@@ -267,20 +267,20 @@ public class Player : NetworkBehaviour
         character.CmdMove(hex);
     }
 
-    [Command(requiresAuthority=false)]
+    [Command(requiresAuthority = false)]
     private void CmdSpendMovementPoints(int amount)
     {
         movementPoints -= amount;
         Debug.Assert(movementPoints >= 0);
     }
-    [Command(requiresAuthority=false)]
+    [Command(requiresAuthority = false)]
     private void CmdSpendActionPoints(int amount)
     {
         actionPoints -= amount;
         Debug.Assert(actionPoints >= 0);
     }
 
-    [Command(requiresAuthority=false)]
+    [Command(requiresAuthority = false)]
     private void CmdCreateCharacter(Color characterColor)
     {
         if (this.character != null)

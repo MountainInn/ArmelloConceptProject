@@ -10,6 +10,7 @@ using Zenject;
 
 public class Combat : NetworkBehaviour
 {
+    [SerializeField] int warPhaseStartRound = 6;
     [SerializeField]
     float combatDurationInSeconds = 5;
 
@@ -48,7 +49,26 @@ public class Combat : NetworkBehaviour
        
         MessageBroker.Default
             .Receive<CombatUnit[]>()
-            .Subscribe(AddCombatToList);
+            .Subscribe(AddCombatToList)
+            .AddTo(this);
+
+        MessageBroker.Default
+            .Receive<TurnSystem.OnRoundEnd>()
+            .Subscribe(WarPhase)
+            .AddTo(this);
+    }
+
+    [Server]
+    private void WarPhase(TurnSystem.OnRoundEnd msg)
+    {
+        if (msg.roundCount >= warPhaseStartRound)
+        {
+            var allUnits = FindObjectsOfType<CombatUnit>();
+
+            AddCombatToList(allUnits);
+
+            StartAllCombats();
+        }
     }
 
     [Server]

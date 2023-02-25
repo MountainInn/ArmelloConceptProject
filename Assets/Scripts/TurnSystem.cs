@@ -9,6 +9,7 @@ using System.Collections.Generic;
 public class TurnSystem : NetworkBehaviour
 {
     [SyncVar] int currentPlayerIndex = -1;
+    [SyncVar] int roundCount = 0;
 
     [SyncVar(hook = nameof(OnCurrentPlayerNetIdSync))]
     uint currentPlayerNetId = uint.MaxValue;
@@ -23,6 +24,11 @@ public class TurnSystem : NetworkBehaviour
     {
         var lobbyUI = FindObjectOfType<EOSLobbyUI>();
         lobbyUI.onStartGameButtonClicked += StartNextPlayerTurn;
+    }
+
+    private void OnEnable()
+    {
+        roundCount = 0;
     }
 
     [Server]
@@ -64,7 +70,7 @@ public class TurnSystem : NetworkBehaviour
         {
             currentPlayerIndex %= players.Count;
 
-            MessageBroker.Default.Publish(new OnRoundEnd());
+            EndRound();
         }
 
         Player nextPlayer = players.ElementAt(currentPlayerIndex);
@@ -79,10 +85,17 @@ public class TurnSystem : NetworkBehaviour
         currentPlayerNetId = nextPlayer.netId;
     }
 
+    [Server]
+    private void EndRound()
+    {
+        roundCount++;
+        MessageBroker.Default.Publish(new OnRoundEnd() { roundCount = roundCount });
+    }
+
     private void OnCurrentPlayerNetIdSync(uint oldNetId, uint newNetId)
     {
         playerNetIdStream.Value = newNetId;
     }
 
-    public struct OnRoundEnd {}
+    public struct OnRoundEnd { public int roundCount; }
 }

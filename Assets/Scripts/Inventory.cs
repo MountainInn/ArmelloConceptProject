@@ -8,10 +8,35 @@ public class Inventory
     List<Item> recipes, equippedItems;
     Character owner;
 
+    public bool HasSpace()
+    {
+        return equippedItems.Count < owner.utilityStats.thriftiness;
+    }
+
+    public void PickupItem(HexTile tile)
+    {
+        if (!HasSpace())
+            return;
+
+        Equip(tile.item);
+        tile.item = null;
+    }
+
+    public void DropItem(Item item)
+    {
+        HexTile tile = owner.GetHexTile();
+
+        if (tile.item != null)
+            return;
+        
+        Unequip(item);
+        tile.item = item;
+    }
+
     public void Craft(Item item)
     {
         Debug.Assert(recipes.Contains(item));
-        Debug.Assert(equippedItems.Count < owner.utilityStats.thriftiness);
+        Debug.Assert(HasSpace());
 
         var newItem = item.Craft(resources);
 
@@ -48,7 +73,7 @@ public class Inventory
         owner.combatUnit.UpdateEquipmentStats(GetTotalEquipmentStats());
     }
 
-    private CombatUnit.NewStats GetTotalEquipmentStats()
+    private CombatUnit.Stats GetTotalEquipmentStats()
     {
         return equippedItems
             .Select(item => item.stats)

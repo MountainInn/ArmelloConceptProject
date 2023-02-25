@@ -12,7 +12,7 @@ public class ItemView : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     {
         this.item = item;
 
-        icon.sprite = item.sprite;
+        icon.sprite = item.icon;
     }
 
     public void OnPointerEnter(PointerEventData eventData)

@@ -4,16 +4,32 @@ using System.Collections.Generic;
 using UnityEngine;
 using Mirror;
 
-abstract public class Item
+public class Item
 {
-    public Dictionary<ResourceType, int> requiredResources;
-
     [SyncVar] public Character wearer;
     [SyncVar] public int tier;
-    [SyncVar] public CombatUnit.NewStats stats;
+    [SyncVar] public CombatUnit.Stats stats;
 
     public string name;
-    public Sprite sprite;
+    public Sprite icon;
+
+    readonly SyncDictionary<ResourceType, int> requiredResources = new SyncDictionary<ResourceType, int>();
+
+    private ItemScriptableObject itemSO;
+
+    public Item(){}
+
+    public Item(ItemScriptableObject itemSO)
+    {
+        itemSO.RequiredResourcesAsDictionary()
+            .ToList()
+            .ForEach(kv => requiredResources.Add(kv));
+       
+        this.name = itemSO.name;
+        this.icon = itemSO.icon;
+        this.stats = itemSO.combatStats;
+        this.itemSO = itemSO;
+    }
 
     public Item Craft(Dictionary<ResourceType, int> resources)
     {
@@ -28,10 +44,8 @@ abstract public class Item
             .ToList()
             .ForEach(kv => resources[kv.Key] -= kv.Value);
         
-        return ConcreteCraft();
+        return this;
     }
-
-    abstract protected Item ConcreteCraft();
 
     public void Disassemble(List<Item> equippedItems, List<Item> recipes, Dictionary<ResourceType, int> resources)
     {
@@ -89,24 +103,8 @@ abstract public class Item
         OnTierUp();
     }
 
-    abstract protected void OnTierUp();
-}
-
-public class ItemHelmOfCommand : Item
-{
-    public ItemHelmOfCommand()
+    void OnTierUp()
     {
-        sprite = Resources.Load<Sprite>("Sprites/HelmOfCommand");
-    }
-
-    protected override Item ConcreteCraft()
-    {
-        return new ItemHelmOfCommand();
-    }
-
-    protected override void OnTierUp()
-    {
-        stats.attack = 2 + 2 * tier;
-        stats.defense = 3 + 3 * tier;
+        itemSO.combatStats += itemSO.perTier;
     }
 }

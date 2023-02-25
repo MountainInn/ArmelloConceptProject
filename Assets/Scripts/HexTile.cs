@@ -295,7 +295,6 @@ abstract public class InfluenceTile : UsableTile
 
 public class InfluenceTileResource : InfluenceTile
 {
-    [SyncVar]
     public MiningTile miningTile;
 
     public InfluenceTileResource(HexTile hexTile, ResourceType resourceType) : base(hexTile)
@@ -363,24 +362,18 @@ static public class UsableTileSerializer
         if (usableTile is MiningTile miningTile)
         {
             writer.WriteByte(MINING);
-            writer.WriteByte(NO_SUBTYPE);
             writer.WriteInt((int)miningTile.resourceType);
         }
         else if (usableTile is InfluenceTile influenceTile)
         {
             writer.WriteByte(INFLUENCE);
+            writer.WriteNetworkBehaviour(influenceTile.owner);
 
             if (influenceTile is InfluenceTileResource resTile)
             {
                 writer.WriteByte(INF_RESOURCE);
                 writer.WriteInt((int)resTile.miningTile.resourceType);
-                writer.WriteUsableTile(resTile.miningTile);
             }
-
-            if (influenceTile.owner)
-                writer.WriteGameObject(influenceTile.owner.gameObject);
-            else
-                writer.WriteGameObject(null);
         }
         else if (usableTile is TriggerTile triggerTile)
         {
@@ -397,35 +390,33 @@ static public class UsableTileSerializer
     {
         HexTile hexTile = reader.ReadNetworkBehaviour<HexTile>();
         byte type = reader.ReadByte();
-        byte subtype = reader.ReadByte();
 
         switch (type)
         {
             case MINING:
-                return new MiningTile(hexTile, (ResourceType)reader.ReadInt());
+                ResourceType resourceType = (ResourceType)reader.ReadInt();
+                return new MiningTile(hexTile, resourceType);
 
             case INFLUENCE:
-                Player owner = reader.ReadGameObject().GetComponent<Player>();
-                switch (subtype)
-                {
-                    case INF_RESOURCE:
-                        return new InfluenceTileResource(hexTile, (ResourceType)reader.ReadInt())
-                        {
-                            miningTile = (MiningTile)reader.ReadUsableTile(),
-                            owner = owner
-                        };
-                    default:
-                        throw new System.Exception($"Invalid InfluenceTile subtype");
-                }
+                Player owner = reader.ReadNetworkBehaviour<Player>();
+                InfluenceTile inflTile =
+                    (reader.ReadByte()) switch
+                    {
+                        (INF_RESOURCE) => new InfluenceTileResource(hexTile, (ResourceType)reader.ReadInt()),
+                        (_) =>
+                        throw new System.Exception($"Invalid InfluenceTile subtype")
+                    };
+
+                inflTile.owner = owner;
+                return inflTile;
 
             case TRIGGER:
-                switch (subtype)
+                return (reader.ReadByte()) switch
                 {
-                    case TRIGGER_CHARACTER_HEALTH:
-                        return new TriggerTileCharacterHealth(hexTile);
-                    default:
-                        throw new System.Exception($"Invalid TriggerTile subtype");
-                }
+                    (TRIGGER_CHARACTER_HEALTH) => new TriggerTileCharacterHealth(hexTile),
+                    (_) =>
+                    throw new System.Exception($"Invalid TriggerTile subtype")
+                };
 
             default:
                 throw new System.Exception($"Invalid UsableTile supertype");

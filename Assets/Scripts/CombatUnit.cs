@@ -5,13 +5,18 @@ using UniRx;
 public class CombatUnit : NetworkBehaviour
 {
     [SyncVar]
-    public NewStats
+    public Stats
         characterStats,
         equipmentStats,
         totalStats;
 
+    public void PrepareForBattle(Character.UtilityStats utilityStats)
+    {
+        totalStats.health = utilityStats.health * 100;
+    }
+
     [System.Serializable]
-    public struct NewStats
+    public struct Stats
     {
         public int
             health,
@@ -20,9 +25,17 @@ public class CombatUnit : NetworkBehaviour
             precision,
             agility;
 
-        static public NewStats operator+(NewStats a, NewStats b)
+        [UnityEngine.HideInInspector]
+        public int
+            speed;
+
+        [UnityEngine.HideInInspector]
+        public float
+            attackTimerRatio;
+
+        static public Stats operator+(Stats a, Stats b)
         {
-            return new NewStats()
+            return new Stats()
             {
                 attack = a.attack + b.attack,
                 defense = a.defense + b.defense,
@@ -41,17 +54,6 @@ public class CombatUnit : NetworkBehaviour
         }
     }
 
-    public struct Stats
-    {
-        public int
-            health,
-            defense,
-            attack,
-            speed;
-        public float
-            attackTimerRatio;
-    }
-
     public ReactiveProperty<int>
         healthReactive = new ReactiveProperty<int>();
 
@@ -64,34 +66,23 @@ public class CombatUnit : NetworkBehaviour
     [SyncVar(hook = nameof(OnAttackTimerRatioSync))]
     public float attackTimerRatio;
 
-    [SyncVar]
-    public int
-        defense,
-        attack,
-        speed;
-
     private void Awake()
     {
         healthReactive.Value = health;
         attackTimerRatioReactive.Value = attackTimerRatio;
+        totalStats.speed = 100;
     }
 
     public Stats GetStatsSnapshot()
     {
-        return new Stats()
-        {
-            health = health,
-                defense = defense,
-                attack = attack,
-                speed = speed
-                };
+        return totalStats;
     }
 
-    public float GetAttackIntervalInSeconds() => speed / 100f;
+    public float GetAttackIntervalInSeconds() => totalStats.speed / 100f;
 
     public bool AttackTimerTick(float delta)
     {
-        attackTimerRatio += speed / 100f * delta;
+        attackTimerRatio += totalStats.speed / 100f * delta;
 
         bool res = attackTimerRatio >= 1f;
 
@@ -103,7 +94,7 @@ public class CombatUnit : NetworkBehaviour
 
     public bool FakeAttackTimerTick(ref float timer, float delta)
     {
-        timer += speed / 100f * delta;
+        timer += totalStats.speed / 100f * delta;
 
         bool res = timer >= 1f;
 
@@ -123,7 +114,7 @@ public class CombatUnit : NetworkBehaviour
         healthReactive.Value = newH;
     }
 
-    public void UpdateEquipmentStats(NewStats updatedEquipmentStats)
+    public void UpdateEquipmentStats(Stats updatedEquipmentStats)
     {
         this.equipmentStats = updatedEquipmentStats;
         totalStats = characterStats + equipmentStats;

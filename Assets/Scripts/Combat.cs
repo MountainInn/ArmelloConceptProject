@@ -120,9 +120,9 @@ public class Combat : NetworkBehaviour
     }
 
     [Server]
-    public void StartCombat(params CombatUnit[] units)
+    public void StartCombat(CombatUnit[] units)
     {
-        var hits = SimulateCombat(units);
+        var hits = SimulateCombat(units.ToList());
 
         units
             .Select(u => u.netIdentity.connectionToClient)
@@ -140,7 +140,7 @@ public class Combat : NetworkBehaviour
     }
 
     [Server]
-    public Hit[] SimulateCombat(params CombatUnit[] units)
+    public Hit[] SimulateCombat(List<CombatUnit> units)
     {
         List<Hit> hits = new List<Hit>();
 
@@ -150,69 +150,62 @@ public class Combat : NetworkBehaviour
                 hits.Add(new Hit() { time = 0, attacker = u, attackerStats = u.GetStatsSnapshot() });
             });
 
-        units.ToList()
-            .ForEach(u =>
-            {
-                float attacksPerBattle =
-                    u.attackTimerRatio + combatDurationInSeconds / u.GetAttackIntervalInSeconds();
+        int combatRound = 1;
 
-                int fullAttacks = (int)MathF.Floor(attacksPerBattle);
-
-                fullAttacks.ForLoop(i =>
+        do
+        {
+            units
+                .Where(u => u.totalStats.health > 0)
+                .ToList()
+                .ForEach(u =>
                 {
-                    float time = (i + 1) * u.GetAttackIntervalInSeconds() - u.attackTimerRatio;
+                    CombatUnit target =
+                        units
+                        .NotEqual(u)
+                        .Where(t => t.totalStats.health > 0)
+                        .GetRandomOrDefault();
 
-                    hits.Add(new Hit() { time = time, attacker = u });
+                    if (target == default)
+                        return;
+
+                    int
+                        dodgeRoll = UnityEngine.Random.Range(0, target.totalStats.agility),
+                        hitRoll = UnityEngine.Random.Range(0, u.totalStats.precision);
+
+                    if (hitRoll > dodgeRoll)
+                    {
+                        int damage = u.totalStats.attack / target.totalStats.defense;
+
+                        target.totalStats.health = Math.Max(0, target.totalStats.health - damage);
+
+                        hits.Add(new Hit() {
+                                    time = combatRound,
+                                    attacker = u,
+                                    attackerStats = u.totalStats,
+                                    defendant = target,
+                                    defendantStats = target.totalStats});
+                    }
+
+                    if (target.totalStats.health <= 0)
+                    {
+                        MessageBroker.Default.Publish(new OnLostFight(){ loser = target });
+                    }
                 });
 
-                u.attackTimerRatio = attacksPerBattle - fullAttacks;
-            });
+            combatRound++;
+        }
+        while
+            (1 < units.Count(u => u.totalStats.health > 0));
 
-        hits =
-            hits
-            .OrderBy(h => h.time)
-            .ToList();
-
-        var hitArray =
-            hits
-            .Select(hit =>
-            {
-                CombatUnit attacker = hit.attacker;
-
-                if (attacker.health <= 0)
-                    return new Hit() { time = -1 };
-
-                CombatUnit target =
-                    units
-                    .NotEqual(attacker)
-                    .Where(t => t.health > 0)
-                    .GetRandomOrDefault();
-
-                if (target == default)
-                    return new Hit() { time = -1 };
-
-                int damage = (int)MathF.Max(1, attacker.attack / target.defense);
-
-                target.health -= damage;
-
-                Hit updHit = new Hit()
-                {
-                    time = hit.time,
-                    attacker = hit.attacker,
-                    attackerStats = attacker.GetStatsSnapshot(),
-                    defendant = target,
-                    defendantStats = target.GetStatsSnapshot()
-                };
-
-                return updHit;
-            })
-            .Where(hit => hit.time >= 0)
-            .ToArray();
-
-        return hitArray;
+        return hits.ToArray();
     }
 
 
+}
+
+public struct OnLostFight
+{
+    public CombatUnit loser;
 }
 
 public struct Hit

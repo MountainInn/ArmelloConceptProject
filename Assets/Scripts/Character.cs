@@ -4,6 +4,7 @@ using DG.Tweening;
 using Zenject;
 using System.Linq;
 using System;
+using UniRx;
 using TMPro;
 
 public class Character : NetworkBehaviour
@@ -26,7 +27,7 @@ public class Character : NetworkBehaviour
 
     public Player player;
     public Inventory inventory;
-
+    private IDisposable onLostFightSubscription;
 
     public void SetCharacterSO(CharacterScriptableObject characterSO)
     {
@@ -51,6 +52,28 @@ public class Character : NetworkBehaviour
                 CmdInitializeCoordinates();
             else
                 cubeMap.onFullySpawned += CmdInitializeCoordinates;
+        }
+    }
+
+    [Server]
+    public override void OnStartServer()
+    {
+        onLostFightSubscription =
+            MessageBroker.Default
+            .Receive<OnLostFight>()
+            .Where(msg => msg.loser == combatUnit)
+            .Subscribe(OnLostFight);
+    }
+
+    [Server]
+    private void OnLostFight(OnLostFight msg)
+    {
+        if (--utilityStats.health == 0)
+        {
+            onLostFightSubscription.Dispose();
+
+            MessageBroker.Default
+                .Publish<OnPlayerLost>(new OnPlayerLost(){ player = player });
         }
     }
 
@@ -145,6 +168,11 @@ public class Character : NetworkBehaviour
         return moveRadius < cubeMap.Distance(coordinates, target);
     }
 
+    public HexTile GetHexTile()
+    {
+        return cubeMap[coordinates];
+    }
+
     public class Factory : PlaceholderFactory<Character>
     {
     }
@@ -170,4 +198,9 @@ public class Character : NetworkBehaviour
                 ("Thriftiness: " + thriftiness + "\n").PadLeft(20, ' ');
         }
     }
+}
+
+public struct OnPlayerLost
+{
+    public Player player;
 }

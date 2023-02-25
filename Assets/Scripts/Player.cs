@@ -131,6 +131,18 @@ public class Player : NetworkBehaviour
                     .ForEach(t => t.InfluenceEffect(this));
             })
             .AddTo(this);
+
+        MessageBroker.Default.Receive<OnPlayerLost>()
+            .Subscribe(OnPlayerLost)
+            .AddTo(this);
+    }
+
+    [Server]
+    private void OnPlayerLost(OnPlayerLost msg)
+    {
+        TargetToggleTurnStarted(false);
+        turnSystem.UnregisterPlayer(this);
+        NetworkServer.Destroy(character.gameObject);
     }
 
     [Server]

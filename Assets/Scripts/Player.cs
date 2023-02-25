@@ -4,6 +4,7 @@ using Mirror;
 using UnityEngine;
 using Zenject;
 using UniRx;
+using MountainInn;
 
 public class Player : NetworkBehaviour
 {
@@ -93,7 +94,12 @@ public class Player : NetworkBehaviour
         }
 
         if (isOwned)
+        {
+            resources
+                .Log("Resources: ");
+
             resourcesView.SetResource(key, item);
+        }
     }
 
     public override void OnStartServer()

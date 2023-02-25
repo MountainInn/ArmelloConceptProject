@@ -180,7 +180,11 @@ public class Player : NetworkBehaviour
 
         if (hex.character is null)
         {
-            if (movementPoints < hex.moveCost) return;
+            if (movementPoints < hex.moveCost)
+                return;
+
+            if (cubeMap.Distance(character.coordinates, hex.coordinates) != 1)
+                return;
 
             CmdMoveCharacter(hex);
             CmdSpendMovementPoints(hex.moveCost);

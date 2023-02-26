@@ -38,7 +38,7 @@ public partial class HexTile : NetworkBehaviour, IPointerClickHandler, IPointerE
 
     [HideInInspector] [SyncVar] public Character character;
     [HideInInspector] [SyncVar] public Item item;
-    [HideInInspector] [SyncVar] public UsableTile usableTile;
+    [HideInInspector] public UsableTile usableTile;
 
     [HideInInspector] public bool isVisible = false;
     [HideInInspector] public Vector3 Top => topTransform.position;

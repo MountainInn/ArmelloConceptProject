@@ -1,6 +1,6 @@
 using Mirror;
 
-public abstract class UsableTile : NetworkBehaviour
+public abstract class UsableTile
 {
     public HexTile hexTile;
 

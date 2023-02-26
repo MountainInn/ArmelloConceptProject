@@ -150,6 +150,7 @@ public class Combat : NetworkBehaviour
         units.ToList()
             .ForEach(u =>
             {
+                u.PrepareForBattle(u.GetComponent<Character>().utilityStats);
                 hits.Add(new Hit() { time = 0, attacker = u, attackerStats = u.GetStatsSnapshot() });
             });
 

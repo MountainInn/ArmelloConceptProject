@@ -87,10 +87,12 @@ public class Player : NetworkBehaviour
         MessageBroker.Default.Receive<OnPlayerLost>()
             .Subscribe(OnPlayerLost)
             .AddTo(this);
+
+        CreateCharacter();
+        CreateCharacter();
     }
     public override void OnStartLocalPlayer()
     {
-        CmdCreateCharacter(clientCharacterColor);
         // CmdCreateCharacter(clientCharacterColor);
 
         MessageBroker.Default
@@ -268,17 +270,18 @@ public class Player : NetworkBehaviour
         Debug.Assert(actionPoints >= 0);
     }
 
-    [Command(requiresAuthority = false)]
-    private void CmdCreateCharacter(Color characterColor)
+    [Server]
+    private void CreateCharacter()
     {
-        if (this.character != null)
-            NetworkServer.Destroy(this.character.gameObject);
+        // if (this.character != null)
+        //     NetworkServer.Destroy(this.character.gameObject);
 
-        this.character = characterFactory.Create();
-        this.character.characterColor = characterColor;
-        this.character.player = this;
+        var newCharacter = Instantiate(prefabCharacter);
+        newCharacter.SetCharacterSO(characterSelectionView.GetSelectedCharacter());
+        newCharacter.player = this;
+        // newCharacter.characterColor = characterColor;
 
-        NetworkServer.Spawn(this.character.gameObject, this.connectionToClient);
+        NetworkServer.Spawn(newCharacter.gameObject, this.connectionToClient);
     }
 
     public class Factory : PlaceholderFactory<Player>

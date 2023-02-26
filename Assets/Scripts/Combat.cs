@@ -188,7 +188,10 @@ public class Combat : NetworkBehaviour
             combatRound++;
         }
         while
-            (1 < units.Count(u => u.totalStats.health > 0));
+            (1 < units.Count(u => u.IsAlive()) && combatRound < 50);
+
+        if (combatRound >= 50)
+            throw new System.Exception("CombatRound >= 50!!!");
 
         return hits.ToArray();
     }

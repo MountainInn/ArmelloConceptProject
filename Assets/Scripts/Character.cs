@@ -22,7 +22,7 @@ public class Character : NetworkBehaviour
     [SyncVar]
     public UtilityStats utilityStats;
 
-    public Player player;
+    [SyncVar] public Player player;
     public Inventory inventory;
     private IDisposable onLostFightSubscription;
 
@@ -49,6 +49,8 @@ public class Character : NetworkBehaviour
             .Receive<OnLostFight>()
             .Where(msg => msg.loser == combatUnit)
             .Subscribe(OnLostFight);
+
+        this.player.character = this;
     }
 
     public override void OnStartClient()

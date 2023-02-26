@@ -107,30 +107,31 @@ public class Character : NetworkBehaviour
         {
             transform
                 .DOMove(position, .5f)
-                .OnKill(EndTransition);
+                .OnKill(() => CmdSetCoordinates(coordinates));
         }
         else
         {
             transform.position = position;
-            EndTransition();
-        }
-
-        void EndTransition()
-        {
             CmdSetCoordinates(coordinates);
-            hex.character = this;
-
-            if (hex.usableTile is TriggerTile bonusTile)
-            {
-                bonusTile.UseTile(player);
-            }
         }
+
     }
 
     [Command(requiresAuthority = false)]
     private void CmdSetCoordinates(Vector3Int coordinates)
     {
+        GetHexTile().character = null;
+
         this.coordinates = coordinates;
+
+        HexTile hex = cubeMap[coordinates];
+
+        hex.character = this;
+
+        if (hex.usableTile is TriggerTile bonusTile)
+        {
+            bonusTile.UseTile(player);
+        }
     }
 
     [Client]

@@ -26,6 +26,8 @@ public class Character : NetworkBehaviour
     public Inventory inventory;
     private IDisposable onLostFightSubscription;
 
+    public CubeMap cubeMap;
+
     public void SetCharacterSO(CharacterScriptableObject characterSO)
     {
         // this.gameObject.name = player.name +" "+ characterSO.characterName;

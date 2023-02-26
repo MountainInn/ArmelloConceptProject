@@ -60,6 +60,40 @@ public class Player : NetworkBehaviour
         prefabCharacter = Resources.Load<Character>("Prefabs/Character");
     }
 
+    public override void OnStartServer()
+    {
+        System.Enum.GetValues(typeof(ResourceType))
+            .Cast<ResourceType>()
+            .ToList()
+            .ForEach(r => resources.Add(r, 0));
+
+        MessageBroker.Default
+            .Receive<MiningTile.TileMinedMsg>()
+            .Where(msg => msg.player == this)
+            .Subscribe(CmdAddResource)
+            .AddTo(this);
+
+
+        influenceTiles = new List<InfluenceTile>();
+
+        MessageBroker.Default
+            .Receive<InfluenceTile.TileTakenMsg>()
+            .Subscribe(OnInfluenceTileTaken)
+            .AddTo(this);
+
+        MessageBroker.Default
+            .Receive<TurnSystem.OnRoundEnd>()
+            .Subscribe(msg =>
+            {
+                influenceTiles
+                    .ForEach(t => t.InfluenceEffect(this));
+            })
+            .AddTo(this);
+
+        MessageBroker.Default.Receive<OnPlayerLost>()
+            .Subscribe(OnPlayerLost)
+            .AddTo(this);
+    }
     public override void OnStartLocalPlayer()
     {
         CmdCreateCharacter(clientCharacterColor);
@@ -98,40 +132,6 @@ public class Player : NetworkBehaviour
         }
     }
 
-    public override void OnStartServer()
-    {
-        System.Enum.GetValues(typeof(ResourceType))
-            .Cast<ResourceType>()
-            .ToList()
-            .ForEach(r => resources.Add(r, 0));
-
-        MessageBroker.Default
-            .Receive<MiningTile.TileMinedMsg>()
-            .Where(msg => msg.player == this)
-            .Subscribe(CmdAddResource)
-            .AddTo(this);
-
-
-        influenceTiles = new List<InfluenceTile>();
-
-        MessageBroker.Default
-            .Receive<InfluenceTile.TileTakenMsg>()
-            .Subscribe(OnInfluenceTileTaken)
-            .AddTo(this);
-
-        MessageBroker.Default
-            .Receive<TurnSystem.OnRoundEnd>()
-            .Subscribe(msg =>
-            {
-                influenceTiles
-                    .ForEach(t => t.InfluenceEffect(this));
-            })
-            .AddTo(this);
-
-        MessageBroker.Default.Receive<OnPlayerLost>()
-            .Subscribe(OnPlayerLost)
-            .AddTo(this);
-    }
 
     [Server]
     private void OnPlayerLost(OnPlayerLost msg)

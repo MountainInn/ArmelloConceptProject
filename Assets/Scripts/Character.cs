@@ -31,7 +31,7 @@ public class Character : NetworkBehaviour
     {
         // this.gameObject.name = player.name +" "+ characterSO.characterName;
         this.renderer.material.SetTexture("_MainTex", characterSO.characterSprite.texture);
-        this.combatUnit.characterStats = characterSO.combatStats;
+        this.combatUnit.SetCharacterStats(characterSO.combatStats);
         this.utilityStats = characterSO.utilityStats;
     }
 

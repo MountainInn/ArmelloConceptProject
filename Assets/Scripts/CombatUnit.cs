@@ -5,14 +5,36 @@ using UniRx;
 public class CombatUnit : NetworkBehaviour
 {
     [SyncVar]
-    public Stats
+    private Stats
         characterStats,
         equipmentStats,
         totalStats;
 
+
+    public void SetCharacterStats(Stats characterStats)
+    {
+        this.characterStats = characterStats;
+        RecalcTotalStats();
+    }
+    public void SetEquipmentStats(Stats equipmentStats)
+    {
+        this.equipmentStats = equipmentStats;
+        RecalcTotalStats();
+    }
+
+    private void RecalcTotalStats()
+    {
+        totalStats = characterStats + equipmentStats;
+    }
+
+    public Stats GetCharacterStats() => characterStats;
+    public Stats GetEquipmentStats() => equipmentStats;
+    public Stats GetTotalStats() => totalStats;
+
     public void PrepareForBattle(Character.UtilityStats utilityStats)
     {
-        totalStats.health = utilityStats.health * 100;
+        RecalcTotalStats();
+        totalStats.health = 100;
     }
 
     [System.Serializable]

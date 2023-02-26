@@ -80,7 +80,7 @@ public class Inventory
 
     private void UpdateEquipmentStats()
     {
-        owner.combatUnit.UpdateEquipmentStats(GetTotalEquipmentStats());
+        owner.combatUnit.SetEquipmentStats(GetTotalEquipmentStats());
     }
 
     private CombatUnit.Stats GetTotalEquipmentStats()

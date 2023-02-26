@@ -33,8 +33,7 @@ public partial class HexTile : NetworkBehaviour, IPointerClickHandler, IPointerE
     private float tileScale => 1 + level;
     private float tileHeight => tileScale * 0.5f;
 
-    [SerializeField]
-    private Transform topTransform;
+    [SerializeField] private Transform topTransform;
 
     [HideInInspector] [SyncVar] public Character character;
     [HideInInspector] [SyncVar] public Item item;

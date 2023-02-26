@@ -5,7 +5,6 @@ using Zenject;
 using System.Linq;
 using System;
 using UniRx;
-using TMPro;
 
 public class Character : NetworkBehaviour
 {

@@ -11,7 +11,6 @@ public class Character : NetworkBehaviour
     [SyncVar(hook = nameof(OnCoordinatesSync))]
     public Vector3Int coordinates;
 
-    [SyncVar(hook = nameof(OnColorSync))]
     public Color characterColor;
 
     [Range(1, 10)]
@@ -143,10 +142,6 @@ public class Character : NetworkBehaviour
 
         MessageBroker.Default
             .Publish<OnStandOnTile>(new OnStandOnTile(){ hex = cubeMap[newCoord] });
-    }
-
-    private void OnColorSync(Color oldc, Color newc)
-    {
     }
 
     [Command(requiresAuthority = false)]

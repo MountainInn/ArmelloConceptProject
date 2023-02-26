@@ -1,10 +1,12 @@
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using UnityEngine;
+using System;
 
 public class ItemView : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
     [SerializeField] Image icon;
+    [SerializeField] Sprite blankIconSprite;
     [SerializeField] ItemPopup popup;
     private Item item;
 
@@ -12,18 +14,30 @@ public class ItemView : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     {
         this.item = item;
 
-        icon.sprite = item.icon;
+        if (item != null)
+        {
+            icon.sprite = item.icon;
+        }
+        else
+        {
+            ClearSlot();
+        }
     }
 
     public void OnPointerEnter(PointerEventData eventData)
     {
         popup.SetItem(item);
         popup.transform.position = eventData.position;
-        popup.canvasGroup.alpha = 1;
+        popup.SetVisible(true);
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
-        popup.canvasGroup.alpha = 0;
+        popup.SetVisible(false);
+    }
+
+    internal void ClearSlot()
+    {
+        icon.sprite = blankIconSprite;
     }
 }

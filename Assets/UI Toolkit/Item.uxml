@@ -1,0 +1,4 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Assets/UI%20Toolkit/USS/InventoryUSS.uss?fileID=7433441132597879392&amp;guid=05712babc4bcf464aa54e51730f331d4&amp;type=3#InventoryUSS" />
+    <ui:Button display-tooltip-when-elided="true" class="itemHeight itemWidth item" />
+</ui:UXML>

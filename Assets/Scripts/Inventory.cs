@@ -1,16 +1,26 @@
 using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
+using Mirror;
+using System;
 
 public class Inventory
 {
     Dictionary<ResourceType, int> resources;
-    List<Item> recipes, equippedItems;
+
+    readonly SyncList<Item>
+        recipes = new SyncList<Item>(),
+        equipment = new SyncList<Item>();
+
     Character owner;
+
+    public int Size => (owner) ? owner.utilityStats.thriftiness : 0;
+    public SyncList<Item> Recipes => recipes;
+    public SyncList<Item> Equipment => equipment;
 
     public bool HasSpace()
     {
-        return equippedItems.Count < owner.utilityStats.thriftiness;
+        return equipment.Count < Size;
     }
 
     public void PickupItem(HexTile tile)
@@ -45,7 +55,7 @@ public class Inventory
 
     public void Merge(Item a, Item b)
     {
-        Debug.Assert(equippedItems.Contains(a) && equippedItems.Contains(b));
+        Debug.Assert(equipment.Contains(a) && equipment.Contains(b));
 
         Unequip(b);
 
@@ -56,14 +66,14 @@ public class Inventory
 
     public void Equip(Item item)
     {
-        equippedItems.Add(item);
+        equipment.Add(item);
         item.Equip(owner);
         UpdateEquipmentStats();
     }
 
     public void Unequip(Item item)
     {
-        equippedItems.Remove(item);
+        equipment.Remove(item);
         item.Unequip();
         UpdateEquipmentStats();
     }
@@ -75,7 +85,7 @@ public class Inventory
 
     private CombatUnit.Stats GetTotalEquipmentStats()
     {
-        return equippedItems
+        return equipment
             .Select(item => item.stats)
             .Aggregate((a, b) => a + b);
     }

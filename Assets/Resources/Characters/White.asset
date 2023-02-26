@@ -21,7 +21,10 @@ MonoBehaviour:
     perception: 1
     thriftiness: 2
   combatStats:
-    attack: 10
-    defense: 10
-    precision: 20
-    agility: 10
+    health: 0
+    attack: 25
+    defense: 6
+    precision: 50
+    agility: 20
+    speed: 0
+    attackTimerRatio: 0

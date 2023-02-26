@@ -69,6 +69,7 @@ public class Character : NetworkBehaviour
     {
         if (--utilityStats.health == 0)
         {
+            Debug.Log($"Hearts: {utilityStats.health}");
             onLostFightSubscription.Dispose();
 
             MessageBroker.Default
@@ -140,8 +141,8 @@ public class Character : NetworkBehaviour
         if (isOwned)
             ClearWarscreen();
 
-        // Проблемы с авторитетом клиента при командовании
-        // InvokeOnCharacterMoved();
+        MessageBroker.Default
+            .Publish<OnStandOnTile>(new OnStandOnTile(){ hex = cubeMap[newCoord] });
     }
 
     private void OnColorSync(Color oldc, Color newc)
@@ -198,6 +199,11 @@ public class Character : NetworkBehaviour
                 ("Thriftiness: " + thriftiness + "\n").PadLeft(20, ' ');
         }
     }
+}
+
+public struct OnStandOnTile
+{
+    public HexTile hex;
 }
 
 public struct OnPlayerLost

@@ -5,10 +5,17 @@ using UnityEngine;
 using Zenject;
 using UniRx;
 using MountainInn;
+using System;
 
 public class Player : NetworkBehaviour
 {
-    public Character character;
+    [SyncVar(hook=nameof(OnCharacterSync))] public Character character;
+
+    private void OnCharacterSync(Character oldv, Character newv)
+    {
+        Debug.Log($"CharacterSync {newv}");
+    }
+
     public Turn turn;
     public bool turnStarted;
     public TurnView turnView;

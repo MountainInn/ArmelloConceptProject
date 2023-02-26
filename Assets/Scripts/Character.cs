@@ -39,8 +39,6 @@ public class Character : NetworkBehaviour
     private void Awake()
     {
         cubeMap = FindObjectOfType<CubeMap>();
-        var characterSelectionView = FindObjectOfType<CharacterSelectionView>();
-        SetCharacterSO(characterSelectionView.GetSelectedCharacter());
     }
 
     [Server]

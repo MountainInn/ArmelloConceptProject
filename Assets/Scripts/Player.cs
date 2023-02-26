@@ -134,7 +134,6 @@ public class Player : NetworkBehaviour
     {
         TargetToggleTurnStarted(false);
         turnSystem.UnregisterPlayer(this);
-        NetworkServer.Destroy(character.gameObject);
     }
 
     [Server]

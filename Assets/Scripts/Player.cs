@@ -283,23 +283,4 @@ public class Player : NetworkBehaviour
 
         NetworkServer.Spawn(newCharacter.gameObject, this.connectionToClient);
     }
-
-    public class Factory : PlaceholderFactory<Player>
-    {
-        new public Player Create()
-        {
-            var player = base.Create();
-
-            return player;
-        }
-        public Player Create(Vector3 startPosition, Quaternion startRotation)
-        {
-            var player = Create();
-
-            player.transform.rotation = startRotation;
-
-            return player;
-        }
-    }
-
 }

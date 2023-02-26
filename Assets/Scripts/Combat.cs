@@ -65,6 +65,9 @@ public class Combat : NetworkBehaviour
         {
             var allUnits = FindObjectsOfType<CombatUnit>();
 
+            if (allUnits.Count() < 2)
+                return;
+
             AddCombatToList(allUnits);
 
             StartAllCombats();

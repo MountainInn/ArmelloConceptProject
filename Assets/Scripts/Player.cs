@@ -204,7 +204,7 @@ public class Player : NetworkBehaviour
             if (cubeMap.Distance(character.coordinates, hex.coordinates) != 1)
                 return;
 
-            CmdMoveCharacter(hex);
+            character.CmdMove(hex);
             CmdSpendMovementPoints(hex.moveCost);
         }
         else if (hex.character.isOwned)
@@ -263,20 +263,6 @@ public class Player : NetworkBehaviour
             CmdResetPoints();
 
         turnView.Toggle(turnStarted);
-    }
-
-    [Command(requiresAuthority = false)]
-    private void CmdMoveCharacter(HexTile hex)
-    {
-        if (character.coordinates == hex.coordinates ||
-            character.OutOfReach(hex.coordinates)
-        )
-        {
-            return;
-        }
-
-        cubeMap[character.coordinates].character = null;
-        character.CmdMove(hex);
     }
 
     [Command(requiresAuthority = false)]

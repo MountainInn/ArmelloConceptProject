@@ -4,7 +4,6 @@ using Mirror;
 using UnityEngine;
 using UniRx;
 using MountainInn;
-using System;
 
 public class Player : NetworkBehaviour
 {

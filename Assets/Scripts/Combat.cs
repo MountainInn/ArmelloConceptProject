@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System;
 using UniRx;
-using UniRx.Triggers;
 using MountainInn;
 using Zenject;
 
@@ -14,7 +13,7 @@ public class Combat : NetworkBehaviour
     [SerializeField]
     float combatDurationInSeconds = 5;
 
-    [SyncVar(hook=nameof(OnIsOngoingSync))]
+    [SyncVar(hook = nameof(OnIsOngoingSync))]
     public bool isOngoing;
     public ReactiveProperty<bool> isOngoingReactive = new ReactiveProperty<bool>(false);
     private void OnIsOngoingSync(bool oldb, bool newb)
@@ -46,7 +45,7 @@ public class Combat : NetworkBehaviour
     public override void OnStartServer()
     {
         combatList = new List<CombatUnit[]>();
-       
+
         MessageBroker.Default
             .Receive<CombatUnit[]>()
             .Subscribe(AddCombatToList)
@@ -79,7 +78,7 @@ public class Combat : NetworkBehaviour
     {
         if (combatList.Any(c => units.All(u => c.Contains(u))))
             return;
-       
+
         combatList.Add(units);
 
         var attackerConn = units[0].netIdentity.connectionToClient;

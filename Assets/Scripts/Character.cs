@@ -42,6 +42,16 @@ public class Character : NetworkBehaviour
         SetCharacterSO(characterSelectionView.GetSelectedCharacter());
     }
 
+    [Server]
+    public override void OnStartServer()
+    {
+        onLostFightSubscription =
+            MessageBroker.Default
+            .Receive<OnLostFight>()
+            .Where(msg => msg.loser == combatUnit)
+            .Subscribe(OnLostFight);
+    }
+
     public override void OnStartClient()
     {
         if (isOwned)
@@ -53,15 +63,6 @@ public class Character : NetworkBehaviour
         }
     }
 
-    [Server]
-    public override void OnStartServer()
-    {
-        onLostFightSubscription =
-            MessageBroker.Default
-            .Receive<OnLostFight>()
-            .Where(msg => msg.loser == combatUnit)
-            .Subscribe(OnLostFight);
-    }
 
     [Server]
     private void OnLostFight(OnLostFight msg)

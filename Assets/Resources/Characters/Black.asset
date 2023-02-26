@@ -23,7 +23,7 @@ MonoBehaviour:
   combatStats:
     health: 0
     attack: 30
-    defense: 5
+    defense: 2
     precision: 50
     agility: 20
     speed: 0

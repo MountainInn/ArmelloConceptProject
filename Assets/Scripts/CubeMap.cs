@@ -132,6 +132,8 @@ public class CubeMap : NetworkBehaviour
         var hexagon = Instantiate(prefab, position, Quaternion.identity, transform)
             .GetComponent<HexTile>();
 
+        hexagon.Initialize(syncData);
+
         return hexagon;
     }
 

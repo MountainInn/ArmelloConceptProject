@@ -9,7 +9,12 @@ using System.Collections.Generic;
 public class TurnSystem : NetworkBehaviour
 {
     [SyncVar] int currentPlayerIndex = -1;
-    [SyncVar] int roundCount = 0;
+    [SyncVar(hook=nameof(OnRoundCountSync))] int roundCount = 0;
+
+    private void OnRoundCountSync(int oldv, int newv)
+    {
+        MessageBroker.Default.Publish<OnRoundEnd>(new OnRoundEnd(){ roundCount = newv });
+    }
 
     [SyncVar(hook = nameof(OnCurrentPlayerNetIdSync))]
     uint currentPlayerNetId = uint.MaxValue;
@@ -26,9 +31,9 @@ public class TurnSystem : NetworkBehaviour
         lobbyUI.onStartGameButtonClicked += StartNextPlayerTurn;
     }
 
-    private void OnEnable()
+    public override void OnStartServer()
     {
-        roundCount = 0;
+        roundCount = 1;
     }
 
     [Server]
@@ -89,7 +94,7 @@ public class TurnSystem : NetworkBehaviour
     private void EndRound()
     {
         roundCount++;
-        MessageBroker.Default.Publish(new OnRoundEnd() { roundCount = roundCount });
+        MessageBroker.Default.Publish<OnRoundEnd>(new OnRoundEnd() { roundCount = roundCount });
     }
 
     private void OnCurrentPlayerNetIdSync(uint oldNetId, uint newNetId)

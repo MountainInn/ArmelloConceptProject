@@ -5,14 +5,7 @@ using Zenject;
 
 public class ArmelloNetworkManager : NetworkManager
 {
-    private Player.Factory playerFactory;
     private TurnSystem turnSystem;
-
-    [Inject]
-    public void Construct(Player.Factory playerFactory, EOSLobbyUI lobbyUI)
-    {
-        this.playerFactory = playerFactory;
-    }
 
     public override void OnStartServer()
     {
@@ -30,7 +23,9 @@ public class ArmelloNetworkManager : NetworkManager
 
     public override void OnServerAddPlayer(NetworkConnectionToClient conn)
     {
-        Player player = playerFactory.Create();
+        Player player =
+            Instantiate(playerPrefab)
+            .GetComponent<Player>();
 
         player.name = $"Player [connId={conn.connectionId}]";
         NetworkServer.AddPlayerForConnection(conn, player.gameObject);

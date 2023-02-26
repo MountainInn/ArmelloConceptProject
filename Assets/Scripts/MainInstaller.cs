@@ -6,51 +6,34 @@ public class MainInstaller : MonoInstaller
     public override void InstallBindings()
     {
         Container
-            .Bind<EOSLobbyUI>()
+            .Bind(
+                typeof(FlagPool),
+                typeof(ResourcesView),
+                typeof(PlayerCustomizationView),
+                typeof(TurnView),
+                typeof(CombatView),
+                typeof(EOSLobbyUI),
+                typeof(CubeMap),
+                typeof(TurnSystem))
             .FromComponentInHierarchy()
             .AsSingle();
 
         Container
-            .Bind<CubeMap>()
-            .FromComponentsInHierarchy()
-            .AsSingle();
-
-        Container
-            .Bind<CubeMapDebug>()
-            .FromComponentsInHierarchy()
-            .AsSingle();
-
-        Container
-            .Bind<TurnSystem>()
-            .FromComponentsInHierarchy()
-            .AsSingle();
-
-        Container
-            .Bind<Tilemap>()
-            .FromComponentInHierarchy()
-            .AsSingle();
-
-        Container
-            .BindFactory<Player, Player.Factory>()
-            .FromComponentInNewPrefabResource("Prefabs/PlayerPrefab")
-            .AsTransient()
-            .Lazy();
-
-        Container
-            .BindFactory<Character, Character.Factory>()
+            .Bind<Character>()
             .FromComponentInNewPrefabResource("Prefabs/Character")
-            .AsTransient()
-            .Lazy();
-
-        Container
-            .Bind<StatView>()
-            .FromResource("Prefabs/Unit View")
             .AsSingle()
             .Lazy();
 
         Container
-            .Bind<CombatView>()
-            .FromComponentInHierarchy()
+            .Bind<Player>()
+            .FromComponentInNewPrefabResource("Prefabs/Player")
+            .AsSingle()
+            .Lazy();
+
+
+        Container
+            .Bind<StatView>()
+            .FromResource("Prefabs/Unit View")
             .AsSingle()
             .Lazy();
     }

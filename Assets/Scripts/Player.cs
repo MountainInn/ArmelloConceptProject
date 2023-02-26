@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Mirror;
 using UnityEngine;
-using Zenject;
 using UniRx;
 using MountainInn;
 using System;
@@ -18,16 +17,7 @@ public class Player : NetworkBehaviour
 
     public Turn turn;
     public bool turnStarted;
-    public TurnView turnView;
-    public TurnSystem turnSystem;
-
-    private CubeMap cubeMap;
-    private Character.Factory characterFactory;
-
-    private PlayerCustomizationView playerCustomizationView;
     public Color clientCharacterColor => playerCustomizationView.playerColor;
-
-    private ResourcesView resourcesView;
 
     [SyncVar(hook = nameof(OnActionPointsSync))]
     public int actionPoints;
@@ -39,35 +29,35 @@ public class Player : NetworkBehaviour
 
     [SyncVar(hook = nameof(OnMovementPointsSync))]
     private int movementPoints;
-    private List<InfluenceTile> influenceTiles;
-    private FlagPool flagPool;
-
     private void OnMovementPointsSync(int ol, int ne)
     {
         if (isOwned)
             resourcesView.UpdateMovementPoints(ne);
     }
 
+    private List<InfluenceTile> influenceTiles;
+
     readonly SyncDictionary<ResourceType, int> resources = new SyncDictionary<ResourceType, int>();
 
-    [Inject]
-    public void Construct(CubeMap cubeMap, Character.Factory characterFactory)
-    {
-        this.characterFactory = characterFactory;
-        this.cubeMap = cubeMap;
-    }
+    private TurnView turnView;
+    private TurnSystem turnSystem;
+    private CubeMap cubeMap;
+    private PlayerCustomizationView playerCustomizationView;
+    private CharacterSelectionView characterSelectionView;
+    private ResourcesView resourcesView;
+    private FlagPool flagPool;
+    private Character prefabCharacter;
 
-    private void Awake()
+    public void Awake()
     {
-        if (!isServer)
-        {
-            var installer = GameObject.FindObjectOfType<MainInstaller>();
-            installer.GetContainer().Inject(this);
-        }
-
         turnView = FindObjectOfType<TurnView>();
+        turnSystem = FindObjectOfType<TurnSystem>();
+        cubeMap = FindObjectOfType<CubeMap>();
         playerCustomizationView = FindObjectOfType<PlayerCustomizationView>();
+        characterSelectionView = FindObjectOfType<CharacterSelectionView>();
         resourcesView = FindObjectOfType<ResourcesView>();
+        flagPool = FindObjectOfType<FlagPool>();
+        prefabCharacter = Resources.Load<Character>("Prefabs/Character");
     }
 
     public override void OnStartLocalPlayer()
@@ -83,7 +73,6 @@ public class Player : NetworkBehaviour
         turnView.onEndTurnClicked += CmdEndTurn;
 
         resources.Callback += OnResourcesSync;
-        flagPool = FindObjectOfType<FlagPool>();
     }
 
     private void OnResourcesSync(SyncIDictionary<ResourceType, int>.Operation op, ResourceType key, int item)

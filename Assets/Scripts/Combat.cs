@@ -158,38 +158,27 @@ public class Combat : NetworkBehaviour
         do
         {
             units
-                .Where(u => u.totalStats.health > 0)
+                .Where(u => u.IsAlive())
                 .ToList()
                 .ForEach(u =>
                 {
                     CombatUnit target =
                         units
                         .NotEqual(u)
-                        .Where(t => t.totalStats.health > 0)
+                        .Where(t => t.IsAlive())
                         .GetRandomOrDefault();
 
                     if (target == default)
                         return;
 
-                    int
-                        dodgeRoll = UnityEngine.Random.Range(0, target.totalStats.agility),
-                        hitRoll = UnityEngine.Random.Range(0, u.totalStats.precision);
-
-                    if (hitRoll > dodgeRoll)
+                    if (u.RollHit(target))
                     {
-                        int damage = u.totalStats.attack / target.totalStats.defense;
-
-                        target.totalStats.health = Math.Max(0, target.totalStats.health - damage);
-
-                        hits.Add(new Hit() {
-                                    time = combatRound,
-                                    attacker = u,
-                                    attackerStats = u.totalStats,
-                                    defendant = target,
-                                    defendantStats = target.totalStats});
+                        Hit hit = u.InflictDamage(target);
+                        hit.time = combatRound;
+                        hits.Add(hit);
                     }
 
-                    if (target.totalStats.health <= 0)
+                    if (!target.IsAlive())
                     {
                         MessageBroker.Default.Publish(new OnLostFight(){ loser = target });
                     }

@@ -114,9 +114,30 @@ public class CombatUnit : NetworkBehaviour
         healthReactive.Value = newH;
     }
 
-    public void UpdateEquipmentStats(Stats updatedEquipmentStats)
+
+    public bool RollHit(CombatUnit target)
     {
-        this.equipmentStats = updatedEquipmentStats;
-        totalStats = characterStats + equipmentStats;
+        int
+            targetDodgeRoll = UnityEngine.Random.Range(0, target.totalStats.agility),
+            thisHitRoll = UnityEngine.Random.Range(0, totalStats.precision);
+      
+        return thisHitRoll > targetDodgeRoll;
     }
+
+    public Hit InflictDamage(CombatUnit target)
+    {
+        int damage = totalStats.attack / target.totalStats.defense;
+
+        target.totalStats.health = Math.Max(0, target.totalStats.health - damage);
+
+        return new Hit()
+        {
+            attacker = this,
+            attackerStats = totalStats,
+            defendant = target,
+            defendantStats = target.totalStats
+        };
+    }
+
+    public bool IsAlive() => GetTotalStats().health > 0;
 }

@@ -181,7 +181,7 @@ public class Combat : NetworkBehaviour
 
                     if (!target.IsAlive())
                     {
-                        MessageBroker.Default.Publish(new OnLostFight(){ loser = target });
+                        MessageBroker.Default.Publish<OnLostFight>(new OnLostFight() { loser = target });
                     }
                 });
 

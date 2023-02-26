@@ -60,9 +60,8 @@ public class CubeMap : NetworkBehaviour
     {
         pickedPositions = new HashSet<Vector3Int>();
         hexagonPrefabs =
-            Resources.LoadAll("Prefabs/3D Tiles/")
+            Resources.LoadAll<HexTile>("Prefabs/3D Tiles/")
             .Where(tile => tile.name != "Base Tile")
-            .Cast<HexTile>()
             .ToArray();
     }
 

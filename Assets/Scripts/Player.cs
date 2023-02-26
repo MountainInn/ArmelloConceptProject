@@ -8,13 +8,7 @@ using System;
 
 public class Player : NetworkBehaviour
 {
-    [SyncVar(hook=nameof(OnCharacterSync))] public Character character;
-
-    private void OnCharacterSync(Character oldv, Character newv)
-    {
-        Debug.Log($"CharacterSync {newv}");
-    }
-
+    [SyncVar] public Character character;
     public Turn turn;
     public bool turnStarted;
     public Color clientCharacterColor => playerCustomizationView.playerColor;

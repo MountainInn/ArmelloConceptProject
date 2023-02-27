@@ -1,10 +1,10 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <ui:Template name="Item" src="project://database/Assets/UI%20Toolkit/Item.uxml?fileID=9197481963319205126&amp;guid=cb2b1bcc48b9a2e4993b0d31c0b5fbab&amp;type=3#Item" />
     <Style src="project://database/Assets/UI%20Toolkit/USS/InventoryUSS.uss?fileID=7433441132597879392&amp;guid=05712babc4bcf464aa54e51730f331d4&amp;type=3#InventoryUSS" />
-    <ui:VisualElement>
-        <ui:ListView focusable="true" class="itemHeight" style="margin-left: 8px; margin-right: 8px; margin-top: 8px; margin-bottom: 8px;" />
-        <ui:VisualElement>
-            <ui:Label text="Ground:" display-tooltip-when-elided="true" />
-            <ui:Button text="Button" display-tooltip-when-elided="true" name="tile-item" class="itemHeight" style="width: 70px; height: 70px; margin-left: 4px; margin-right: 4px; margin-top: 4px; margin-bottom: 4px; padding-left: 0; padding-right: 0; padding-top: 0; padding-bottom: 0;" />
-        </ui:VisualElement>
+    <ui:Label text="Equipment:" display-tooltip-when-elided="true" name="Equipment" />
+    <ui:ListView focusable="true" name="Equipment" class="item" style="margin-left: 8px; margin-right: 8px; margin-top: 8px; margin-bottom: 8px;" />
+    <ui:VisualElement name="Ground">
+        <ui:Label text="Ground:" display-tooltip-when-elided="true" name="GroundLabel" />
+        <ui:Instance template="Item" name="GroundItem" style="width: 91px;" />
     </ui:VisualElement>
 </ui:UXML>

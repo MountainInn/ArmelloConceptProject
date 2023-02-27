@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using UnityEngine;
 using Mirror;
 using System;
+using MountainInn;
 
-public class Inventory
+public class Inventory : NetworkBehaviour
 {
-    Dictionary<ResourceType, int> resources;
+    readonly SyncDictionary<ResourceType, int>
+        resources = new SyncDictionary<ResourceType, int>();
 
     readonly SyncList<Item>
         recipes = new SyncList<Item>(),
@@ -17,6 +19,43 @@ public class Inventory
     public int Size => (owner) ? owner.utilityStats.thriftiness : 0;
     public SyncList<Item> Recipes => recipes;
     public SyncList<Item> Equipment => equipment;
+    public SyncDictionary<ResourceType, int> Resources => resources;
+
+    private InventoryView view;
+    private ResourcesView resourcesView;
+
+
+    public override void OnStartServer()
+    {
+        System.Enum.GetValues(typeof(ResourceType))
+            .Cast<ResourceType>()
+            .ToList()
+            .ForEach(r => resources.Add(r, 0));
+    }
+
+    public override void OnStartClient()
+    {
+        resources.Callback += LogResourceOnSync;
+
+        if (isOwned)
+        {
+            view = FindObjectOfType<InventoryView>();
+            view.SetInventory(this);
+
+            resourcesView = FindObjectOfType<ResourcesView>();
+            resourcesView.SetResourcesSync(Resources);
+
+            owner =
+                NetworkClient.connection.owned.ToList()
+                .Single(netid => netid.GetComponent<Character>())
+                .GetComponent<Character>();
+        }
+    }
+
+    private void LogResourceOnSync(SyncIDictionary<ResourceType, int>.Operation op, ResourceType key, int item)
+    {
+        resources.Log("Resources: ");
+    }
 
     public bool HasSpace()
     {
@@ -48,7 +87,7 @@ public class Inventory
         Debug.Assert(recipes.Contains(item));
         Debug.Assert(HasSpace());
 
-        var newItem = item.Craft(resources);
+        Item newItem = null; // item.Craft(resources);
 
         Equip(newItem);
     }

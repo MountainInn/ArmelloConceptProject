@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Mirror;
+using MountainInn;
 using TMPro;
 using UnityEngine;
 
@@ -10,7 +12,6 @@ public class ResourcesView : MonoBehaviour
     public TextMeshProUGUI movementPointLabel;
 
     Dictionary<ResourceType, TextMeshProUGUI> resourceTexts = new Dictionary<ResourceType, TextMeshProUGUI>();
-
 
     private void Awake()
     {
@@ -28,6 +29,29 @@ public class ResourcesView : MonoBehaviour
                 SetResource(r, 0);
             });
     }
+
+    public void SetResourcesSync(SyncIDictionary<ResourceType, int> resources)
+    {
+        resources.Callback += OnResourcesSync;
+    }
+
+    private void OnResourcesSync(SyncIDictionary<ResourceType, int>.Operation op, ResourceType key, int item)
+    {
+        switch (op)
+        {
+            case SyncIDictionary<ResourceType, int>.Operation.OP_ADD:
+                break;
+            case SyncIDictionary<ResourceType, int>.Operation.OP_SET:
+                break;
+            case SyncIDictionary<ResourceType, int>.Operation.OP_REMOVE:
+                break;
+            case SyncIDictionary<ResourceType, int>.Operation.OP_CLEAR:
+                break;
+        }
+
+        SetResource(key, item);
+    }
+
 
     public void UpdateActionPoints(int actionPoints)
     {

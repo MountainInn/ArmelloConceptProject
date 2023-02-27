@@ -31,7 +31,7 @@ public class InventoryView : MonoBehaviour
         tileItem.SetItem(msg.hex.item);
     }
 
-    public void Initialize(Inventory inventory)
+    public void SetInventory(Inventory inventory)
     {
         inventory.Equipment.Callback += OnEquipSync;
 

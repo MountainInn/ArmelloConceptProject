@@ -5,10 +5,20 @@ using System;
 
 public class ItemView : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
-    [SerializeField] Image icon;
-    [SerializeField] Sprite blankIconSprite;
-    [SerializeField] ItemPopup popup;
+    private Image icon;
+    private Sprite blankIconSprite;
+    private ItemPopup popup;
+
     private Item item;
+
+
+    private void Start()
+    {
+        icon = GetComponent<Image>();
+        popup = FindObjectOfType<ItemPopup>();
+
+        blankIconSprite = Resources.Load<Sprite>("Sprites/Blank Icon");
+    }
 
     public void SetItem(Item item)
     {

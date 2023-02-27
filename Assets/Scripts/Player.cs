@@ -30,7 +30,8 @@ public class Player : NetworkBehaviour
 
     private List<InfluenceTile> influenceTiles;
 
-    readonly SyncDictionary<ResourceType, int> resources = new SyncDictionary<ResourceType, int>();
+    [SyncVar]
+    private Inventory inventory;
 
     private TurnView turnView;
     private TurnSystem turnSystem;
@@ -55,15 +56,10 @@ public class Player : NetworkBehaviour
 
     public override void OnStartServer()
     {
-        System.Enum.GetValues(typeof(ResourceType))
-            .Cast<ResourceType>()
-            .ToList()
-            .ForEach(r => resources.Add(r, 0));
-
         MessageBroker.Default
             .Receive<MiningTile.TileMinedMsg>()
             .Where(msg => msg.player == this)
-            .Subscribe(CmdAddResource)
+            .Subscribe(AddResource)
             .AddTo(this);
 
 
@@ -86,14 +82,9 @@ public class Player : NetworkBehaviour
         MessageBroker.Default.Receive<OnPlayerLost>()
             .Subscribe(OnPlayerLost)
             .AddTo(this);
-
-        CreateCharacter();
-        CreateCharacter();
     }
     public override void OnStartLocalPlayer()
     {
-        // CmdCreateCharacter(clientCharacterColor);
-
         MessageBroker.Default
             .Receive<HexTile>()
             .Subscribe(OnHexClicked)
@@ -101,32 +92,8 @@ public class Player : NetworkBehaviour
 
         turnView.onEndTurnClicked += CmdEndTurn;
 
-        resources.Callback += OnResourcesSync;
+        CmdCreateCharacterAndInventory(this);
     }
-
-    private void OnResourcesSync(SyncIDictionary<ResourceType, int>.Operation op, ResourceType key, int item)
-    {
-        switch (op)
-        {
-            case SyncIDictionary<ResourceType, int>.Operation.OP_ADD:
-                break;
-            case SyncIDictionary<ResourceType, int>.Operation.OP_SET:
-                break;
-            case SyncIDictionary<ResourceType, int>.Operation.OP_REMOVE:
-                break;
-            case SyncIDictionary<ResourceType, int>.Operation.OP_CLEAR:
-                break;
-        }
-
-        if (isOwned)
-        {
-            resources
-                .Log("Resources: ");
-
-            resourcesView.SetResource(key, item);
-        }
-    }
-
 
     [Server]
     private void OnPlayerLost(OnPlayerLost msg)
@@ -163,9 +130,9 @@ public class Player : NetworkBehaviour
         flagPool.Return(player, tile);
     }
 
-    public void CmdAddResource(MiningTile.TileMinedMsg msg)
+    public void AddResource(MiningTile.TileMinedMsg msg)
     {
-        resources[msg.resourceType] += msg.amount;
+        inventory.Resources[msg.resourceType] += msg.amount;
     }
 
     public override void OnStopLocalPlayer()
@@ -268,17 +235,21 @@ public class Player : NetworkBehaviour
         Debug.Assert(actionPoints >= 0);
     }
 
-    [Server]
-    private void CreateCharacter()
+    [Command(requiresAuthority = false)]
+    private void CmdCreateCharacterAndInventory(Player characterOwner)
     {
-        // if (this.character != null)
-        //     NetworkServer.Destroy(this.character.gameObject);
-
         var newCharacter = Instantiate(prefabCharacter);
         newCharacter.player = characterOwner;
         newCharacter.SetCharacterSO(characterSelectionView.GetSelectedCharacter());
         // newCharacter.characterColor = characterColor;
 
         NetworkServer.Spawn(newCharacter.gameObject, this.connectionToClient);
+
+        this.character = newCharacter;
+
+        var prefabInventory = Resources.Load<Inventory>("Prefabs/Inventory");
+        var newInventory = Instantiate(prefabInventory);
+
+        NetworkServer.Spawn(newInventory.gameObject, this.connectionToClient);
     }
 }

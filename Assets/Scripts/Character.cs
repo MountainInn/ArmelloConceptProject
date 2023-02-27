@@ -22,7 +22,7 @@ public class Character : NetworkBehaviour
     [SyncVar]
     public UtilityStats utilityStats;
 
-    [SyncVar] public Player player;
+    public Player player;
     public Inventory inventory;
     private IDisposable onLostFightSubscription;
 
@@ -49,8 +49,6 @@ public class Character : NetworkBehaviour
             .Receive<OnLostFight>()
             .Where(msg => msg.loser == combatUnit)
             .Subscribe(OnLostFight);
-
-        this.player.character = this;
     }
 
     public override void OnStartClient()
@@ -61,6 +59,11 @@ public class Character : NetworkBehaviour
                 CmdInitializeCoordinates();
             else
                 cubeMap.onFullySpawned += CmdInitializeCoordinates;
+
+            player =
+                NetworkClient.connection.owned.ToList()
+                .Single(netid => netid.GetComponent<Player>())
+                .GetComponent<Player>();
         }
     }
 

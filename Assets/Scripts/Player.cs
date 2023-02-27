@@ -275,8 +275,8 @@ public class Player : NetworkBehaviour
         //     NetworkServer.Destroy(this.character.gameObject);
 
         var newCharacter = Instantiate(prefabCharacter);
+        newCharacter.player = characterOwner;
         newCharacter.SetCharacterSO(characterSelectionView.GetSelectedCharacter());
-        newCharacter.player = this;
         // newCharacter.characterColor = characterColor;
 
         NetworkServer.Spawn(newCharacter.gameObject, this.connectionToClient);

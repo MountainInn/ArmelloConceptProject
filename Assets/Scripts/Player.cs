@@ -251,5 +251,7 @@ public class Player : NetworkBehaviour
         var newInventory = Instantiate(prefabInventory);
 
         NetworkServer.Spawn(newInventory.gameObject, this.connectionToClient);
+
+        this.inventory = newInventory;
     }
 }

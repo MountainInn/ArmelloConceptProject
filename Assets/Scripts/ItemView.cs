@@ -36,6 +36,9 @@ public class ItemView : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 
     public void OnPointerEnter(PointerEventData eventData)
     {
+        if (item == null)
+            return;
+
         popup.SetItem(item);
         popup.transform.position = eventData.position;
         popup.SetVisible(true);

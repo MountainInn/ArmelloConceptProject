@@ -172,3 +172,15 @@ namespace MountainInn
         }
     }
 }
+
+static public class NetworkConnectionExt
+{
+    static public T GetSingleOwnedOfType<T>(this Mirror.NetworkConnection connection)
+        where T : Component
+    {
+        return
+            connection.owned.ToList()
+            .Single(netid => netid.GetComponent<T>())
+            .GetComponent<T>();
+    }
+}

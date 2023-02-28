@@ -46,9 +46,7 @@ public class Inventory : NetworkBehaviour
             resourcesView.SetResourcesSync(Resources);
 
             owner =
-                NetworkClient.connection.owned.ToList()
-                .Single(netid => netid.GetComponent<Character>())
-                .GetComponent<Character>();
+                NetworkClient.connection.GetSingleOwnedOfType<Character>();
         }
     }
 

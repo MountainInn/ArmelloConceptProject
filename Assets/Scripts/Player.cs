@@ -3,14 +3,13 @@ using System.Linq;
 using Mirror;
 using UnityEngine;
 using UniRx;
-using MountainInn;
 
 public class Player : NetworkBehaviour
 {
     [SyncVar] public Character character;
     public Turn turn;
     public bool turnStarted;
-    public Color clientCharacterColor => playerCustomizationView.playerColor;
+    public CharacterSettings characterSettings;
 
     [SyncVar(hook = nameof(OnActionPointsSync))]
     public int actionPoints;
@@ -52,6 +51,7 @@ public class Player : NetworkBehaviour
         resourcesView = FindObjectOfType<ResourcesView>();
         flagPool = FindObjectOfType<FlagPool>();
         prefabCharacter = Resources.Load<Character>("Prefabs/Character");
+        characterSettings = Resources.Load<CharacterSettings>("CharacterSettings");
     }
 
     public override void OnStartServer()
@@ -83,6 +83,19 @@ public class Player : NetworkBehaviour
             .Subscribe(OnPlayerLost)
             .AddTo(this);
     }
+
+    [Server]
+    public void SetInventory(Inventory newInventory)
+    {
+        this.inventory = newInventory;
+    }
+
+    [Server]
+    public void SetCharacter(Character newCharacter)
+    {
+        this.character = newCharacter;
+    }
+
     public override void OnStartLocalPlayer()
     {
         MessageBroker.Default
@@ -91,8 +104,6 @@ public class Player : NetworkBehaviour
             .AddTo(this);
 
         turnView.onEndTurnClicked += CmdEndTurn;
-
-        CmdCreateCharacterAndInventory(this);
     }
 
     [Server]
@@ -233,25 +244,5 @@ public class Player : NetworkBehaviour
     {
         actionPoints -= amount;
         Debug.Assert(actionPoints >= 0);
-    }
-
-    [Command(requiresAuthority = false)]
-    private void CmdCreateCharacterAndInventory(Player characterOwner)
-    {
-        var newCharacter = Instantiate(prefabCharacter);
-        newCharacter.player = characterOwner;
-        newCharacter.SetCharacterSO(characterSelectionView.GetSelectedCharacter());
-        // newCharacter.characterColor = characterColor;
-
-        NetworkServer.Spawn(newCharacter.gameObject, this.connectionToClient);
-
-        this.character = newCharacter;
-
-        var prefabInventory = Resources.Load<Inventory>("Prefabs/Inventory");
-        var newInventory = Instantiate(prefabInventory);
-
-        NetworkServer.Spawn(newInventory.gameObject, this.connectionToClient);
-
-        this.inventory = newInventory;
     }
 }

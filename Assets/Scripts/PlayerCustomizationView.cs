@@ -12,6 +12,7 @@ public class PlayerCustomizationView : MonoBehaviour
 
     public string playerName;
     public Color playerColor;
+    private CharacterSettings characterSettings;
 
     private void Awake()
     {
@@ -21,17 +22,21 @@ public class PlayerCustomizationView : MonoBehaviour
             .Select(colorName => new OptionData(colorName))
             .ToList();
 
-        colorDropdown.onValueChanged.AddListener(OnColorChanged);
-
-        nameInputField.onValueChanged.AddListener(OnNameChanged);
-
         colorDropdown.value = 0;
         colorDropdown.onValueChanged.Invoke(0);
+        colorDropdown.onValueChanged.AddListener(OnColorChanged);
+
+
+        nameInputField.text = PlayerPrefs.GetString("Nickname");
+        nameInputField.onValueChanged.AddListener(OnNameChanged);
+
+        characterSettings = Resources.Load<CharacterSettings>("CharacterSettings");
     }
 
     private void OnNameChanged(string newName)
     {
         playerName = newName;
+        PlayerPrefs.SetString("Nickname", playerName);
     }
 
     private void OnColorChanged(int optionId)
@@ -45,6 +50,8 @@ public class PlayerCustomizationView : MonoBehaviour
             (PlayerColors.Yellow) => Color.yellow,
             (_) => throw new System.Exception("Not all color options handled in switch block.")
         };
+
+        characterSettings.characterColor = playerColor;
     }
 
     public enum PlayerColors

@@ -25,12 +25,6 @@ public class TurnSystem : NetworkBehaviour
     ReactiveProperty<uint> playerNetIdStream = new ReactiveProperty<uint>(uint.MaxValue);
     IDisposable turnDisposable;
 
-    private void Awake()
-    {
-        var lobbyUI = FindObjectOfType<EOSLobbyUI>();
-        lobbyUI.onStartGameButtonClicked += StartNextPlayerTurn;
-    }
-
     public override void OnStartServer()
     {
         roundCount = 1;
@@ -39,6 +33,9 @@ public class TurnSystem : NetworkBehaviour
     [Server]
     public void UnregisterPlayer(Player player)
     {
+        if (!players.Contains(player))
+            return;
+
         players.Remove(player);
 
         player.turn = null;

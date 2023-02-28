@@ -14,13 +14,7 @@ public class CharacterSelectionView : MonoBehaviour
 
     ColorBlock defaultColorBlock;
 
-    [Inject]
-    public void Construct(EOSLobbyUI lobbyUI)
-    {
-        lobbyUI.onStartGameButtonClicked += () => gameObject.SetActive(false);
-        lobbyUI.onPreLeaveLobbySuccess += () => gameObject.SetActive(true);
-    }
-
+    CharacterSettings characterSettings;
 
     void Awake()
     {
@@ -40,6 +34,8 @@ public class CharacterSelectionView : MonoBehaviour
                 newCard.SetScriptableObject(so);
                 newCard.button.onClick.AddListener(()=> RadioSelect(newCard));
             });
+
+        characterSettings = Resources.Load<CharacterSettings>("CharacterSettings");
     }
 
     void Start()
@@ -72,6 +68,8 @@ public class CharacterSelectionView : MonoBehaviour
         colorBlock.highlightedColor = Color.Lerp(colorBlock.highlightedColor, Color.green, .3f);
 
         selected.button.colors = colorBlock;
+
+        characterSettings.characterSO = selected.GetCharacterScriptableObject();
     }
 
     public CharacterScriptableObject GetSelectedCharacter()

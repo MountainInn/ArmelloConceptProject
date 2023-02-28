@@ -27,12 +27,6 @@ public class CubeMap : NetworkBehaviour
     int expectedTileCount;
     int spawnedTileCount;
 
-    [Inject]
-    public void Construct(EOSLobbyUI lobbyUI)
-    {
-        lobbyUI.onStartGameButtonClicked += () => Generate(mapRadius);
-    }
-
     public void Awake()
     {
         tiles = new Dictionary<Vector3Int, HexTile>();
@@ -63,6 +57,8 @@ public class CubeMap : NetworkBehaviour
             Resources.LoadAll<HexTile>("Prefabs/3D Tiles/")
             .Where(tile => tile.name != "Base Tile")
             .ToArray();
+
+        Generate(mapRadius);
     }
 
     public override void OnStopClient()

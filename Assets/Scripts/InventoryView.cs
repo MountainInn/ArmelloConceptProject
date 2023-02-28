@@ -22,11 +22,10 @@ public class InventoryView : MonoBehaviour
 
     private void SetTileItem(OnStandOnTile msg)
     {
-        if (!msg.hex.isOwned)
-        {
-            Debug.LogError($"SetTileItem: hex is not owned");
+        var item = msg.hex.item;
+
+        if (item == null)
             return;
-        }
 
         tileItem.SetItem(msg.hex.item);
     }

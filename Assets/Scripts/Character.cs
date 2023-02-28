@@ -8,7 +8,7 @@ using UniRx;
 
 public class Character : NetworkBehaviour
 {
-    [SyncVar(hook = nameof(OnCoordinatesSync))]
+    [SyncVar]
     public Vector3Int coordinates;
 
     public Color characterColor;
@@ -30,9 +30,11 @@ public class Character : NetworkBehaviour
 
     public void SetCharacterSO(CharacterScriptableObject characterSO)
     {
-        // this.gameObject.name = player.name +" "+ characterSO.characterName;
+        this.renderer.material = new Material(this.renderer.material);
         this.renderer.material.SetTexture("_MainTex", characterSO.characterSprite.texture);
+
         this.combatUnit.SetCharacterStats(characterSO.combatStats);
+
         this.utilityStats = characterSO.utilityStats;
     }
 
@@ -84,11 +86,11 @@ public class Character : NetworkBehaviour
     [Command(requiresAuthority = false)]
     private void CmdInitializeCoordinates()
     {
-        var coord = cubeMap.GetRandomCoordinates();
+        Vector3Int coordinates = cubeMap.GetRandomCoordinates();
 
-        var position = cubeMap.PositionFromCoordinates(coord);
+        SetCoordinates(coordinates);
 
-        var hex = cubeMap[coord];
+        HexTile hex = cubeMap[coordinates];
 
         RpcMove(hex, useTween: false);
     }   
@@ -97,33 +99,14 @@ public class Character : NetworkBehaviour
     public void CmdMove(HexTile hex)
     {
         Vector3Int coordinates = hex.coordinates;
-        Vector3 position = cubeMap.PositionFromCoordinates(coordinates);
+
+        SetCoordinates(coordinates);
 
         RpcMove(hex, true);
     }
 
-    [ClientRpc]
-    public void RpcMove(HexTile hex, bool useTween)
-    {
-        Vector3 position = hex.Top;
-        Vector3Int coordinates = hex.coordinates;
-
-        if (useTween)
-        {
-            transform
-                .DOMove(position, .5f)
-                .OnKill(() => CmdSetCoordinates(coordinates));
-        }
-        else
-        {
-            transform.position = position;
-            CmdSetCoordinates(coordinates);
-        }
-
-    }
-
-    [Command(requiresAuthority = false)]
-    private void CmdSetCoordinates(Vector3Int coordinates)
+    [Server]
+    private void SetCoordinates(Vector3Int coordinates)
     {
         GetHexTile().character = null;
 
@@ -139,14 +122,32 @@ public class Character : NetworkBehaviour
         }
     }
 
+    [ClientRpc]
+    public void RpcMove(HexTile hex, bool useTween)
+    {
+        Vector3 position = hex.Top;
+
+        if (useTween)
+        {
+            transform
+                .DOMove(position, .5f)
+                .OnKill(() => OnStandOnTile(hex));
+        }
+        else
+        {
+            transform.position = position;
+            OnStandOnTile(hex);
+        }
+    }
+
     [Client]
-    private void OnCoordinatesSync(Vector3Int oldCoord, Vector3Int newCoord)
+    private void OnStandOnTile(HexTile hex)
     {
         if (isOwned)
             ClearWarscreen();
 
         MessageBroker.Default
-            .Publish<OnStandOnTile>(new OnStandOnTile(){ hex = cubeMap[newCoord] });
+            .Publish<OnStandOnTile>(new OnStandOnTile(){ hex = hex });
     }
 
     [Command(requiresAuthority = false)]

@@ -4,22 +4,20 @@ using System.Collections.Generic;
 using UnityEngine;
 using Mirror;
 
-public class Item
+public class Item : NetworkBehaviour
 {
     [SyncVar] public Character wearer;
     [SyncVar] public int tier;
     [SyncVar] public CombatUnit.Stats stats;
 
-    public string name;
+    new public string name;
     public Sprite icon;
 
     readonly SyncDictionary<ResourceType, int> requiredResources = new SyncDictionary<ResourceType, int>();
 
     private ItemScriptableObject itemSO;
 
-    public Item(){}
-
-    public Item(ItemScriptableObject itemSO)
+    public void Initialize(ItemScriptableObject itemSO)
     {
         itemSO.RequiredResourcesAsDictionary()
             .ToList()
@@ -31,7 +29,7 @@ public class Item
         this.itemSO = itemSO;
     }
 
-    public Item Craft(Dictionary<ResourceType, int> resources)
+    public Item Craft(SyncDictionary<ResourceType, int> resources)
     {
         bool canAfford =
             requiredResources
@@ -47,7 +45,7 @@ public class Item
         return this;
     }
 
-    public void Disassemble(List<Item> equippedItems, List<Item> recipes, Dictionary<ResourceType, int> resources)
+    public void Disassemble(SyncList<Item> recipes, SyncDictionary<ResourceType, int> resources)
     {
         Unequip();
 
@@ -59,7 +57,7 @@ public class Item
             {
                 int scrapResource = Mathf.FloorToInt(kv.Value * 0.5f);
                 resources[kv.Key] += scrapResource;
-            });
+            });        
     }
 
     public void Merge(Item otherItem)

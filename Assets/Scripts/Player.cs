@@ -27,10 +27,8 @@ public class Player : NetworkBehaviour
             resourcesView.UpdateMovementPoints(ne);
     }
 
-    private List<InfluenceTile> influenceTiles;
-
     [SyncVar]
-    private Inventory inventory;
+    public Inventory inventory;
 
     private TurnView turnView;
     private TurnSystem turnSystem;
@@ -56,29 +54,6 @@ public class Player : NetworkBehaviour
 
     public override void OnStartServer()
     {
-        MessageBroker.Default
-            .Receive<MiningTile.TileMinedMsg>()
-            .Where(msg => msg.player == this)
-            .Subscribe(AddResource)
-            .AddTo(this);
-
-
-        influenceTiles = new List<InfluenceTile>();
-
-        MessageBroker.Default
-            .Receive<InfluenceTile.TileTakenMsg>()
-            .Subscribe(OnInfluenceTileTaken)
-            .AddTo(this);
-
-        MessageBroker.Default
-            .Receive<TurnSystem.OnRoundEnd>()
-            .Subscribe(msg =>
-            {
-                influenceTiles
-                    .ForEach(t => t.InfluenceEffect(this));
-            })
-            .AddTo(this);
-
         MessageBroker.Default.Receive<OnPlayerLost>()
             .Subscribe(OnPlayerLost)
             .AddTo(this);
@@ -102,8 +77,6 @@ public class Player : NetworkBehaviour
             .Receive<HexTile>()
             .Subscribe(OnHexClicked)
             .AddTo(this);
-
-        turnView.onEndTurnClicked += CmdEndTurn;
     }
 
     [Server]
@@ -113,38 +86,6 @@ public class Player : NetworkBehaviour
         turnSystem.UnregisterPlayer(this);
     }
 
-    [Server]
-    private void OnInfluenceTileTaken(InfluenceTile.TileTakenMsg msg)
-    {
-        if (msg.newOwner == this)
-        {
-            Debug.Log("You took Influence Tile");
-            influenceTiles.Add(msg.tile);
-            RpcPutFlagOnInfluenceTile(this, msg.hexTile);
-        }
-        else if (msg.previousOwner == this)
-        {
-            Debug.Log("You lost Influence Tile");
-            influenceTiles.Remove(msg.tile);
-            RpcRemoveFlagFromInfluenceTile(this, msg.hexTile);
-        }
-    }
-
-    [ClientRpc]
-    private void RpcPutFlagOnInfluenceTile(Player player, HexTile tile)
-    {
-        var flag = flagPool.Rent(player, tile);
-    }
-    [ClientRpc]
-    private void RpcRemoveFlagFromInfluenceTile(Player player, HexTile tile)
-    {
-        flagPool.Return(player, tile);
-    }
-
-    public void AddResource(MiningTile.TileMinedMsg msg)
-    {
-        inventory.Resources[msg.resourceType] += msg.amount;
-    }
 
     public override void OnStopLocalPlayer()
     {
@@ -178,7 +119,6 @@ public class Player : NetworkBehaviour
         else if (hex.character.isOwned)
         {
             if (actionPoints < 1) return;
-            if (!hex.CanUseTile(this)) return;
 
             CmdUseTile(hex);
             CmdSpendActionPoints(1);
@@ -199,7 +139,7 @@ public class Player : NetworkBehaviour
     [Command(requiresAuthority = false)]
     private void CmdUseTile(HexTile hex)
     {
-        hex.UseTile(this);
+        hex.influence.WorkOn(this);
     }
 
     [Command(requiresAuthority = false)]

@@ -70,6 +70,21 @@ namespace MountainInn
 
     static public class IEnumerableExt
     {
+        static public Dictionary<TKey, TValue> ToDict<TKey, TValue>(this IEnumerable<(TKey, TValue )> source)
+        {
+            return source.ToDictionary(kv => kv.Item1,
+                                       kv => kv.Item2);
+        }
+        static public Dictionary<TKey, TValue> ToDict<TKey, TValue>(this IEnumerable<Tuple<TKey, TValue>> source)
+        {
+            return source.ToDictionary(kv => kv.Item1,
+                                       kv => kv.Item2);
+        }
+        static public Dictionary<TKey, TValue> ToDictionary<TKey, TValue>(this IEnumerable<KeyValuePair<TKey, TValue>> source)
+        {
+            return source.ToDictionary(kv => kv.Key,
+                                       kv => kv.Value);
+        }
         static public IEnumerable<( int, T )> Enumerate<T>(this IEnumerable<T> source)
         {
             int i = 0;
@@ -94,6 +109,17 @@ namespace MountainInn
         static public IEnumerable<T> Shuffle<T>(this IEnumerable<T> source)
         {
             return source.OrderBy(_ => UnityEngine.Random.value);
+        }
+        static public T GetRandomOrThrow<T>(this IEnumerable<T> source)
+        {
+            int count = source.Count();
+
+            if (count == 0)
+                throw new System.Exception("No items in collection!");
+
+            int id = UnityEngine.Random.Range(0, count);
+
+            return source.ElementAt(id);
         }
         static public T GetRandomOrDefault<T>(this IEnumerable<T> source)
         {

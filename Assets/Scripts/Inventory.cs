@@ -55,6 +55,12 @@ public class Inventory : NetworkBehaviour
         resources.Log("Resources: ");
     }
 
+    [Server]
+    public void AddResource(ResourceType resourceType, int income)
+    {
+        Resources[resourceType] += income;
+    }
+
     public bool HasSpace()
     {
         return equipment.Count < Size;

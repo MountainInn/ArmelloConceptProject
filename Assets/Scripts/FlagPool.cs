@@ -2,45 +2,64 @@ using UnityEngine;
 using UniRx;
 using System.Linq;
 using System.Collections.Generic;
-using System;
+using Mirror;
 
-public class FlagPool : MonoBehaviour
+public class FlagPool : NetworkBehaviour
 {
     private ResourcePool<Transform> pool;
 
-    Dictionary<Tuple<Player, HexTile>, Transform> flagDict = new Dictionary<Tuple<Player, HexTile>, Transform>();
+    Dictionary<HexTile, Transform> flagDict = new Dictionary<HexTile, Transform>();
 
     private void Awake()
     {
         pool = new ResourcePool<Transform>("Prefabs/Flag");
     }
 
-    public Transform Rent(Player player, HexTile tile)
+    public override void OnStartServer()
     {
-        if (flagDict.ContainsKey(Tuple.Create(player, tile)))
-            throw new System.Exception("(Player, HexTile) key is already present in flagDict");
+        MessageBroker.Default
+            .Receive<Influence.msgTileCaptured>()
+            .Subscribe(msg => Rent(msg.owner, msg.hexTile))
+            .AddTo(this);
+
+        MessageBroker.Default
+            .Receive<Influence.msgTilePlundered>()
+            .Subscribe(msg => Return(msg.hexTile))
+            .AddTo(this);
+    }
+
+    [Server]
+    private void Rent(Player player, HexTile tile)
+    {
+        if (flagDict.ContainsKey(tile))
+            throw new System.Exception("(HexTile) key is already present in flagDict");
 
         var newFlag = pool.Rent();
 
-        flagDict.Add(Tuple.Create(player, tile), newFlag);
+        flagDict.Add(tile, newFlag);
 
-        SetColor(newFlag.gameObject, player.clientCharacterColor);
+        SetColor(newFlag.gameObject, player.characterSettings.characterColor);
 
         newFlag.position = tile.Top;
         tile.flag = newFlag;
 
-        return newFlag;
+        NetworkServer.Spawn(newFlag.gameObject, player.gameObject);
     }
 
-    public void Return(Player player, HexTile tile)
+    [Server]
+    private void Return(HexTile tile)
     {
-        if (flagDict.TryGetValue(Tuple.Create(player, tile), out Transform flag))
+        if (flagDict.TryGetValue(tile, out Transform flag))
             throw new System.Exception("(Player, HexTile) key is NOT present in flagDict");
 
-        pool.Return(flag);
         tile.flag = null;
+
+        NetworkServer.UnSpawn(flag.gameObject);
+
+        pool.Return(flag);
     }
 
+    [Server]
     private void SetColor(GameObject flagGO, Color color)
     {
         flagGO

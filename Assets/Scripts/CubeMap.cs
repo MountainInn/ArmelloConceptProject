@@ -34,7 +34,7 @@ public class CubeMap : NetworkBehaviour
         expectedTileCount = GetTileCount();
 
         MessageBroker.Default
-            .Receive<HexTile.HexTileSpawned>()
+            .Receive<HexTile.msgSpawned>()
             .Subscribe(spawned =>
             {
                 var hex = spawned.Value;

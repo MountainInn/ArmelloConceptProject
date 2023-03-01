@@ -8,7 +8,7 @@ using Zenject;
 
 public class ArmelloNetworkManager : NetworkManager
 {
-    private const string GAME_SCENE_NAME = "Game Scene";
+    private const string GAME_SCENE_NAME = "SampleScene";
     private TurnSystem turnSystem;
     private Dictionary<int, NetworkConnectionToClient> stillLoadingClients;
 
@@ -17,6 +17,7 @@ public class ArmelloNetworkManager : NetworkManager
     public override void Awake()
     {
         base.Awake();
+
     }
 
     public override void OnStartServer()
@@ -95,11 +96,11 @@ public class ArmelloNetworkManager : NetworkManager
 
     public override void OnClientSceneChanged()
     {
-        if (networkSceneName == GAME_SCENE_NAME)
-        {
-            int connId = NetworkClient.connection.connectionId;
-            NetworkClient.Send(new OnClientLoadedScene(){ connectionId = connId });
-        }
+        // if (networkSceneName == GAME_SCENE_NAME)
+        // {
+        //     int connId = NetworkClient.connection.connectionId;
+        //     NetworkClient.Send(new OnClientLoadedScene(){ connectionId = connId });
+        // }
     }
 
     public struct OnClientLoadedScene : NetworkMessage

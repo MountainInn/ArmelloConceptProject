@@ -116,10 +116,7 @@ public class Character : NetworkBehaviour
 
         hex.character = this;
 
-        if (hex.usableTile is TriggerTile bonusTile)
-        {
-            bonusTile.UseTile(player);
-        }
+        hex.aura.Trigger(this);
     }
 
     [ClientRpc]

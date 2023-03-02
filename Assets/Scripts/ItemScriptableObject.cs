@@ -6,7 +6,6 @@ using UnityEngine;
 public class ItemScriptableObject : ScriptableObject
 {
     [SerializeField] public Sprite icon;
-    [SerializeField] public string itemName;
     [SerializeField] public CombatUnit.Stats combatStats;
     [SerializeField] public CombatUnit.Stats perTier;
     [SerializeField] List<ResourceTuple> requiredResources;

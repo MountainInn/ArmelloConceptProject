@@ -14,8 +14,6 @@ public class CharacterSelectionView : MonoBehaviour
 
     ColorBlock defaultColorBlock;
 
-    CharacterSettings characterSettings;
-
     void Awake()
     {
         var characterCardPrefab = Resources.Load<CharacterCardView>("Prefabs/Character Card");
@@ -34,8 +32,6 @@ public class CharacterSelectionView : MonoBehaviour
                 newCard.SetScriptableObject(so);
                 newCard.button.onClick.AddListener(()=> RadioSelect(newCard));
             });
-
-        characterSettings = Resources.Load<CharacterSettings>("CharacterSettings");
     }
 
     void Start()
@@ -68,8 +64,6 @@ public class CharacterSelectionView : MonoBehaviour
         colorBlock.highlightedColor = Color.Lerp(colorBlock.highlightedColor, Color.green, .3f);
 
         selected.button.colors = colorBlock;
-
-        characterSettings.characterSO = selected.GetCharacterScriptableObject();
     }
 
     public CharacterScriptableObject GetSelectedCharacter()

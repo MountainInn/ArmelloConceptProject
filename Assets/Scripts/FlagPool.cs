@@ -38,7 +38,7 @@ public class FlagPool : NetworkBehaviour
 
         flagDict.Add(tile, newFlag);
 
-        SetColor(newFlag.gameObject, player.characterSettings.characterColor);
+        SetColor(newFlag.gameObject, player.roomPlayer.playerColor);
 
         newFlag.position = tile.Top;
         tile.flag = newFlag;

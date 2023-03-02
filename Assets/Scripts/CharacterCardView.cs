@@ -18,7 +18,7 @@ public class CharacterCardView : MonoBehaviour
         this.characterSO = characterSO;
 
         portrait.sprite = characterSO.characterSprite;
-        characterName.text = characterSO.characterName;
+        characterName.text = characterSO.name;
         characterStats.text =
             characterSO.utilityStats.ToString()
             + "\n" +

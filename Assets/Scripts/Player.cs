@@ -3,13 +3,13 @@ using System.Linq;
 using Mirror;
 using UnityEngine;
 using UniRx;
+using TMPro;
 
 public class Player : NetworkBehaviour
 {
     [SyncVar] public Character character;
     public Turn turn;
     public bool turnStarted;
-    public CharacterSettings characterSettings;
 
     [SyncVar(hook = nameof(OnActionPointsSync))]
     public int actionPoints;
@@ -30,7 +30,7 @@ public class Player : NetworkBehaviour
     [SyncVar]
     public Inventory inventory;
 
-    private ArmelloRoomPlayer roomPlayer;
+    public ArmelloRoomPlayer roomPlayer;
     private TurnView turnView;
     private TurnSystem turnSystem;
     private CubeMap cubeMap;
@@ -39,6 +39,7 @@ public class Player : NetworkBehaviour
     private ResourcesView resourcesView;
     private FlagPool flagPool;
     private Character prefabCharacter;
+    private TextMeshPro nicknameText;
 
     public void Awake()
     {
@@ -52,16 +53,26 @@ public class Player : NetworkBehaviour
         flagPool = FindObjectOfType<FlagPool>();
         prefabCharacter = Resources.Load<Character>("Prefabs/Character");
 
-        name = $"[Player] {PlayerPrefs.GetString("Nickname")}";
         character = GetComponent<Character>();
         inventory = GetComponent<Inventory>();
-        characterSettings = Resources.Load<CharacterSettings>("CharacterSettings");
+
+        InitNicknameText();
+    }
+
+    private void InitNicknameText()
+    {
+        string nickname = roomPlayer.nickname;
+        name = $"[Player] {nickname}";
+
+        nicknameText = GetComponentInChildren<TextMeshPro>();
+        nicknameText.text = nickname;
+        nicknameText.color = roomPlayer.playerColor;
     }
 
     public override void OnStartServer()
     {
-        character.SetCharacterSO(characterSettings.characterSO);
-        character.characterColor = characterSettings.characterColor;
+        character.SetCharacterSO(roomPlayer.characterSO);
+        character.characterColor = roomPlayer.playerColor;
 
         MessageBroker.Default.Receive<OnPlayerLost>()
             .Subscribe(OnPlayerLost)

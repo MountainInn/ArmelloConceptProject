@@ -30,6 +30,7 @@ public class Player : NetworkBehaviour
     [SyncVar]
     public Inventory inventory;
 
+    private ArmelloRoomPlayer roomPlayer;
     private TurnView turnView;
     private TurnSystem turnSystem;
     private CubeMap cubeMap;
@@ -41,6 +42,7 @@ public class Player : NetworkBehaviour
 
     public void Awake()
     {
+        roomPlayer = FindObjectOfType<ArmelloRoomPlayer>();
         turnView = FindObjectOfType<TurnView>();
         turnSystem = FindObjectOfType<TurnSystem>();
         cubeMap = FindObjectOfType<CubeMap>();
@@ -49,11 +51,18 @@ public class Player : NetworkBehaviour
         resourcesView = FindObjectOfType<ResourcesView>();
         flagPool = FindObjectOfType<FlagPool>();
         prefabCharacter = Resources.Load<Character>("Prefabs/Character");
+
+        name = $"[Player] {PlayerPrefs.GetString("Nickname")}";
+        character = GetComponent<Character>();
+        inventory = GetComponent<Inventory>();
         characterSettings = Resources.Load<CharacterSettings>("CharacterSettings");
     }
 
     public override void OnStartServer()
     {
+        character.SetCharacterSO(characterSettings.characterSO);
+        character.characterColor = characterSettings.characterColor;
+
         MessageBroker.Default.Receive<OnPlayerLost>()
             .Subscribe(OnPlayerLost)
             .AddTo(this);
@@ -77,7 +86,12 @@ public class Player : NetworkBehaviour
             .Receive<HexTile>()
             .Subscribe(OnHexClicked)
             .AddTo(this);
+
+
+        MessageBroker.Default.Publish(new msgOnLocalPlayerStarted{ player = this });
     }
+
+    public struct msgOnLocalPlayerStarted { public Player player; }
 
     [Server]
     private void OnPlayerLost(OnPlayerLost msg)
@@ -86,12 +100,22 @@ public class Player : NetworkBehaviour
         turnSystem.UnregisterPlayer(this);
     }
 
+    public override void OnStopServer()
+    {
+        turnSystem.UnregisterPlayer(this);
+    }
 
-    public override void OnStopLocalPlayer()
+    [TargetRpc]
+    public void TargetInitTurnView()
+    {
+        turnView.onEndTurnClicked += CmdEndTurn;
+    }
+
+    [TargetRpc]
+    public void TargetCleanupTurnView()
     {
         turnView.onEndTurnClicked -= CmdEndTurn;
     }
-
 
     [Command(requiresAuthority = false)]
     public void CmdResetPoints()
@@ -157,8 +181,6 @@ public class Player : NetworkBehaviour
     [Command(requiresAuthority = false)]
     private void CmdEndTurn()
     {
-        if (turn == null) return;
-
         turn.forceTurnCompletion.Value = true;
     }
 

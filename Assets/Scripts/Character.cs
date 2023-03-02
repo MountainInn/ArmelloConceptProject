@@ -15,8 +15,6 @@ public class Character : NetworkBehaviour
 
     [Range(1, 10)]
     public int moveRadius = 1;
-    public CombatUnit combatUnit => GetComponent<CombatUnit>();
-    new public MeshRenderer renderer;
     public event Action<Character> onCharacterMoved;
 
     [SyncVar]
@@ -24,6 +22,9 @@ public class Character : NetworkBehaviour
 
     public Player player;
     public Inventory inventory;
+    public CombatUnit combatUnit;
+    new public MeshRenderer renderer;
+
     private IDisposable onLostFightSubscription;
 
     public CubeMap cubeMap;
@@ -41,6 +42,10 @@ public class Character : NetworkBehaviour
     private void Awake()
     {
         cubeMap = FindObjectOfType<CubeMap>();
+        player = GetComponent<Player>();
+        inventory = GetComponent<Inventory>();
+        combatUnit = GetComponent<CombatUnit>();
+        renderer = GetComponentInChildren<MeshRenderer>();
     }
 
     [Server]
@@ -61,11 +66,6 @@ public class Character : NetworkBehaviour
                 CmdInitializeCoordinates();
             else
                 cubeMap.onFullySpawned += CmdInitializeCoordinates;
-
-            player =
-                NetworkClient.connection.owned.ToList()
-                .Single(netid => netid.GetComponent<Player>())
-                .GetComponent<Player>();
         }
     }
 

@@ -57,7 +57,7 @@ public partial class HexTile : NetworkBehaviour, IPointerClickHandler, IPointerE
         influence = GetComponent<Influence>();
         aura = GetComponent<Aura>();
 
-        ToggleVisibility(false);
+        SetColors();
 
         gameObject.name = $"{baseType} {coordinates}";
     }
@@ -84,8 +84,6 @@ public partial class HexTile : NetworkBehaviour, IPointerClickHandler, IPointerE
         this.coordinates = syncData.coord;
 
         gameObject.name = $"{coordinates} {gameObject.name}";
-
-        SetColors();
 
         SetDirty();
     }

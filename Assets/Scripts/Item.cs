@@ -13,20 +13,27 @@ public class Item : NetworkBehaviour
     new public string name;
     public Sprite icon;
 
-    readonly SyncDictionary<ResourceType, int> requiredResources = new SyncDictionary<ResourceType, int>();
+    Dictionary<ResourceType, int> requiredResources = new Dictionary<ResourceType, int>();
 
     private ItemScriptableObject itemSO;
 
     public void Initialize(ItemScriptableObject itemSO)
     {
-        itemSO.RequiredResourcesAsDictionary()
-            .ToList()
-            .ForEach(kv => requiredResources.Add(kv));
-       
+        requiredResources = itemSO.RequiredResourcesAsDictionary();
+
+        gameObject.name = itemSO.name;
         this.name = itemSO.name;
         this.icon = itemSO.icon;
         this.stats = itemSO.combatStats;
         this.itemSO = itemSO;
+    }
+
+    public string RequiredResourcesAsString()
+    {
+        return
+            requiredResources
+            .Select(kv => $"{kv.Key}: {kv.Value}")
+            .Aggregate((a, b) => a + " | " + b);
     }
 
     public Item Craft(SyncDictionary<ResourceType, int> resources)
@@ -57,7 +64,7 @@ public class Item : NetworkBehaviour
             {
                 int scrapResource = Mathf.FloorToInt(kv.Value * 0.5f);
                 resources[kv.Key] += scrapResource;
-            });        
+            });
     }
 
     public void Merge(Item otherItem)

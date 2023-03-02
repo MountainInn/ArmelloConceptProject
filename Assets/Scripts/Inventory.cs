@@ -36,18 +36,17 @@ public class Inventory : NetworkBehaviour
     public override void OnStartClient()
     {
         resources.Callback += LogResourceOnSync;
+    }
 
-        if (isOwned)
-        {
-            view = FindObjectOfType<InventoryView>();
-            view.SetInventory(this);
+    public override void OnStartLocalPlayer()
+    {
+        view = FindObjectOfType<InventoryView>();
+        view.SetInventory(this);
 
-            resourcesView = FindObjectOfType<ResourcesView>();
-            resourcesView.SetResourcesSync(Resources);
+        resourcesView = FindObjectOfType<ResourcesView>();
+        resourcesView.SetResourcesSync(Resources);
 
-            owner =
-                NetworkClient.connection.GetSingleOwnedOfType<Character>();
-        }
+        owner = GetComponent<Character>();
     }
 
     private void LogResourceOnSync(SyncIDictionary<ResourceType, int>.Operation op, ResourceType key, int item)

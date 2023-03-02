@@ -40,7 +40,7 @@ public class ItemView : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
             return;
 
         popup.SetItem(item);
-        popup.transform.position = eventData.position;
+        popup.transform.position = eventData.pointerCurrentRaycast.worldPosition;
         popup.SetVisible(true);
     }
 

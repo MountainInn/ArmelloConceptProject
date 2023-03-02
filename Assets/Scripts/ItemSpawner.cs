@@ -27,7 +27,7 @@ public class ItemSpawner : NetworkBehaviour
         if (UnityEngine.Random.value > .5f)
             return;
 
-        Vector3 position = tile.Top - Vector3.fwd * .3f;
+        Vector3 position = tile.Top - Vector3.fwd * .3f + Vector3.up * .5f;
 
         var newItem = Instantiate(prefabItem, position, Quaternion.identity, null);
         newItem.Initialize(itemSOs.GetRandomOrThrow());

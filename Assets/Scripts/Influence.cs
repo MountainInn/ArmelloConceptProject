@@ -37,6 +37,8 @@ public class Influence : NetworkBehaviour
 
         if (IsNotOwnedBy(player))
         {
+            influencePoints.TryAdd(player.netId, 0);
+
             if (++influencePoints[player.netId] == gameSettings.influenceThreshold)
             {
                 Capture(player);

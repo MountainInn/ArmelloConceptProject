@@ -1215,7 +1215,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0.000030517578, y: 0.000030517578}
+  m_AnchoredPosition: {x: 0.000030517578, y: 0}
   m_SizeDelta: {x: 0, y: -5.4183655}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1059352017
@@ -1704,146 +1704,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 28}
   m_Pivot: {x: 0.5, y: 1}
---- !u!1 &1450716265
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1450716270}
-  - component: {fileID: 1450716269}
-  - component: {fileID: 1450716268}
-  - component: {fileID: 1450716267}
-  - component: {fileID: 1450716266}
-  m_Layer: 0
-  m_Name: Room Network Manager
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &1450716266
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1450716265}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 09c2b9adb023e6547aa45a0e8bf5fcfc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  apiKeys: {fileID: 11400000, guid: 2c4877059ae47d64f957cc0b2812fe97, type: 2}
-  authInterfaceLogin: 0
-  authInterfaceCredentialType: 6
-  devAuthToolPort: 7878
-  devAuthToolCredentialName: 
-  connectInterfaceCredentialType: 10
-  deviceModel: PC Windows 64bit
-  displayName: User
-  epicLoggerLevel: 200
-  collectPlayerMetrics: 0
-  checkForEpicLauncherAndRestart: 0
-  delayedInitialization: 0
-  platformTickIntervalInSeconds: 0
-  tickBudgetInMilliseconds: 0
---- !u!114 &1450716267
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1450716265}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: db5efa10489208a44a5e560cc56f93ed, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  AttributeKeys:
-  - lobby_name
---- !u!114 &1450716268
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1450716265}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f5f2d307354f3ea49b3ea12e6763a9fe, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  Channels: 0200000000000000
-  timeout: 25
-  maxFragments: 55
-  ignoreCachedMessagesAtStartUpInSeconds: 2
-  relayControl: 1
---- !u!114 &1450716269
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1450716265}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 615e6c6589cf9e54cad646b5a11e0529, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  dontDestroyOnLoad: 1
-  runInBackground: 1
-  autoStartServerBuild: 1
-  autoConnectClientBuild: 0
-  sendRate: 30
-  offlineScene: Assets/Scenes/Preparation Scene.unity
-  onlineScene: 
-  transport: {fileID: 1450716268}
-  networkAddress: localhost
-  maxConnections: 100
-  authenticator: {fileID: 0}
-  playerPrefab: {fileID: 6100752503988652460, guid: 7989bb1ec1397fc4e83c7443a77c9680, type: 3}
-  autoCreatePlayer: 1
-  playerSpawnMethod: 0
-  spawnPrefabs:
-  - {fileID: 3510028339065026706, guid: cb3c99f22b2a929499284aac58c9eee0, type: 3}
-  - {fileID: 943283474332557209, guid: 0060340ad84bae748bb1334b9e901725, type: 3}
-  - {fileID: 7546959795988468870, guid: 76ac4439b014ae849bfb3eb4d8c8670d, type: 3}
-  - {fileID: 1145828421140888241, guid: 87b23aa6c1846674aa7836e379bb7916, type: 3}
-  - {fileID: 6635377679985840410, guid: bce7515a2f7ec0a4fbb397968ad6011f, type: 3}
-  - {fileID: 7278258989069780905, guid: da19f582c1e609d42997898e875d788a, type: 3}
-  - {fileID: 2995948742179404381, guid: cf001d308bde47242b9b0803570cdce6, type: 3}
-  - {fileID: 5913888825258297133, guid: e2f0dc3b636218b4ba20bb0ea2e5641e, type: 3}
-  - {fileID: 6895463704499183142, guid: bad32fe9b715ee7c6892b3c6f30d211f, type: 3}
-  - {fileID: 2456886808427508281, guid: d5cdbd59e7c96e453b5be4b4a94a64ad, type: 3}
-  - {fileID: 2456886808427508281, guid: f73754495dcf2c62eb37b9fddb02dc42, type: 3}
-  - {fileID: 7929548903702104824, guid: 5c6ec5664c7177a4ca65c7009135f6a2, type: 3}
-  timeInterpolationGui: 0
-  showRoomGUI: 1
-  minPlayers: 1
-  roomPlayerPrefab: {fileID: -4693668797156816766, guid: c1597264100e16d4fb29dbb07634de97, type: 3}
-  RoomScene: Assets/Scenes/Preparation Scene.unity
-  GameplayScene: Assets/Scenes/SampleScene.unity
-  _allPlayersReady: 0
-  roomSlots: []
-  clientIndex: 0
---- !u!4 &1450716270
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1450716265}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.016772479, y: -0.34549016, z: -0.09418701}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_RootOrder: 3
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1487124129
 GameObject:
   m_ObjectHideFlags: 0
@@ -2601,6 +2461,146 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1929879993}
   m_CullTransparentMesh: 1
+--- !u!1 &1954750121
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1954750126}
+  - component: {fileID: 1954750125}
+  - component: {fileID: 1954750124}
+  - component: {fileID: 1954750123}
+  - component: {fileID: 1954750122}
+  m_Layer: 0
+  m_Name: Armello Room Network Manager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1954750122
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1954750121}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 09c2b9adb023e6547aa45a0e8bf5fcfc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  apiKeys: {fileID: 11400000, guid: 2c4877059ae47d64f957cc0b2812fe97, type: 2}
+  authInterfaceLogin: 0
+  authInterfaceCredentialType: 6
+  devAuthToolPort: 7878
+  devAuthToolCredentialName: 
+  connectInterfaceCredentialType: 10
+  deviceModel: PC Windows 64bit
+  displayName: User
+  epicLoggerLevel: 200
+  collectPlayerMetrics: 0
+  checkForEpicLauncherAndRestart: 0
+  delayedInitialization: 0
+  platformTickIntervalInSeconds: 0
+  tickBudgetInMilliseconds: 0
+--- !u!114 &1954750123
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1954750121}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: db5efa10489208a44a5e560cc56f93ed, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  AttributeKeys:
+  - lobby_name
+--- !u!114 &1954750124
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1954750121}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f5f2d307354f3ea49b3ea12e6763a9fe, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Channels: 0200000000000000
+  timeout: 25
+  maxFragments: 55
+  ignoreCachedMessagesAtStartUpInSeconds: 2
+  relayControl: 1
+--- !u!114 &1954750125
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1954750121}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9183b91b6d914414b9d64d1be245e596, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  dontDestroyOnLoad: 1
+  runInBackground: 1
+  autoStartServerBuild: 1
+  autoConnectClientBuild: 0
+  sendRate: 30
+  offlineScene: Assets/Scenes/Preparation Scene.unity
+  onlineScene: 
+  transport: {fileID: 1954750124}
+  networkAddress: localhost
+  maxConnections: 100
+  authenticator: {fileID: 0}
+  playerPrefab: {fileID: 6100752503988652460, guid: 7989bb1ec1397fc4e83c7443a77c9680, type: 3}
+  autoCreatePlayer: 1
+  playerSpawnMethod: 0
+  spawnPrefabs:
+  - {fileID: 3510028339065026706, guid: cb3c99f22b2a929499284aac58c9eee0, type: 3}
+  - {fileID: 943283474332557209, guid: 0060340ad84bae748bb1334b9e901725, type: 3}
+  - {fileID: 7546959795988468870, guid: 76ac4439b014ae849bfb3eb4d8c8670d, type: 3}
+  - {fileID: 1145828421140888241, guid: 87b23aa6c1846674aa7836e379bb7916, type: 3}
+  - {fileID: 6635377679985840410, guid: bce7515a2f7ec0a4fbb397968ad6011f, type: 3}
+  - {fileID: 7278258989069780905, guid: da19f582c1e609d42997898e875d788a, type: 3}
+  - {fileID: 2995948742179404381, guid: cf001d308bde47242b9b0803570cdce6, type: 3}
+  - {fileID: 5913888825258297133, guid: e2f0dc3b636218b4ba20bb0ea2e5641e, type: 3}
+  - {fileID: 6895463704499183142, guid: bad32fe9b715ee7c6892b3c6f30d211f, type: 3}
+  - {fileID: 2456886808427508281, guid: d5cdbd59e7c96e453b5be4b4a94a64ad, type: 3}
+  - {fileID: 2456886808427508281, guid: f73754495dcf2c62eb37b9fddb02dc42, type: 3}
+  - {fileID: 7929548903702104824, guid: 5c6ec5664c7177a4ca65c7009135f6a2, type: 3}
+  timeInterpolationGui: 0
+  showRoomGUI: 1
+  minPlayers: 1
+  roomPlayerPrefab: {fileID: 9021821640631777493, guid: c1597264100e16d4fb29dbb07634de97, type: 3}
+  RoomScene: Assets/Scenes/Preparation Scene.unity
+  GameplayScene: Assets/Scenes/SampleScene.unity
+  _allPlayersReady: 0
+  roomSlots: []
+  clientIndex: 0
+--- !u!4 &1954750126
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1954750121}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.016772479, y: -0.34549016, z: -0.09418701}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 3
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1976413440
 GameObject:
   m_ObjectHideFlags: 0

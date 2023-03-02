@@ -30,6 +30,24 @@ public class TurnSystem : NetworkBehaviour
         roundCount = 1;
     }
 
+    public override void OnStartClient()
+    {
+        MessageBroker.Default
+            .Receive<Player.msgOnLocalPlayerStarted>()
+            .Subscribe(msg => CmdRegisterPlayer(msg.player))
+            .AddTo(this);
+    }
+
+    [Command(requiresAuthority = false)]
+    public void CmdRegisterPlayer(Player player)
+    {
+        RegisterPlayer(player);
+
+        MessageBroker.Default.Publish(new msgOnPlayerRegistered());
+    }
+
+    public struct msgOnPlayerRegistered{}
+
     [Server]
     public void UnregisterPlayer(Player player)
     {
@@ -39,6 +57,8 @@ public class TurnSystem : NetworkBehaviour
         players.Remove(player);
 
         player.turn = null;
+
+        player.TargetCleanupTurnView();
 
         if (currentPlayerNetId == player.netId)
             StartNextPlayerTurn();
@@ -57,12 +77,17 @@ public class TurnSystem : NetworkBehaviour
 
         players.Add(player);
         players = players.Shuffle().ToList();
+
+        player.TargetInitTurnView();
     }
 
     [Server]
     public void StartNextPlayerTurn()
     {
+        Debug.Log($"NextPlayerTurn");
         if (players.Count == 0) return;
+
+        Debug.Log($"NextPlayerTurnStarted");
 
         currentPlayerNetId = uint.MaxValue;
 

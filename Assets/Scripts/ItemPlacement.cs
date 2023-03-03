@@ -1,52 +1,58 @@
 using Mirror;
+using System.Linq;
 
 public class ItemPlacement : NetworkBehaviour
 {
-    [SyncVar] HexTile hexTile;
-    Item item;
+    readonly SyncDictionary<HexTile, Item>
+        itemPlacements = new SyncDictionary<HexTile, Item>();
 
-    private void Awake()
+    public bool IsPlaced(Item item)
     {
-        item = GetComponent<Item>();
+        return itemPlacements.Values.Contains(item);
     }
 
-    public bool IsPlaced => hexTile != null;
+    public Item GetItem(HexTile hexTile)
+    {
+        return itemPlacements[hexTile];
+    }
 
     [Command(requiresAuthority = false)]
-    public void CmdDropItem(Inventory inventory, HexTile hexTile)
+    public void CmdDropItem(Inventory inventory, HexTile hexTile, Item item)
     {
-        if (IsPlaced)
+        if (IsPlaced(item))
             return;
 
         inventory.Unequip(item);
 
-        this.hexTile = hexTile;
+        itemPlacements.Add(hexTile, item);
+
+        item.transform.position = ItemSpawner.GetItemPosition(hexTile);
 
         item.ToggleParticle(true);
     }
 
     [Server]
-    public void PutItem(HexTile hexTile)
+    public void PutItem(HexTile hexTile, Item item)
     {
-        if (IsPlaced)
+        if (IsPlaced(item))
             return;
 
-        this.hexTile = hexTile;
+        itemPlacements.Add(hexTile, item);
+
+        item.transform.position = ItemSpawner.GetItemPosition(hexTile);
 
         item.ToggleParticle(true);
     }
 
     [Command(requiresAuthority = false)]
-    public void CmdPickupItem(Inventory inventory)
+    public void CmdPickupItem(Inventory inventory, HexTile hexTile, Item item)
     {
-        if (hexTile == null)
-            return;
         if (!inventory.HasSpace())
             return;
 
         inventory.Equip(item);
 
-        hexTile = null;
+        itemPlacements.Remove(hexTile);
 
         item.ToggleParticle(false);
     }

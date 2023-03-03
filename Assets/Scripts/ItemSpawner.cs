@@ -7,7 +7,7 @@ using MountainInn;
 public class ItemSpawner : NetworkBehaviour
 {
     ItemScriptableObject[] itemSOs;
-
+    private ItemPlacement itemPlacement;
     Item prefabItem;
 
     public override void OnStartServer()
@@ -19,6 +19,7 @@ public class ItemSpawner : NetworkBehaviour
 
         prefabItem = Resources.Load<Item>("Prefabs/Item");
         itemSOs = Resources.LoadAll<ItemScriptableObject>("Items");
+        itemPlacement = FindObjectOfType<ItemPlacement>();
     }
 
     [Server]
@@ -34,8 +35,7 @@ public class ItemSpawner : NetworkBehaviour
 
         NetworkServer.Spawn(newItem.gameObject);
 
-        ItemPlacement placement = newItem.GetComponent<ItemPlacement>();
-        placement.PutItem(tile);
+        itemPlacement.PutItem(tile, newItem);
     }
 
     static public Vector3 GetItemPosition(HexTile tile)

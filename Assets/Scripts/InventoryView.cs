@@ -15,7 +15,7 @@ public class InventoryView : MonoBehaviour
 
     private ItemView prefabItemView;
     private Sprite blankIconSprite;
-
+    private ItemPlacement itemPlacement;
     private Inventory inventory;
     private HexTile groundTile;
 
@@ -23,6 +23,7 @@ public class InventoryView : MonoBehaviour
     {
         prefabItemView = Resources.Load<ItemView>("Prefabs/Item Slot");
         blankIconSprite = Resources.Load<Sprite>("Sprites/Blank Icon");
+        itemPlacement = FindObjectOfType<ItemPlacement>();
     }
     private void Start()
     {
@@ -33,12 +34,12 @@ public class InventoryView : MonoBehaviour
 
     private void SetTileItem(OnStandOnTile msg)
     {
-        var item = msg.hex.GetItem();
+        var item = itemPlacement.GetItem(msg.hex);
 
         if (item == null)
             return;
 
-        groundItemView.SetItem(msg.hex.GetItem());
+        groundItemView.SetItem(item);
         groundTile = msg.hex;
     }
 
@@ -75,16 +76,12 @@ public class InventoryView : MonoBehaviour
     {
         if (groundItemView.Item == null)
             return;
-
-        ItemPlacement placement =
-            groundItemView.Item.GetComponent<ItemPlacement>();
-
-        if (!placement.IsPlaced)
+        if (!itemPlacement.IsPlaced(groundItemView.Item))
             return;
         if (inventory.HasSpace() == false)
             return;
 
-        placement.CmdPickupItem(inventory);
+        itemPlacement.CmdPickupItem(inventory, groundTile, groundItemView.Item);
         
         groundItemView.SetItem(null);
     }
@@ -97,9 +94,8 @@ public class InventoryView : MonoBehaviour
             return;
 
         Item dropItem = view.Item;
-        ItemPlacement placement = dropItem.GetComponent<ItemPlacement>();
 
-        placement.CmdDropItem(inventory, groundTile);
+        itemPlacement.CmdDropItem(inventory, groundTile, dropItem);
 
         groundItemView.SetItem(dropItem);
     }

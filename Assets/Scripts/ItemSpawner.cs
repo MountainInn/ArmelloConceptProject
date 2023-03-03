@@ -20,20 +20,26 @@ public class ItemSpawner : NetworkBehaviour
         prefabItem = Resources.Load<Item>("Prefabs/Item");
         itemSOs = Resources.LoadAll<ItemScriptableObject>("Items");
     }
-    
+
     [Server]
     private void SpawnItem(HexTile tile)
     {
         if (UnityEngine.Random.value > .5f)
             return;
 
-        Vector3 position = tile.Top - Vector3.fwd * .3f + Vector3.up * .5f;
+        Vector3 position = GetItemPosition(tile);
 
         var newItem = Instantiate(prefabItem, position, Quaternion.identity, null);
         newItem.Initialize(itemSOs.GetRandomOrThrow());
 
         NetworkServer.Spawn(newItem.gameObject);
 
-        tile.item = newItem;
+        ItemPlacement placement = newItem.GetComponent<ItemPlacement>();
+        placement.PutItem(tile);
+    }
+
+    static public Vector3 GetItemPosition(HexTile tile)
+    {
+        return tile.Top - Vector3.fwd * .3f + Vector3.up * .5f;
     }
 }

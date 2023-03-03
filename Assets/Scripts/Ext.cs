@@ -94,11 +94,15 @@ namespace MountainInn
                 i++;
             }
         }
-        static public IEnumerable<T> LookAt<T>(this IEnumerable<T> source, Action<T> action)
+        static public IEnumerable<T> Map<T>(this IEnumerable<T> source, Action<T> action)
         {
             foreach (var item in source)
             {
                 action.Invoke(item);
+            }
+
+            foreach (var item in source)
+            {
                 yield return item;
             }
         }

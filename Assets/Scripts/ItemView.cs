@@ -3,7 +3,7 @@ using UnityEngine.EventSystems;
 using UnityEngine;
 using System;
 
-public class ItemView : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
+public class ItemView : MonoBehaviour, IPointerDownHandler, IPointerEnterHandler, IPointerExitHandler
 {
     private Image icon;
     private Sprite blankIconSprite;
@@ -11,6 +11,9 @@ public class ItemView : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 
     private Item item;
 
+    public Item Item => item;
+
+    public event Action onLeftClick, onRightClick;
 
     private void Start()
     {
@@ -52,5 +55,17 @@ public class ItemView : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     internal void ClearSlot()
     {
         icon.sprite = blankIconSprite;
+    }
+
+    public void OnPointerDown(PointerEventData eventData)
+    {
+        if (eventData.button == PointerEventData.InputButton.Left)
+        {
+            onLeftClick?.Invoke();
+        }
+        else if (eventData.button == PointerEventData.InputButton.Right)
+        {
+            onRightClick?.Invoke();
+        }
     }
 }

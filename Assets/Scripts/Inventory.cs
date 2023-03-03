@@ -40,13 +40,12 @@ public class Inventory : NetworkBehaviour
 
     public override void OnStartLocalPlayer()
     {
-        view = FindObjectOfType<InventoryView>();
-        view.SetInventory(this);
-
-        resourcesView = FindObjectOfType<ResourcesView>();
-        resourcesView.SetResourcesSync(Resources);
-
         owner = GetComponent<Character>();
+        view = FindObjectOfType<InventoryView>();
+        resourcesView = FindObjectOfType<ResourcesView>();
+
+        view.SetInventory(this);
+        resourcesView.SetResourcesSync(Resources);
     }
 
     private void LogResourceOnSync(SyncIDictionary<ResourceType, int>.Operation op, ResourceType key, int item)
@@ -65,61 +64,77 @@ public class Inventory : NetworkBehaviour
         return equipment.Count < Size;
     }
 
-    public void PickupItem(HexTile tile)
+    [Command(requiresAuthority = false)]
+    public void CmdDisassemble(Item item)
     {
-        if (!HasSpace())
-            return;
-
-        Equip(tile.item);
-        tile.item = null;
-    }
-
-    public void DropItem(Item item)
-    {
-        HexTile tile = owner.GetHexTile();
-
-        if (tile.item != null)
-            return;
-        
         Unequip(item);
-        tile.item = item;
+
+        Recipes.Add(item);
+
+        item.costResources
+            .ToList()
+            .ForEach(cost =>
+            {
+                int scrapResource = Mathf.FloorToInt(cost.Value * 0.5f);
+                resources[cost.Key] += scrapResource;
+            });
+
+        NetworkServer.UnSpawn(item.gameObject);
     }
 
-    public void Craft(Item item)
+    [Command(requiresAuthority = false)]
+    public void CmdCraft(Item recipe)
     {
-        Debug.Assert(recipes.Contains(item));
-        Debug.Assert(HasSpace());
+        if (!Recipes.Contains(recipe) || !HasSpace())
+            return;
 
-        Item newItem = null; // item.Craft(resources);
+        bool canAfford =
+            recipe.costResources
+            .All(cost => Resources[cost.Key] >= cost.Value);
 
-        Equip(newItem);
+        if (!canAfford)
+            return;
+
+        recipe.costResources
+            .ToList()
+            .ForEach(cost => Resources[cost.Key] -= cost.Value);
+
+        Equip(recipe);
     }
 
-    public void Merge(Item a, Item b)
+    [Command(requiresAuthority = false)]
+    public void CmdMerge(Item a, Item b)
     {
-        Debug.Assert(equipment.Contains(a) && equipment.Contains(b));
+        if (a.tier != b.tier)
+            return;
+        if (a.itemSO != b.itemSO)
+            return;
+        if (!equipment.Contains(a) || !equipment.Contains(b))
+            return;
 
         Unequip(b);
+        NetworkServer.UnSpawn(b.gameObject);
 
-        a.Merge(b);
+        a.TierUp();
 
         UpdateEquipmentStats();
     }
 
+    [Server]
     public void Equip(Item item)
     {
         equipment.Add(item);
-        item.Equip(owner);
         UpdateEquipmentStats();
     }
 
+    [Server]
     public void Unequip(Item item)
     {
         equipment.Remove(item);
-        item.Unequip();
         UpdateEquipmentStats();
     }
 
+    [Server]
     private void UpdateEquipmentStats()
     {
         owner.combatUnit.SetEquipmentStats(GetTotalEquipmentStats());
@@ -127,8 +142,11 @@ public class Inventory : NetworkBehaviour
 
     private CombatUnit.Stats GetTotalEquipmentStats()
     {
-        return equipment
+        return
+            (equipment.Any())
+            ? equipment
             .Select(item => item.stats)
-            .Aggregate((a, b) => a + b);
+            .Aggregate((a, b) => a + b)
+            : default;
     }
 }

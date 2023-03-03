@@ -36,7 +36,6 @@ public partial class HexTile : NetworkBehaviour, IPointerClickHandler, IPointerE
     [SerializeField] private Transform topTransform;
 
     [HideInInspector] [SyncVar] public Character character;
-    [HideInInspector] [SyncVar] public Item item;
 
     [HideInInspector] public bool isVisible = false;
     [HideInInspector] public Vector3 Top => topTransform.position;

@@ -332,7 +332,7 @@ GameObject:
   - component: {fileID: 372467501}
   - component: {fileID: 372467502}
   m_Layer: 5
-  m_Name: Character Holds
+  m_Name: Equipment
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1074,7 +1074,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   equipmentContainer: {fileID: 372467501}
-  tileItem: {fileID: 2128941925}
+  groundItemView: {fileID: 2128941925}
 --- !u!1 &778096247
 GameObject:
   m_ObjectHideFlags: 0
@@ -2013,7 +2013,7 @@ GameObject:
   - component: {fileID: 1597178902}
   - component: {fileID: 1597178901}
   m_Layer: 5
-  m_Name: Inventory Label
+  m_Name: Equipment Label
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3292,7 +3292,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 440357289947874167, guid: 26ba9de8be9dd3247a8ee92ab13c0ff6, type: 3}
       propertyPath: m_Name
-      value: Item Slot
+      value: Ground Item Slot
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 26ba9de8be9dd3247a8ee92ab13c0ff6, type: 3}

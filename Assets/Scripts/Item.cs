@@ -12,14 +12,16 @@ public class Item : NetworkBehaviour
 
     new public string name;
     public Sprite icon;
+    private ParticleSystem particle;
 
-    Dictionary<ResourceType, int> requiredResources = new Dictionary<ResourceType, int>();
+    public Dictionary<ResourceType, int> costResources {get; private set;}
 
-    private ItemScriptableObject itemSO;
+    public ItemScriptableObject itemSO {get; private set;}
 
     public void Initialize(ItemScriptableObject itemSO)
     {
-        requiredResources = itemSO.RequiredResourcesAsDictionary();
+        particle = GetComponentInChildren<ParticleSystem>();
+        costResources = itemSO.RequiredResourcesAsDictionary();
 
         gameObject.name = itemSO.name;
         this.name = itemSO.name;
@@ -28,78 +30,20 @@ public class Item : NetworkBehaviour
         this.itemSO = itemSO;
     }
 
+    public void ToggleParticle(bool toggle)
+    {
+        if (toggle)
+            particle.Play();
+        else
+            particle.Stop();
+    }
+
     public string RequiredResourcesAsString()
     {
         return
-            requiredResources
+            costResources
             .Select(kv => $"{kv.Key}: {kv.Value}")
             .Aggregate((a, b) => a + " | " + b);
-    }
-
-    public Item Craft(SyncDictionary<ResourceType, int> resources)
-    {
-        bool canAfford =
-            requiredResources
-            .All(kv => resources[kv.Key] >= kv.Value);
-
-        if (!canAfford)
-            return null;
-
-        requiredResources
-            .ToList()
-            .ForEach(kv => resources[kv.Key] -= kv.Value);
-        
-        return this;
-    }
-
-    public void Disassemble(SyncList<Item> recipes, SyncDictionary<ResourceType, int> resources)
-    {
-        Unequip();
-
-        recipes.Add(this);
-
-        requiredResources
-            .ToList()
-            .ForEach(kv =>
-            {
-                int scrapResource = Mathf.FloorToInt(kv.Value * 0.5f);
-                resources[kv.Key] += scrapResource;
-            });
-    }
-
-    public void Merge(Item otherItem)
-    {
-        if (this.GetType() != otherItem.GetType())
-            return;
-
-        if (this.tier != otherItem.tier)
-            return;
-
-        Character cacheWearer
-            = this.wearer;
-
-        this.Unequip();
-        otherItem.Unequip();
-        otherItem = null;
-
-        this.TierUp();
-
-        this.Equip(cacheWearer);
-    }
-
-    public void Equip(Character wearer)
-    {
-        Debug.Assert(wearer == null);
-
-        this.wearer = wearer;
-    }
-
-    public void Unequip()
-    {
-        if (wearer == null)
-            return;
-
-        this.wearer = null;
     }
 
     public void TierUp()

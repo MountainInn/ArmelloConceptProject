@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Linq;
 using Zenject;
+using System;
 
 public class CharacterSelectionView : MonoBehaviour
 {
@@ -13,6 +14,7 @@ public class CharacterSelectionView : MonoBehaviour
     CharacterCardView selected;
 
     ColorBlock defaultColorBlock;
+    public event Action<CharacterScriptableObject> onSelectedCharacterChanged;
 
     void Awake()
     {
@@ -64,13 +66,12 @@ public class CharacterSelectionView : MonoBehaviour
         colorBlock.highlightedColor = Color.Lerp(colorBlock.highlightedColor, Color.green, .3f);
 
         selected.button.colors = colorBlock;
+
+        onSelectedCharacterChanged?.Invoke(GetSelectedCharacter());
     }
 
     public CharacterScriptableObject GetSelectedCharacter()
     {
-        if (selected == null)
-            throw new System.NullReferenceException("CharacterSelectionView.selected is null.");
-
         return selected.GetCharacterScriptableObject();
     }
 }

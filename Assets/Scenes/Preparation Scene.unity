@@ -817,7 +817,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 266844778}
   m_Direction: 0
   m_Value: 0
-  m_Size: 0.99999994
+  m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -1215,7 +1215,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0.000030517578, y: 0}
+  m_AnchoredPosition: {x: 0.000030517578, y: 0.00033569336}
   m_SizeDelta: {x: 0, y: -5.4183655}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1059352017
@@ -2565,18 +2565,16 @@ MonoBehaviour:
   autoCreatePlayer: 1
   playerSpawnMethod: 0
   spawnPrefabs:
-  - {fileID: 3510028339065026706, guid: cb3c99f22b2a929499284aac58c9eee0, type: 3}
-  - {fileID: 943283474332557209, guid: 0060340ad84bae748bb1334b9e901725, type: 3}
-  - {fileID: 7546959795988468870, guid: 76ac4439b014ae849bfb3eb4d8c8670d, type: 3}
-  - {fileID: 1145828421140888241, guid: 87b23aa6c1846674aa7836e379bb7916, type: 3}
   - {fileID: 6635377679985840410, guid: bce7515a2f7ec0a4fbb397968ad6011f, type: 3}
-  - {fileID: 7278258989069780905, guid: da19f582c1e609d42997898e875d788a, type: 3}
   - {fileID: 2995948742179404381, guid: cf001d308bde47242b9b0803570cdce6, type: 3}
-  - {fileID: 5913888825258297133, guid: e2f0dc3b636218b4ba20bb0ea2e5641e, type: 3}
-  - {fileID: 6895463704499183142, guid: bad32fe9b715ee7c6892b3c6f30d211f, type: 3}
-  - {fileID: 2456886808427508281, guid: d5cdbd59e7c96e453b5be4b4a94a64ad, type: 3}
-  - {fileID: 2456886808427508281, guid: f73754495dcf2c62eb37b9fddb02dc42, type: 3}
-  - {fileID: 7929548903702104824, guid: 5c6ec5664c7177a4ca65c7009135f6a2, type: 3}
+  - {fileID: 1696168540019010737, guid: a6f8deafbf2a9ae4d803b93fefc2ae9e, type: 3}
+  - {fileID: 1696168540019010737, guid: 8f5a075db4d264b41987889a29daf327, type: 3}
+  - {fileID: 1696168540019010737, guid: d22b918fa0154f2469bbbb5c6c334792, type: 3}
+  - {fileID: 1696168540019010737, guid: 54477447a42118b4ab4d4c6ae48aa61f, type: 3}
+  - {fileID: 1696168540019010737, guid: e1bec388f0367b34497e91c3a8aa4818, type: 3}
+  - {fileID: 1696168540019010737, guid: 9bdd7c8097034874ca1d4980a0503e7f, type: 3}
+  - {fileID: 1716873505125694647, guid: 025eec87fe4112e47b0d43d049a245ac, type: 3}
+  - {fileID: 2174319019795375046, guid: 286feb22b719a47409cb6b7a0f394d52, type: 3}
   timeInterpolationGui: 0
   showRoomGUI: 1
   minPlayers: 1
@@ -2685,7 +2683,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 24015969}
   m_Direction: 2
   m_Value: 0
-  m_Size: 1
+  m_Size: 0.99999624
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:

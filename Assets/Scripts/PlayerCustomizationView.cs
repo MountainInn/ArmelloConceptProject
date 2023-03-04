@@ -10,8 +10,11 @@ public class PlayerCustomizationView : MonoBehaviour
     [SerializeField] TMP_InputField nameInputField;
     [SerializeField] TMP_Dropdown colorDropdown;
 
-    public string playerName;
-    public Color playerColor;
+    public string playerName { get; private set; }
+    public Color playerColor { get; private set; }
+
+    public event Action<string> onNameChanged;
+    public event Action<Color> onColorChanged;
 
     private void Awake()
     {
@@ -34,6 +37,8 @@ public class PlayerCustomizationView : MonoBehaviour
     {
         playerName = newName;
         PlayerPrefs.SetString("Nickname", playerName);
+
+        onNameChanged?.Invoke(playerName);
     }
 
     private void OnColorChanged(int optionId)
@@ -47,6 +52,8 @@ public class PlayerCustomizationView : MonoBehaviour
             (PlayerColors.Yellow) => Color.yellow,
             (_) => throw new System.Exception("Not all color options handled in switch block.")
         };
+
+        onColorChanged?.Invoke(playerColor);
     }
 
     public enum PlayerColors

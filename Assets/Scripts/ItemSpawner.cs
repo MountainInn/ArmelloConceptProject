@@ -3,12 +3,16 @@ using Mirror;
 using UniRx;
 using UnityEngine;
 using MountainInn;
+using System.Collections.Generic;
 
 public class ItemSpawner : NetworkBehaviour
 {
     ItemScriptableObject[] itemSOs;
     private ItemPlacement itemPlacement;
     Item prefabItem;
+
+    List<(HexTile, Item)>
+        itemsBuffer = new List<(HexTile, Item)>();
 
     public override void OnStartServer()
     {
@@ -17,9 +21,18 @@ public class ItemSpawner : NetworkBehaviour
             .Subscribe(msg => SpawnItem(msg.Value))
             .AddTo(this);
 
+        FindObjectOfType<CubeMap>()
+            .onFullySpawned += ApplyItemBuffer;
+
         prefabItem = Resources.Load<Item>("Prefabs/Item");
         itemSOs = Resources.LoadAll<ItemScriptableObject>("Items");
         itemPlacement = FindObjectOfType<ItemPlacement>();
+    }
+
+    public override void OnStopServer()
+    {
+        FindObjectOfType<CubeMap>()
+            .onFullySpawned -= ApplyItemBuffer;
     }
 
     [Server]
@@ -35,7 +48,16 @@ public class ItemSpawner : NetworkBehaviour
 
         NetworkServer.Spawn(newItem.gameObject);
 
-        itemPlacement.PutItem(tile, newItem);
+        itemsBuffer.Add((tile, newItem));
+    }
+
+    [Server]
+    private void ApplyItemBuffer()
+    {
+        itemsBuffer
+            .ForEach(tup => itemPlacement.PutItem(tup.Item1, tup.Item2));
+
+        itemsBuffer.Clear();
     }
 
     static public Vector3 GetItemPosition(HexTile tile)

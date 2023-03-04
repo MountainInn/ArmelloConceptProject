@@ -4,15 +4,14 @@ using UnityEngine;
 
 public class ArmelloRoomPlayer : NetworkRoomPlayer
 {
-    [SyncVar] public string nickname;
-    [SyncVar] public Color playerColor;
-
-    [SyncVar(hook = nameof(LoadCharacterSO))] private string characterSOName;
-
-    private void LoadCharacterSO(string oldv, string newv)
+    [SyncVar(hook = nameof(OnNicknameSync))] public string nickname;
+    private void OnNicknameSync(string oldv, string newv)
     {
-        characterSO = Resources.Load<CharacterScriptableObject>($"Characters/{newv}");
+        RenameGameObject(newv);
     }
+
+    [SyncVar] public Color playerColor;
+    [SyncVar(hook = nameof(LoadCharacterSO))] private string characterSOName;
 
     public CharacterScriptableObject characterSO;
 
@@ -24,23 +23,43 @@ public class ArmelloRoomPlayer : NetworkRoomPlayer
         customizationView = FindObjectOfType<PlayerCustomizationView>();
         characterSelection = FindObjectOfType<CharacterSelectionView>();
 
-        SaveData();
+        customizationView.onNameChanged += SetName;
+        customizationView.onColorChanged += SetColor;
+
+        characterSelection.onSelectedCharacterChanged += SetSelectedCharacter;
+
+        LoadName();
+        SetColor(customizationView.playerColor);
+        SetSelectedCharacter(characterSelection.GetSelectedCharacter());
     }
 
-    public override void ReadyStateChanged(bool oldReadyState, bool newReadyState)
+    private void SetSelectedCharacter(CharacterScriptableObject selectedCharacterSO)
     {
-        if (newReadyState == true)
-        {
-            SaveData();
-        }
+        characterSOName = selectedCharacterSO.name;
     }
 
-    private void SaveData()
+    private void LoadCharacterSO(string oldv, string newv)
+    {
+        characterSO = Resources.Load<CharacterScriptableObject>($"Characters/{newv}");
+    }
+
+    private void SetColor(Color color)
+    {
+        playerColor = color;
+    }
+
+    private void LoadName()
     {
         nickname = PlayerPrefs.GetString("Nickname");
-        name = $"[Room Player] {nickname}";
+    }
+    private void SetName(string playerName)
+    {
+        nickname = playerName;
+        RenameGameObject(nickname);
+    }
 
-        playerColor = customizationView.playerColor;
-        characterSOName = characterSelection.GetSelectedCharacter().name;
+    private void RenameGameObject(string nickname)
+    {
+        name = $"[Room Player] {nickname}";
     }
 }

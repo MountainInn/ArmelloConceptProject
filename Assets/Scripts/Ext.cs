@@ -96,15 +96,13 @@ namespace MountainInn
         }
         static public IEnumerable<T> Map<T>(this IEnumerable<T> source, Action<T> action)
         {
-            foreach (var item in source)
-            {
-                action.Invoke(item);
-            }
-
-            foreach (var item in source)
-            {
-                yield return item;
-            }
+            return
+                source.ToList()
+                .Select(item =>
+                {
+                    action.Invoke(item);
+                    return item;
+                });
         }
         static public IEnumerable<(T, O)> Zip<T, O>(this IEnumerable<T> source, IEnumerable<O> other)
         {

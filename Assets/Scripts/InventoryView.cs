@@ -34,10 +34,7 @@ public class InventoryView : MonoBehaviour
 
     private void SetTileItem(OnStandOnTile msg)
     {
-        var item = itemPlacement.GetItem(msg.hex);
-
-        if (item == null)
-            return;
+        itemPlacement.TryGetItem(msg.hex, out Item item);
 
         groundItemView.SetItem(item);
         groundTile = msg.hex;
@@ -60,7 +57,7 @@ public class InventoryView : MonoBehaviour
             .ToList();
 
         groundItemView.onLeftClick += () => Pickup(inventory);
-        groundItemView.onLeftClick += () => Disassemble(inventory, groundItemView);
+        groundItemView.onRightClick += () => Disassemble(inventory, groundItemView);
     }
 
     private void Disassemble(Inventory inventory, ItemView view)
@@ -68,7 +65,7 @@ public class InventoryView : MonoBehaviour
         if (view.Item == null)
             return;
 
-        inventory.CmdDisassemble(view.Item);
+        itemPlacement.CmdDisassemble(inventory, view.Item);
         view.SetItem(null);
     }
 

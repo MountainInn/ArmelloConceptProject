@@ -79,7 +79,7 @@ public class Inventory : NetworkBehaviour
                 resources[cost.Key] += scrapResource;
             });
 
-        NetworkServer.UnSpawn(item.gameObject);
+        NetworkServer.Destroy(item.gameObject);
     }
 
     [Command(requiresAuthority = false)]

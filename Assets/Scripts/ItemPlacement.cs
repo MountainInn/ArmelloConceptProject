@@ -11,9 +11,9 @@ public class ItemPlacement : NetworkBehaviour
         return itemPlacements.Values.Contains(item);
     }
 
-    public Item GetItem(HexTile hexTile)
+    public bool TryGetItem(HexTile hexTile, out Item item)
     {
-        return itemPlacements[hexTile];
+        return itemPlacements.TryGetValue(hexTile, out item);
     }
 
     [Command(requiresAuthority = false)]
@@ -55,5 +55,20 @@ public class ItemPlacement : NetworkBehaviour
         itemPlacements.Remove(hexTile);
 
         item.ToggleParticle(false);
+    }
+
+    [Command(requiresAuthority = false)]
+    public void CmdDisassemble(Inventory inventory, Item item)
+    {
+        if (IsPlaced(item))
+        {
+            var hexTile =
+                itemPlacements
+                .First(kv => kv.Value == item);
+
+            itemPlacements.Remove(hexTile);
+        }
+
+        inventory.CmdDisassemble(item);
     }
 }

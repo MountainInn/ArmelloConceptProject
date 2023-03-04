@@ -63,5 +63,9 @@ PrefabInstance:
       propertyPath: m_Name
       value: Forest
       objectReference: {fileID: 0}
+    - target: {fileID: 8179368960336868763, guid: e2f0dc3b636218b4ba20bb0ea2e5641e, type: 3}
+      propertyPath: resourceAmount
+      value: 2
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: e2f0dc3b636218b4ba20bb0ea2e5641e, type: 3}

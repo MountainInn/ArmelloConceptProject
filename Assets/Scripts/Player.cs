@@ -4,6 +4,7 @@ using Mirror;
 using UnityEngine;
 using UniRx;
 using TMPro;
+using System;
 
 public class Player : NetworkBehaviour
 {
@@ -30,20 +31,25 @@ public class Player : NetworkBehaviour
     [SyncVar]
     public Inventory inventory;
 
-    public ArmelloRoomPlayer roomPlayer;
+    [SyncVar] public ArmelloRoomPlayer roomPlayer;
     private TurnView turnView;
     private TurnSystem turnSystem;
     private CubeMap cubeMap;
     private PlayerCustomizationView playerCustomizationView;
     private CharacterSelectionView characterSelectionView;
     private ResourcesView resourcesView;
+
     private FlagPool flagPool;
     private Character prefabCharacter;
     private TextMeshPro nicknameText;
 
+    internal void SetRoomPlayer(ArmelloRoomPlayer armelloRoomPlayer)
+    {
+        roomPlayer = armelloRoomPlayer;
+    }
+
     public void Awake()
     {
-        roomPlayer = FindObjectOfType<ArmelloRoomPlayer>();
         turnView = FindObjectOfType<TurnView>();
         turnSystem = FindObjectOfType<TurnSystem>();
         cubeMap = FindObjectOfType<CubeMap>();
@@ -52,14 +58,33 @@ public class Player : NetworkBehaviour
         resourcesView = FindObjectOfType<ResourcesView>();
         flagPool = FindObjectOfType<FlagPool>();
         prefabCharacter = Resources.Load<Character>("Prefabs/Character");
-
-        character = GetComponent<Character>();
-        inventory = GetComponent<Inventory>();
-
-        InitNicknameText();
     }
 
-    private void InitNicknameText()
+    public override void OnStartServer()
+    {
+        MessageBroker.Default.Receive<OnPlayerLost>()
+            .Subscribe(OnPlayerLost)
+            .AddTo(this);
+    }
+
+    public override void OnStartClient()
+    {
+        InitNicknameText(roomPlayer);
+
+        InitCharacterSO(roomPlayer);
+
+        inventory = GetComponent<Inventory>();
+    }
+
+    public void InitCharacterSO(ArmelloRoomPlayer roomPlayer)
+    {
+        character = GetComponent<Character>();
+
+        character.SetCharacterSO(roomPlayer.characterSO);
+        character.characterColor = roomPlayer.playerColor;
+    }
+
+    private void InitNicknameText(ArmelloRoomPlayer roomPlayer)
     {
         string nickname = roomPlayer.nickname;
         name = $"[Player] {nickname}";
@@ -67,28 +92,6 @@ public class Player : NetworkBehaviour
         nicknameText = GetComponentInChildren<TextMeshPro>();
         nicknameText.text = nickname;
         nicknameText.color = roomPlayer.playerColor;
-    }
-
-    public override void OnStartServer()
-    {
-        character.SetCharacterSO(roomPlayer.characterSO);
-        character.characterColor = roomPlayer.playerColor;
-
-        MessageBroker.Default.Receive<OnPlayerLost>()
-            .Subscribe(OnPlayerLost)
-            .AddTo(this);
-    }
-
-    [Server]
-    public void SetInventory(Inventory newInventory)
-    {
-        this.inventory = newInventory;
-    }
-
-    [Server]
-    public void SetCharacter(Character newCharacter)
-    {
-        this.character = newCharacter;
     }
 
     public override void OnStartLocalPlayer()
@@ -99,7 +102,7 @@ public class Player : NetworkBehaviour
             .AddTo(this);
 
 
-        MessageBroker.Default.Publish(new msgOnLocalPlayerStarted{ player = this });
+        MessageBroker.Default.Publish(new msgOnLocalPlayerStarted { player = this });
     }
 
     public struct msgOnLocalPlayerStarted { public Player player; }

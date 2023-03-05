@@ -36,39 +36,13 @@ public class ArmelloNetworkManager : NetworkRoomManager
     public override GameObject OnRoomServerCreateGamePlayer(NetworkConnectionToClient conn, GameObject roomPlayer)
     {
         ++loadingPlayers;
-        // loadingPlayers = NetworkServer.connections.Select(kv => kv.Key).ToHashSet();
-        // loadingPlayers.Log("LoadingPlayers");
 
-        return null;
+        Player newPlayer = Instantiate(playerPrefab).GetComponent<Player>();
+
+        newPlayer.SetRoomPlayer(roomPlayer.GetComponent<ArmelloRoomPlayer>());
+
+        return newPlayer.gameObject;
     }
-
-    // [Server]
-    // public override bool OnRoomServerSceneLoadedForPlayer(NetworkConnectionToClient conn, GameObject roomPlayer, GameObject gamePlayer)
-    // {
-    //     turnSystem = FindObjectOfType<TurnSystem>();
-    //     turnSystem.RegisterPlayer(gamePlayer.GetComponent<Player>());
-
-    //     loadingPlayers.Remove(conn.connectionId);
-
-    //     if (loadingPlayers.Count == 0)
-    //     {
-    //         turnSystem.StartNextPlayerTurn();
-    //     }
-
-    //     return true;
-    // }
-
-
-    // [Server]
-    // public override void OnRoomServerDisconnect(NetworkConnectionToClient conn)
-    // {
-    //     Player disconnectedPlayer =
-    //         conn.GetSingleOwnedOfType<Player>();
-
-    //     turnSystem.UnregisterPlayer(disconnectedPlayer);
-
-    //     base.OnRoomServerDisconnect(conn);
-    // }
 
     private T InstantiatePrefab<T>(string name)
     {

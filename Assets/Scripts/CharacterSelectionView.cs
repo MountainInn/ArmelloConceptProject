@@ -14,7 +14,7 @@ public class CharacterSelectionView : MonoBehaviour
     CharacterCardView selected;
 
     ColorBlock defaultColorBlock;
-    public event Action<CharacterScriptableObject> onSelectedCharacterChanged;
+    public event Action<string> onSelectedCharacterChanged;
 
     void Awake()
     {
@@ -67,7 +67,7 @@ public class CharacterSelectionView : MonoBehaviour
 
         selected.button.colors = colorBlock;
 
-        onSelectedCharacterChanged?.Invoke(GetSelectedCharacter());
+        onSelectedCharacterChanged?.Invoke(GetSelectedCharacter().name);
     }
 
     public CharacterScriptableObject GetSelectedCharacter()

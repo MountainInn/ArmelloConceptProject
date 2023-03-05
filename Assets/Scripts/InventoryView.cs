@@ -4,18 +4,16 @@ using System.Collections.Generic;
 using System.Linq;
 using UniRx;
 using UnityEngine;
-using UnityEngine.UI;
 
 public class InventoryView : MonoBehaviour
 {
     [SerializeField] Transform equipmentContainer;
-    [SerializeField] ItemView groundItemView;
+    [SerializeField] ItemView groundView;
 
     private List<ItemView> equipmentViews;
 
     private ItemView prefabItemView;
     private Sprite blankIconSprite;
-    private ItemPlacement itemPlacement;
     private Inventory inventory;
     private HexTile groundTile;
 
@@ -23,20 +21,19 @@ public class InventoryView : MonoBehaviour
     {
         prefabItemView = Resources.Load<ItemView>("Prefabs/Item Slot");
         blankIconSprite = Resources.Load<Sprite>("Sprites/Blank Icon");
-        itemPlacement = FindObjectOfType<ItemPlacement>();
     }
     private void Start()
     {
         MessageBroker.Default
             .Receive<OnStandOnTile>()
-            .Subscribe(SetTileItem);
+            .Subscribe(SwitchGroundTile);
     }
 
-    private void SetTileItem(OnStandOnTile msg)
+    private void SwitchGroundTile(OnStandOnTile msg)
     {
-        itemPlacement.TryGetItem(msg.hex, out Item item);
+        msg.hex.itemPlacement.TryGetItem(out Item item);
 
-        groundItemView.SetItem(item);
+        groundView.SetItem(item);
         groundTile = msg.hex;
     }
 
@@ -52,49 +49,59 @@ public class InventoryView : MonoBehaviour
             .Map(view =>
             {
                 view.onLeftClick += () => DropItem(inventory, view);
-                view.onRightClick += () => Disassemble(inventory, view);
+                view.onRightClick += () => DisassembleFromEquipment(inventory, view);
             })
             .ToList();
 
-        groundItemView.onLeftClick += () => Pickup(inventory);
-        groundItemView.onRightClick += () => Disassemble(inventory, groundItemView);
+        groundView.onLeftClick += () => Pickup(inventory);
+        groundView.onRightClick += () => DisassembleFromGround();
     }
 
-    private void Disassemble(Inventory inventory, ItemView view)
+    private void DisassembleFromEquipment(Inventory inventory, ItemView view)
     {
         if (view.Item == null)
             return;
 
-        itemPlacement.CmdDisassemble(inventory, view.Item);
+        inventory.CmdDisassemble(view.Item);
+
         view.SetItem(null);
+    }
+    private void DisassembleFromGround()
+    {
+        if (!groundTile.itemPlacement.IsPlaced)
+            return;
+
+        groundTile.itemPlacement.CmdDisassemble(inventory);
+
+        groundView.SetItem(null);
     }
 
     private void Pickup(Inventory inventory)
     {
-        if (groundItemView.Item == null)
+        if (groundView.Item == null)
             return;
-        if (!itemPlacement.IsPlaced(groundItemView.Item))
+        if (!groundTile.itemPlacement.IsPlaced)
             return;
-        if (inventory.HasSpace() == false)
+        if (!inventory.HasSpace())
             return;
 
-        itemPlacement.CmdPickupItem(inventory, groundTile, groundItemView.Item);
-        
-        groundItemView.SetItem(null);
+        groundTile.itemPlacement.CmdPickupItem(inventory);
+
+        groundView.SetItem(null);
     }
 
     private void DropItem(Inventory inventory, ItemView view)
     {
         if (view.Item == null)
             return;
-        if (groundItemView.Item != null)
+        if (groundTile.itemPlacement.IsPlaced)
             return;
 
         Item dropItem = view.Item;
 
-        itemPlacement.CmdDropItem(inventory, groundTile, dropItem);
+        groundTile.itemPlacement.CmdDropItem(inventory, dropItem);
 
-        groundItemView.SetItem(dropItem);
+        groundView.SetItem(dropItem);
     }
 
     private ItemView InstantiateItemView(Item item)

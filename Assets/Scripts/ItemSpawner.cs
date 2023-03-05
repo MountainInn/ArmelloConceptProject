@@ -8,11 +8,7 @@ using System.Collections.Generic;
 public class ItemSpawner : NetworkBehaviour
 {
     ItemScriptableObject[] itemSOs;
-    private ItemPlacement itemPlacement;
     Item prefabItem;
-
-    List<(HexTile, Item)>
-        itemsBuffer = new List<(HexTile, Item)>();
 
     public override void OnStartServer()
     {
@@ -21,18 +17,8 @@ public class ItemSpawner : NetworkBehaviour
             .Subscribe(msg => SpawnItem(msg.Value))
             .AddTo(this);
 
-        FindObjectOfType<CubeMap>()
-            .onFullySpawned += ApplyItemBuffer;
-
         prefabItem = Resources.Load<Item>("Prefabs/Item");
         itemSOs = Resources.LoadAll<ItemScriptableObject>("Items");
-        itemPlacement = FindObjectOfType<ItemPlacement>();
-    }
-
-    public override void OnStopServer()
-    {
-        FindObjectOfType<CubeMap>()
-            .onFullySpawned -= ApplyItemBuffer;
     }
 
     [Server]
@@ -44,22 +30,13 @@ public class ItemSpawner : NetworkBehaviour
         Vector3 position = GetItemPosition(tile);
 
         var newItem = Instantiate(prefabItem, position, Quaternion.identity, null);
-        newItem.Initialize(itemSOs.GetRandomOrThrow());
+
+        newItem.SetItemSOName(itemSOs.GetRandomOrThrow().name);
 
         NetworkServer.Spawn(newItem.gameObject);
 
-        itemsBuffer.Add((tile, newItem));
+        tile.itemPlacement.PutItem(newItem);
     }
-
-    [Server]
-    private void ApplyItemBuffer()
-    {
-        itemsBuffer
-            .ForEach(tup => itemPlacement.PutItem(tup.Item1, tup.Item2));
-
-        itemsBuffer.Clear();
-    }
-
     static public Vector3 GetItemPosition(HexTile tile)
     {
         return tile.Top - Vector3.fwd * .3f + Vector3.up * .5f;

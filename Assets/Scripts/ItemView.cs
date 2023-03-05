@@ -15,11 +15,10 @@ public class ItemView : MonoBehaviour, IPointerDownHandler, IPointerEnterHandler
 
     public event Action onLeftClick, onRightClick;
 
-    private void Start()
+    private void Awake()
     {
         icon = GetComponent<Image>();
         popup = FindObjectOfType<ItemPopup>();
-
         blankIconSprite = Resources.Load<Sprite>("Sprites/Blank Icon");
     }
 

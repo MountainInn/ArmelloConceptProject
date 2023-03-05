@@ -3,72 +3,59 @@ using System.Linq;
 
 public class ItemPlacement : NetworkBehaviour
 {
-    readonly SyncDictionary<HexTile, Item>
-        itemPlacements = new SyncDictionary<HexTile, Item>();
+    [SyncVar] Item item;
+    HexTile hexTile;
 
-    public bool IsPlaced(Item item)
+    private void Awake()
     {
-        return itemPlacements.Values.Contains(item);
+        hexTile = GetComponent<HexTile>();
     }
 
-    public bool TryGetItem(HexTile hexTile, out Item item)
+    public bool IsPlaced => item != null;
+
+    public bool TryGetItem(out Item item)
     {
-        return itemPlacements.TryGetValue(hexTile, out item);
+        item = this.item;
+        return item;
     }
 
     [Command(requiresAuthority = false)]
-    public void CmdDropItem(Inventory inventory, HexTile hexTile, Item item)
+    public void CmdDropItem(Inventory inventory, Item item)
     {
-        if (IsPlaced(item))
-            return;
-
         inventory.Unequip(item);
 
-        itemPlacements.Add(hexTile, item);
+        this.item = item;
 
         item.transform.position = ItemSpawner.GetItemPosition(hexTile);
 
-        item.ToggleParticle(true);
+        item.RpcToggleParticle(true);
     }
 
     [Server]
-    public void PutItem(HexTile hexTile, Item item)
+    public void PutItem(Item item)
     {
-        if (IsPlaced(item))
-            return;
-
-        itemPlacements.Add(hexTile, item);
+        this.item = item;
 
         item.transform.position = ItemSpawner.GetItemPosition(hexTile);
 
-        item.ToggleParticle(true);
+        item.RpcToggleParticle(true);
     }
 
     [Command(requiresAuthority = false)]
-    public void CmdPickupItem(Inventory inventory, HexTile hexTile, Item item)
+    public void CmdPickupItem(Inventory inventory)
     {
-        if (!inventory.HasSpace())
-            return;
-
         inventory.Equip(item);
 
-        itemPlacements.Remove(hexTile);
+        item.RpcToggleParticle(false);
 
-        item.ToggleParticle(false);
+        item = null;
     }
 
     [Command(requiresAuthority = false)]
-    public void CmdDisassemble(Inventory inventory, Item item)
+    public void CmdDisassemble(Inventory inventory)
     {
-        if (IsPlaced(item))
-        {
-            var hexTile =
-                itemPlacements
-                .First(kv => kv.Value == item);
-
-            itemPlacements.Remove(hexTile);
-        }
-
         inventory.CmdDisassemble(item);
+
+        item = null;
     }
 }

@@ -24,6 +24,10 @@ public class Inventory : NetworkBehaviour
     private InventoryView view;
     private ResourcesView resourcesView;
 
+    private void Awake()
+    {
+        owner = GetComponent<Character>();
+    }
 
     public override void OnStartServer()
     {
@@ -40,7 +44,6 @@ public class Inventory : NetworkBehaviour
 
     public override void OnStartLocalPlayer()
     {
-        owner = GetComponent<Character>();
         view = FindObjectOfType<InventoryView>();
         resourcesView = FindObjectOfType<ResourcesView>();
 

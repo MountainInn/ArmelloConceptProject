@@ -49,12 +49,14 @@ public partial class HexTile : NetworkBehaviour, IPointerClickHandler, IPointerE
     public ResourceType resourceType;
     public int resourceAmount;
     public Aura aura;
+    public ItemPlacement itemPlacement;
 
     private void Awake()
     {
         meshRenderer = GetComponent<MeshRenderer>();
         influence = GetComponent<Influence>();
         aura = GetComponent<Aura>();
+        itemPlacement = GetComponent<ItemPlacement>();
 
         SetColors();
 

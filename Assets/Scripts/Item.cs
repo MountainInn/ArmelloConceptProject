@@ -10,27 +10,40 @@ public class Item : NetworkBehaviour
     [SyncVar] public int tier;
     [SyncVar] public CombatUnit.Stats stats;
 
-    new public string name;
     public Sprite icon;
     private ParticleSystem particle;
 
-    public Dictionary<ResourceType, int> costResources {get; private set;}
+    public Dictionary<ResourceType, int> costResources;
 
-    public ItemScriptableObject itemSO {get; private set;}
+    public ItemScriptableObject itemSO;
+
+    [SyncVar(hook = nameof(OnItemSONameSync))] string itemSOName;
+    private void OnItemSONameSync(string oldv, string newv)
+    {
+        itemSO = Resources.Load<ItemScriptableObject>($"Items/{newv}");
+
+        Initialize(itemSO);
+    }
+
+    public void SetItemSOName(string name)
+    {
+        this.itemSOName = name;
+    }
 
     public void Initialize(ItemScriptableObject itemSO)
     {
+        this.itemSO = itemSO;
+
         particle = GetComponentInChildren<ParticleSystem>();
         costResources = itemSO.RequiredResourcesAsDictionary();
 
         gameObject.name = itemSO.name;
-        this.name = itemSO.name;
         this.icon = itemSO.icon;
         this.stats = itemSO.combatStats;
-        this.itemSO = itemSO;
     }
 
-    public void ToggleParticle(bool toggle)
+    [ClientRpc]
+    public void RpcToggleParticle(bool toggle)
     {
         if (toggle)
             particle.Play();
@@ -54,6 +67,5 @@ public class Item : NetworkBehaviour
 
     void OnTierUp()
     {
-        itemSO.combatStats += itemSO.perTier;
     }
 }

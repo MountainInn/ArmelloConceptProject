@@ -8,8 +8,6 @@ public class FlagPool : NetworkBehaviour
 {
     private ResourcePool<Transform> pool;
 
-    Dictionary<HexTile, Transform> flagDict = new Dictionary<HexTile, Transform>();
-
     private void Awake()
     {
         pool = new ResourcePool<Transform>("Prefabs/Flag");
@@ -31,14 +29,9 @@ public class FlagPool : NetworkBehaviour
     [Server]
     private void Rent(Player player, HexTile tile)
     {
-        if (flagDict.ContainsKey(tile))
-            throw new System.Exception("(HexTile) key is already present in flagDict");
-
         var newFlag = pool.Rent();
 
-        flagDict.Add(tile, newFlag);
-
-        SetColor(newFlag.gameObject, player.roomPlayer.playerColor);
+        RpcSetColor(newFlag.gameObject, player.roomPlayer.playerColor);
 
         newFlag.position = tile.Top;
         tile.flag = newFlag;
@@ -49,8 +42,7 @@ public class FlagPool : NetworkBehaviour
     [Server]
     private void Return(HexTile tile)
     {
-        if (flagDict.TryGetValue(tile, out Transform flag))
-            throw new System.Exception("(Player, HexTile) key is NOT present in flagDict");
+        Transform flag = tile.flag;
 
         tile.flag = null;
 
@@ -59,8 +51,8 @@ public class FlagPool : NetworkBehaviour
         pool.Return(flag);
     }
 
-    [Server]
-    private void SetColor(GameObject flagGO, Color color)
+    [ClientRpc]
+    private void RpcSetColor(GameObject flagGO, Color color)
     {
         flagGO
             .GetComponentsInChildren<MeshRenderer>()

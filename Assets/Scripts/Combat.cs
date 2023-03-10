@@ -60,16 +60,17 @@ public class Combat : NetworkBehaviour
     [Server]
     private void WarPhase(TurnSystem.msgRoundEnd msg)
     {
+        Debug.Log($"WarPhase; round number: {msg.roundCount}");
         if (msg.roundCount >= warPhaseStartRound)
         {
+            Debug.Log($"This is war");
+
             var allUnits = FindObjectsOfType<CombatUnit>();
 
             if (allUnits.Count() < 2)
                 return;
 
-            AddCombatToList(allUnits);
-
-            StartAllCombats();
+            StartCombat(allUnits);
         }
     }
 

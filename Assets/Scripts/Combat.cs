@@ -52,13 +52,13 @@ public class Combat : NetworkBehaviour
             .AddTo(this);
 
         MessageBroker.Default
-            .Receive<TurnSystem.OnRoundEnd>()
+            .Receive<TurnSystem.msgRoundEnd>()
             .Subscribe(WarPhase)
             .AddTo(this);
     }
 
     [Server]
-    private void WarPhase(TurnSystem.OnRoundEnd msg)
+    private void WarPhase(TurnSystem.msgRoundEnd msg)
     {
         if (msg.roundCount >= warPhaseStartRound)
         {

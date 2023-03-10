@@ -55,7 +55,7 @@ public class Influence : NetworkBehaviour
 
         incomeDisposable =
             MessageBroker.Default
-            .Receive<TurnSystem.OnRoundEnd>()
+            .Receive<TurnSystem.msgRoundEnd>()
             .Where(_ => HasOwner())
             .Subscribe(msg => Income(owner));
 

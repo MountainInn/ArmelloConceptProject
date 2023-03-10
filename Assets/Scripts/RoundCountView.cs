@@ -11,7 +11,7 @@ public class RoundCountView : MonoBehaviour
         roundCountText = GetComponentInChildren<TextMeshProUGUI>();
 
         MessageBroker.Default
-            .Receive<TurnSystem.OnRoundEnd>()
+            .Receive<TurnSystem.msgRoundEnd>()
             .Subscribe(msg => roundCountText.text = $"Round: {msg.roundCount}")
             .AddTo(this);
     }

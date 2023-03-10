@@ -13,7 +13,7 @@ public class TurnSystem : NetworkBehaviour
 
     private void OnRoundCountSync(int oldv, int newv)
     {
-        MessageBroker.Default.Publish<OnRoundEnd>(new OnRoundEnd(){ roundCount = newv });
+        MessageBroker.Default.Publish<msgRoundEnd>(new msgRoundEnd(){ roundCount = newv });
     }
 
     [SyncVar(hook = nameof(OnCurrentPlayerNetIdSync))]
@@ -116,7 +116,7 @@ public class TurnSystem : NetworkBehaviour
     private void EndRound()
     {
         roundCount++;
-        MessageBroker.Default.Publish<OnRoundEnd>(new OnRoundEnd() { roundCount = roundCount });
+        MessageBroker.Default.Publish<msgRoundEnd>(new msgRoundEnd() { roundCount = roundCount });
     }
 
     private void OnCurrentPlayerNetIdSync(uint oldNetId, uint newNetId)
@@ -124,5 +124,5 @@ public class TurnSystem : NetworkBehaviour
         playerNetIdStream.Value = newNetId;
     }
 
-    public struct OnRoundEnd { public int roundCount; }
+    public struct msgRoundEnd { public int roundCount; }
 }

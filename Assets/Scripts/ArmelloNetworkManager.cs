@@ -30,13 +30,20 @@ public class ArmelloNetworkManager : NetworkRoomManager
        {
            FindObjectOfType<TurnSystem>()
                .StartNextPlayerTurn();
+
+           Debug.Log($"All Players Looaded ___+++");
        }
+    }
+
+    public override void OnRoomServerPlayersReady()
+    {
+        loadingPlayers = numPlayers;
+
+        base.OnRoomServerPlayersReady();
     }
 
     public override GameObject OnRoomServerCreateGamePlayer(NetworkConnectionToClient conn, GameObject roomPlayer)
     {
-        ++loadingPlayers;
-
         Player newPlayer = Instantiate(playerPrefab).GetComponent<Player>();
 
         newPlayer.SetRoomPlayer(roomPlayer.GetComponent<ArmelloRoomPlayer>());

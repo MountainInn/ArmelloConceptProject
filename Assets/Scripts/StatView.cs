@@ -14,12 +14,19 @@ public class StatView : MonoBehaviour
     [SerializeField] private TextMeshProUGUI healthText;
     [SerializeField] private Image attackProgressShadow;
     [SerializeField] private Image attackProgress;
+    [SerializeField] private Image avatar;
 
     float attackRatio;
 
     public void InitUnit(CombatUnit unit)
     {
         attackRatio = unit.attackTimerRatio;
+
+        ArmelloRoomPlayer roomPlayer = unit.GetComponent<Player>().roomPlayer;
+        playerName.text = roomPlayer.nickname;
+        playerName.color = roomPlayer.playerColor;
+
+        avatar.sprite = roomPlayer.characterSO.characterSprite;
     }
 
     public void SetStats(CombatUnit.Stats stats)

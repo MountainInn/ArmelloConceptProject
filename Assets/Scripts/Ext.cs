@@ -212,3 +212,38 @@ static public class NetworkConnectionExt
             .GetComponent<T>();
     }
 }
+
+public static class MonoBehaviourExtension
+{
+    public static Coroutine StartInvokeAfter(this MonoBehaviour mono, Action action, float seconds)
+    {
+        return mono.StartCoroutine(CoroutineExtension.InvokeAfter( action,  seconds));
+    }
+}
+
+public static class CoroutineExtension
+{
+    public static System.Collections.IEnumerator InvokeAfter(Action action, float seconds)
+    {
+        var wait = new WaitForEndOfFrame();
+
+        while ((seconds -= Time.deltaTime) > 0f) yield return wait;
+
+        action.Invoke();
+    }
+}
+
+public static class CanvasGroupExtension
+{
+    static public void SetVisibleAndInteractable(this CanvasGroup canvasGroup, bool visible)
+    {
+        canvasGroup.alpha = (visible) ? 1f : 0f;
+        SetInteractable(canvasGroup, visible);
+    }
+
+    private static void SetInteractable(this CanvasGroup canvasGroup, bool visible)
+    {
+        canvasGroup.interactable = visible;
+        canvasGroup.blocksRaycasts = visible;
+    }
+}

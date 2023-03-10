@@ -60,13 +60,19 @@ public class Character : NetworkBehaviour
 
     public override void OnStartClient()
     {
-        if (isOwned)
-        {
-            if (cubeMap.isFullySpawned)
-                CmdInitializeCoordinates();
-            else
-                cubeMap.onFullySpawned += CmdInitializeCoordinates;
-        }
+        MessageBroker.Default
+            .Receive<ArmelloNetworkManager.msgAllPlayersLoaded>()
+            .Subscribe(msg =>
+            {
+                if (isOwned)
+                {
+                    if (cubeMap.isFullySpawned)
+                        CmdInitializeCoordinates();
+                    else
+                        cubeMap.onFullySpawned += CmdInitializeCoordinates;
+                }
+            })
+            .AddTo(this);
     }
 
 

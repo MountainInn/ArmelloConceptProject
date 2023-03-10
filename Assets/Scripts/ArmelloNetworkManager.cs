@@ -14,6 +14,8 @@ public class ArmelloNetworkManager : NetworkRoomManager
 
     private int loadingPlayers;
 
+    public struct msgAllPlayersLoaded{}
+
     public override void OnStartServer()
     {
         base.OnStartServer();
@@ -32,6 +34,7 @@ public class ArmelloNetworkManager : NetworkRoomManager
                .StartNextPlayerTurn();
 
            Debug.Log($"All Players Looaded ___+++");
+           MessageBroker.Default.Publish(new msgAllPlayersLoaded());
        }
     }
 

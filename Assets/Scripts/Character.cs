@@ -144,7 +144,7 @@ public class Character : NetworkBehaviour
             ClearWarscreen();
 
         MessageBroker.Default
-            .Publish<OnStandOnTile>(new OnStandOnTile(){ hex = hex });
+            .Publish<OnStandOnTile>(new OnStandOnTile(){ hex = hex, character = this });
     }
 
     [Command(requiresAuthority = false)]
@@ -201,6 +201,7 @@ public class Character : NetworkBehaviour
 
 public struct OnStandOnTile
 {
+    public Character character;
     public HexTile hex;
 }
 

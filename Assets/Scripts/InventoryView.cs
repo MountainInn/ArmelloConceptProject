@@ -26,7 +26,9 @@ public class InventoryView : MonoBehaviour
     {
         MessageBroker.Default
             .Receive<OnStandOnTile>()
-            .Subscribe(SwitchGroundTile);
+            .Where(msg => msg.character.isOwned)
+            .Subscribe(SwitchGroundTile)
+            .AddTo(this);
     }
 
     private void SwitchGroundTile(OnStandOnTile msg)

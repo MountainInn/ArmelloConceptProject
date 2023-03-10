@@ -88,7 +88,7 @@ public class CombatView : MonoBehaviour
         combatDisposable =
             this.UpdateAsObservable()
             .TakeWhile((_) => hitQueue.Any())
-            .DoOnCompleted(() => SetVisible(false))
+            .DoOnCompleted(() => this.StartInvokeAfter(() => SetVisible(false), 2f))
             .Subscribe((_) =>
             {
                 float delta = Time.deltaTime;

@@ -163,6 +163,9 @@ public class Combat : NetworkBehaviour
                 .ToList()
                 .ForEach(u =>
                 {
+                    if (!u.IsAlive())
+                        return;
+
                     CombatUnit target =
                         units
                         .NotEqual(u)

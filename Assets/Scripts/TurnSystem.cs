@@ -65,7 +65,9 @@ public class TurnSystem : NetworkBehaviour
 
         player.TargetCleanupTurnView();
 
-        if (currentPlayerNetId == player.netId)
+        if (currentPlayerNetId == player.netId
+            && players.Count > 1
+        )
             StartNextPlayerTurn();
     }
 

@@ -552,7 +552,7 @@ MonoBehaviour:
   syncDirection: 0
   syncMode: 0
   syncInterval: 0.1
-  warPhaseStartRound: 6
+  warPhaseStartRound: 2
   combatDurationInSeconds: 5
   isOngoing: 0
   isOngoingReactive:

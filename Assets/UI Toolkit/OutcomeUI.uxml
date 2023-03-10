@@ -1,0 +1,7 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Assets/UI%20Toolkit/USS/OutcomeUI.uss?fileID=7433441132597879392&amp;guid=34ee5df17c355fa4eb060d6737c3395d&amp;type=3#OutcomeUI" />
+    <ui:IMGUIContainer name="OutcomeBackground" class="fade-in" style="width: auto; height: 500px; background-color: rgb(51, 51, 51); visibility: visible; align-items: center; justify-content: space-between; padding-left: 70px; padding-right: 70px; padding-top: 70px; padding-bottom: 70px; position: relative; left: 10%; top: 10%; right: 10%; bottom: 10%; max-width: 50%; transition-property: opacity; transition-duration: 1s; transition-delay: initial; transition-timing-function: ease-in-bounce;">
+        <ui:Label text="You win/lose!" display-tooltip-when-elided="true" name="OutcomeLabel" style="font-size: 25px; -unity-text-align: upper-center; margin-left: 44px; margin-right: 44px; margin-top: 44px; margin-bottom: 44px; color: rgb(255, 255, 255);" />
+        <ui:Button text="Leave" display-tooltip-when-elided="true" name="LeaveButton" usage-hints="DynamicColor" style="width: 163px; height: 43px; margin-left: 20px; margin-right: 20px; margin-top: 20px; margin-bottom: 20px; font-size: 19px;" />
+    </ui:IMGUIContainer>
+</ui:UXML>

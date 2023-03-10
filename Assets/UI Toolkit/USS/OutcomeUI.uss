@@ -1,0 +1,11 @@
+
+#OutcomeBackground {
+    width: 100px;
+    transition-property: opacity;
+    transition-duration: 0.5s;
+    transition-timing-function: ease-out-back;
+}
+
+.fade-in {
+    opacity: 0;
+}

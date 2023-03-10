@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.Linq;
 using Mirror;
 using UnityEngine;
@@ -60,13 +59,6 @@ public class Player : NetworkBehaviour
         prefabCharacter = Resources.Load<Character>("Prefabs/Character");
     }
 
-    public override void OnStartServer()
-    {
-        MessageBroker.Default.Receive<OnPlayerLost>()
-            .Subscribe(OnPlayerLost)
-            .AddTo(this);
-    }
-
     public override void OnStartClient()
     {
         InitNicknameText(roomPlayer);
@@ -101,18 +93,11 @@ public class Player : NetworkBehaviour
             .Subscribe(OnHexClicked)
             .AddTo(this);
 
-
         MessageBroker.Default.Publish(new msgOnLocalPlayerStarted { player = this });
     }
 
     public struct msgOnLocalPlayerStarted { public Player player; }
 
-    [Server]
-    private void OnPlayerLost(OnPlayerLost msg)
-    {
-        TargetToggleTurnStarted(false);
-        turnSystem.UnregisterPlayer(this);
-    }
 
     public override void OnStopServer()
     {

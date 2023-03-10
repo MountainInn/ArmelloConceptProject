@@ -28,6 +28,11 @@ public class TurnSystem : NetworkBehaviour
     public override void OnStartServer()
     {
         roundCount = 1;
+
+        MessageBroker.Default
+            .Receive<OnPlayerLost>()
+            .Subscribe(msg => UnregisterPlayer(msg.player))
+            .AddTo(this);
     }
 
     public override void OnStartClient()

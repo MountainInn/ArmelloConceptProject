@@ -52,6 +52,7 @@ public class TurnSystem : NetworkBehaviour
     }
 
     public struct msgOnPlayerRegistered{}
+    public struct msgPlayerUnregistered{ public Player player; }
 
     [Server]
     public void UnregisterPlayer(Player player)
@@ -61,9 +62,10 @@ public class TurnSystem : NetworkBehaviour
 
         players.Remove(player);
 
+        player.TargetCleanupTurnView();
         player.turn = null;
 
-        player.TargetCleanupTurnView();
+        MessageBroker.Default.Publish(new msgPlayerUnregistered{ player = player });
 
         if (currentPlayerNetId == player.netId
             && players.Count > 1

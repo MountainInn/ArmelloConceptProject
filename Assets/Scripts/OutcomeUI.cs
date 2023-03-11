@@ -14,7 +14,7 @@ public class OutcomeUI : MonoBehaviour
     private void Awake()
     {
         root = GetComponent<UIDocument>().rootVisualElement;
-        outcomeBackround = root.Q<Image>();
+        outcomeBackround = root.Q<Image>("OutcomeBackground");
         outcomeLabel = root.Q<Label>("OutcomeLabel");
         leaveButton = root.Q<Button>("LeaveButton");
 

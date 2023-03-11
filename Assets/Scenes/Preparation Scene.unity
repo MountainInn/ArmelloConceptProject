@@ -817,7 +817,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 266844778}
   m_Direction: 0
   m_Value: 0
-  m_Size: 1
+  m_Size: 0.99999994
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -1039,8 +1039,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   nameInputField: {fileID: 1428596105}
   colorDropdown: {fileID: 1855753317}
-  playerName: 
-  playerColor: {r: 0, g: 0, b: 0, a: 0}
 --- !u!114 &921395455
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1215,7 +1213,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0.000030517578, y: 0.00033569336}
+  m_AnchoredPosition: {x: 0.000030517578, y: 0.000030517578}
   m_SizeDelta: {x: 0, y: -5.4183655}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1059352017
@@ -2474,6 +2472,7 @@ GameObject:
   - component: {fileID: 1954750124}
   - component: {fileID: 1954750123}
   - component: {fileID: 1954750122}
+  - component: {fileID: 1954750127}
   m_Layer: 0
   m_Name: Armello Room Network Manager
   m_TagString: Untagged
@@ -2575,6 +2574,7 @@ MonoBehaviour:
   - {fileID: 1696168540019010737, guid: 9bdd7c8097034874ca1d4980a0503e7f, type: 3}
   - {fileID: 1716873505125694647, guid: 025eec87fe4112e47b0d43d049a245ac, type: 3}
   - {fileID: 2174319019795375046, guid: 286feb22b719a47409cb6b7a0f394d52, type: 3}
+  - {fileID: 6100752503988652460, guid: c1597264100e16d4fb29dbb07634de97, type: 3}
   timeInterpolationGui: 0
   showRoomGUI: 1
   minPlayers: 1
@@ -2599,6 +2599,20 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1954750127
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1954750121}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 84d680f7a85a6f142bef7d6f3bf12bc1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  visRange: 4
+  rebuildInterval: 0.5
 --- !u!1 &1976413440
 GameObject:
   m_ObjectHideFlags: 0
@@ -2683,7 +2697,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 24015969}
   m_Direction: 2
   m_Value: 0
-  m_Size: 0.99999624
+  m_Size: 0.99999726
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:

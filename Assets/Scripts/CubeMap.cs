@@ -45,10 +45,14 @@ public class CubeMap : NetworkBehaviour
                 {
                     onFullySpawned?.Invoke();
                     spawnedTileCount = 0;
+
+                    MessageBroker.Default.Publish(new msgFullySpawned());
                 }
             })
             .AddTo(this);
     }
+
+    public struct msgFullySpawned {}
 
     public override void OnStartServer()
     {
@@ -112,7 +116,7 @@ public class CubeMap : NetworkBehaviour
         return new HexSyncData()
         {
             coord = coord,
-        };
+                };
     }
 
     HexTile CreateHex(HexSyncData syncData)
@@ -125,7 +129,7 @@ public class CubeMap : NetworkBehaviour
 
         HexTile prefab = (HexTile)hexagonPrefabs.ArrayGetRandom<HexTile>();
 
-        var hexagon = Instantiate(prefab, position, Quaternion.identity, transform)
+        var hexagon = Instantiate(prefab, position, Quaternion.identity)
             .GetComponent<HexTile>();
 
         hexagon.Initialize(syncData);
@@ -187,11 +191,11 @@ public class CubeMap : NetworkBehaviour
                 .ToList()
                 .ForEach(next =>
                 {
-                    // graph.cost - Возвращает цену движения от текущего тайла
-                    // к следующему, может пригодиться если разные типы тайлов
-                    // будут иметь разную проходимость.
-                    // Пока что просто поставлю 1.
-                    // new_cost = cost_so_far[current] + graph.cost(current, next)
+// graph.cost - Возвращает цену движения от текущего тайла
+// к следующему, может пригодиться если разные типы тайлов
+// будут иметь разную проходимость.
+// Пока что просто поставлю 1.
+// new_cost = cost_so_far[current] + graph.cost(current, next)
                     var newCost = costSoFar[current] + 1;
 
                     if (!costSoFar.ContainsKey(next) || newCost < costSoFar[next])
@@ -273,6 +277,12 @@ public class CubeMap : NetworkBehaviour
     public int Distance(Vector3Int from, Vector3Int to)
     {
         var vec = from - to;
+        return (Math.Abs(vec.x) + Math.Abs(vec.y) + Math.Abs(vec.z)) / 2;
+    }
+
+    public int Distance(CubicTransform from, CubicTransform to)
+    {
+        var vec = from.coordinates - to.coordinates;
         return (Math.Abs(vec.x) + Math.Abs(vec.y) + Math.Abs(vec.z)) / 2;
     }
 

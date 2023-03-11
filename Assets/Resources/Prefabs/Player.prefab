@@ -327,9 +327,9 @@ MonoBehaviour:
   syncInterval: 0.1
   character: {fileID: 0}
   turnStarted: 0
-  characterSettings: {fileID: 0}
   actionPoints: 0
   inventory: {fileID: 0}
+  roomPlayer: {fileID: 0}
 --- !u!114 &4587081185069098306
 MonoBehaviour:
   m_ObjectHideFlags: 0

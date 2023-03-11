@@ -66,6 +66,8 @@ public class Player : NetworkBehaviour
         InitCharacterSO(roomPlayer);
 
         inventory = GetComponent<Inventory>();
+
+        // GetComponent<DistanceInterestManagementCustomRange>().visRange = character.utilityStats.perception * 2 + 1;
     }
 
     public void InitCharacterSO(ArmelloRoomPlayer roomPlayer)
@@ -130,14 +132,14 @@ public class Player : NetworkBehaviour
 
         if (hex.character is null)
         {
-            if (movementPoints < hex.moveCost)
+            if (movementPoints < hex.tileLevel.syncLevel)
                 return;
 
             if (cubeMap.Distance(character.coordinates, hex.coordinates) != 1)
                 return;
 
             character.CmdMove(hex);
-            CmdSpendMovementPoints(hex.moveCost);
+            CmdSpendMovementPoints(hex.tileLevel.syncLevel);
         }
         else if (hex.character.isOwned)
         {

@@ -36,7 +36,8 @@ public class Turn
 
         started =
             playerNetIdObservable
-            .Select(id => id == playerNetId)
+            .Select(id => true // id == playerNetId
+            )
             .ToReadOnlyReactiveProperty();
 
         started

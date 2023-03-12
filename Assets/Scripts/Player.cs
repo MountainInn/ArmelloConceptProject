@@ -86,6 +86,7 @@ public class Player : NetworkBehaviour
         nicknameText.color = roomPlayer.playerColor;
     }
 
+    [Client]
     public override void OnStartLocalPlayer()
     {
         MessageBroker.Default
@@ -98,6 +99,12 @@ public class Player : NetworkBehaviour
             .Subscribe(msg => CmdEndTurn())
             .AddTo(this);
 
+        CmdPublishLocalPlayerStarted();
+    }
+
+    [Command(requiresAuthority = false)]
+    public void CmdPublishLocalPlayerStarted()
+    {
         MessageBroker.Default.Publish(new msgOnLocalPlayerStarted { player = this });
     }
 

@@ -45,10 +45,13 @@ public class CubeMap : NetworkBehaviour
                 {
                     onFullySpawned?.Invoke();
                     spawnedTileCount = 0;
+                    MessageBroker.Default.Publish(new msgFullySpawned());
                 }
             })
             .AddTo(this);
     }
+
+    public struct msgFullySpawned {}
 
     public override void OnStartServer()
     {

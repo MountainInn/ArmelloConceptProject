@@ -33,13 +33,10 @@ public class TurnSystem : NetworkBehaviour
             .Receive<OnPlayerLost>()
             .Subscribe(msg => UnregisterPlayer(msg.player))
             .AddTo(this);
-    }
 
-    public override void OnStartClient()
-    {
         MessageBroker.Default
             .Receive<Player.msgOnLocalPlayerStarted>()
-            .Subscribe(msg => CmdRegisterPlayer(msg.player))
+            .Subscribe(msg => RegisterPlayer(msg.player))
             .AddTo(this);
     }
 
@@ -47,8 +44,6 @@ public class TurnSystem : NetworkBehaviour
     public void CmdRegisterPlayer(Player player)
     {
         RegisterPlayer(player);
-
-        MessageBroker.Default.Publish(new msgOnPlayerRegistered());
     }
 
     public struct msgOnPlayerRegistered{}
@@ -85,6 +80,8 @@ public class TurnSystem : NetworkBehaviour
 
         players.Add(player);
         players = players.Shuffle().ToList();
+
+        MessageBroker.Default.Publish(new msgOnPlayerRegistered());
     }
 
     [Server]

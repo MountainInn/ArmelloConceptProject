@@ -56,25 +56,21 @@ public class Character : NetworkBehaviour
             .Receive<OnLostFight>()
             .Where(msg => msg.loser == combatUnit)
             .Subscribe(OnLostFight);
-    }
 
-    public override void OnStartClient()
-    {
-        MessageBroker.Default
+        var msgAllPlayersLoaded =
+            MessageBroker.Default
             .Receive<ArmelloNetworkManager.msgAllPlayersLoaded>()
-            .Subscribe(msg =>
-            {
-                if (isOwned)
-                {
-                    if (cubeMap.isFullySpawned)
-                        CmdInitializeCoordinates();
-                    else
-                        cubeMap.onFullySpawned += CmdInitializeCoordinates;
-                }
-            })
+            .Select(msg => new Unit());
+
+        var msgCubeMapFullySpawned =
+            MessageBroker.Default
+            .Receive<CubeMap.msgFullySpawned>()
+            .Select(msg => new Unit());
+
+        Observable.CombineLatest(new [] { msgAllPlayersLoaded, msgCubeMapFullySpawned })
+            .Subscribe(_=> CmdInitializeCoordinates())
             .AddTo(this);
     }
-
 
     [Server]
     private void OnLostFight(OnLostFight msg)

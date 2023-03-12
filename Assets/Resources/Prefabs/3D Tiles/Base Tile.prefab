@@ -49,6 +49,7 @@ GameObject:
   - component: {fileID: 222043843753770394}
   - component: {fileID: 115533538302853122}
   - component: {fileID: 5398904373872131313}
+  - component: {fileID: 7759993334678670811}
   m_Layer: 0
   m_Name: Base Tile
   m_TagString: Untagged
@@ -168,7 +169,6 @@ MonoBehaviour:
   syncDirection: 0
   syncMode: 0
   syncInterval: 0.1
-  coordinates: {x: 0, y: 0, z: 0}
   baseType: 0
   currentType: 0
   topTransform: {fileID: 6424657900700059651}
@@ -244,3 +244,19 @@ MonoBehaviour:
   syncInterval: 0.1
   syncLevel: 0
   effectiveLevel: 0
+--- !u!114 &7759993334678670811
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5913888825258297133}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 80303e2d3708f3544876f37ec57fd458, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  syncDirection: 0
+  syncMode: 0
+  syncInterval: 0.1
+  coordinates: {x: 0, y: 0, z: 0}

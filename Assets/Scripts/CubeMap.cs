@@ -283,7 +283,8 @@ public class CubeMap : NetworkBehaviour
     public int Distance(CubicTransform from, CubicTransform to)
     {
         var vec = from.coordinates - to.coordinates;
-        return (Math.Abs(vec.x) + Math.Abs(vec.y) + Math.Abs(vec.z)) / 2;
+        int distance = (Math.Abs(vec.x) + Math.Abs(vec.y) + Math.Abs(vec.z)) / 2;
+        return distance;
     }
 
 

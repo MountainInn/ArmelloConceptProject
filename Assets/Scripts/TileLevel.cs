@@ -20,18 +20,19 @@ public class TileLevel : NetworkBehaviour
         onLevelSync?.Invoke();
     }
 
+
+    [Client]
+    public bool ShouldSync() => effectiveLevel != syncLevel;
+
     [Client]
     public void SyncTileLevel(Transform[] standingOnTop)
     {
-        if (effectiveLevel != syncLevel)
-        {
-            effectiveLevel = syncLevel;
+        effectiveLevel = syncLevel;
 
-            transform.DOScaleY(height, .3f);
+        transform.DOScaleY(height, .3f);
 
-            standingOnTop
-                .Map(tr => tr.DOMoveY(height, .3f));
-        }
+        standingOnTop
+            .Map(tr => tr.DOMoveY(height, .3f));
     }
 
 

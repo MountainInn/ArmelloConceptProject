@@ -8,8 +8,11 @@ using UniRx;
 
 public class Character : NetworkBehaviour
 {
-    [SyncVar]
-    public Vector3Int coordinates;
+    public Vector3Int coordinates
+    {
+        get => this.cubicTransform().coordinates;
+        set => this.cubicTransform().coordinates = value;
+    }
 
     public Color characterColor;
 

@@ -13,7 +13,12 @@ public partial class HexTile : NetworkBehaviour, IPointerClickHandler, IPointerE
     public event Action<Vector3Int> onPointerEnter;
     public event Action<Vector3Int> onPointerExit;
 
-    [SyncVar] public Vector3Int coordinates;
+    public Vector3Int coordinates
+    {
+        get => this.cubicTransform().coordinates;
+        set => this.cubicTransform().coordinates = value;
+    }
+
     [HideInInspector] [SyncVar] public HexType baseType, currentType;
 
     [SerializeField] private Transform topTransform;
@@ -33,6 +38,7 @@ public partial class HexTile : NetworkBehaviour, IPointerClickHandler, IPointerE
     public Aura aura;
     public ItemPlacement itemPlacement;
     public TileLevel tileLevel;
+    private bool isMouseOver;
 
     private void Awake()
     {
@@ -47,6 +53,11 @@ public partial class HexTile : NetworkBehaviour, IPointerClickHandler, IPointerE
         SetColors();
 
         gameObject.name = $"{baseType} {coordinates}";
+    }
+
+    public override void OnStartServer()
+    {
+        NetworkServer.connections.Values.Map(conn => TargetToggleVisibility( conn, false));
     }
 
     public override void OnStartClient()
@@ -68,7 +79,7 @@ public partial class HexTile : NetworkBehaviour, IPointerClickHandler, IPointerE
 
     public void Initialize(HexSyncData syncData)
     {
-        this.coordinates = syncData.coord;
+        coordinates = syncData.coord;
 
         gameObject.name = $"{coordinates} {gameObject.name}";
 
@@ -79,6 +90,7 @@ public partial class HexTile : NetworkBehaviour, IPointerClickHandler, IPointerE
     {
         baseColor = meshRenderer.material.color;
         warScreenColor = baseColor * .5f;
+        meshRenderer.material.color = (isVisible) ? baseColor : warScreenColor;
     }
 
     public void OnPointerClick(PointerEventData eventData)
@@ -91,12 +103,14 @@ public partial class HexTile : NetworkBehaviour, IPointerClickHandler, IPointerE
 
     public void OnPointerEnter(PointerEventData eventData)
     {
+        isMouseOver = true;
         HighlightMouseOver();
         onPointerEnter?.Invoke(coordinates);
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
+        isMouseOver = false;
         RemoveHighlight();
         onPointerExit?.Invoke(coordinates);
     }
@@ -111,7 +125,15 @@ public partial class HexTile : NetworkBehaviour, IPointerClickHandler, IPointerE
     public void TargetToggleVisibility(NetworkConnectionToClient conn, bool toggle)
     {
         isVisible = toggle;
-        meshRenderer.material.color = (isVisible) ? baseColor : warScreenColor;
+
+        if (isMouseOver)
+        {
+            HighlightMouseOver();
+        }
+        else
+        {
+            RemoveHighlight();
+        }
 
         SyncTileHeightIfVisible();
     }
@@ -119,7 +141,7 @@ public partial class HexTile : NetworkBehaviour, IPointerClickHandler, IPointerE
     [Client]
     private void SyncTileHeightIfVisible()
     {
-        if (isVisible)
+        if (isVisible && tileLevel.ShouldSync())
         {
             var standingOnTop = new List<Transform>();
 

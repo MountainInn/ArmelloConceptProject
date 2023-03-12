@@ -12,6 +12,7 @@ public class Item : NetworkBehaviour
 
     public Sprite icon;
     private ParticleSystem particle;
+    public CubicTransform cubicTransform;
 
     public Dictionary<ResourceType, int> costResources;
 

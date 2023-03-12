@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UniRx;
 using MountainInn;
+using System;
 
 public class ArmelloDistanceInterestManagement : InterestManagement
 {
@@ -15,22 +16,6 @@ public class ArmelloDistanceInterestManagement : InterestManagement
 
     CubeMap cubeMap;
 
-    protected override void Awake()
-    {
-        base.Awake();
-
-        MessageBroker.Default
-            .Receive<CubeMap.msgFullySpawned>()
-            .Subscribe(msg => cubeMap = FindObjectOfType<CubeMap>())
-            .AddTo(this);
-    }
-
-    // helper function to get vis range for a given object, or default.
-    int GetVisRange(NetworkIdentity identity)
-    {
-        return identity.TryGetComponent(out DistanceInterestManagementCustomRange custom) ? custom.visRange : visRange;
-    }
-
     [ServerCallback]
     public override void Reset()
     {
@@ -39,33 +24,46 @@ public class ArmelloDistanceInterestManagement : InterestManagement
 
     public override bool OnCheckObserver(NetworkIdentity identity, NetworkConnectionToClient newObserver)
     {
-        identity.TryGetComponent(out HexTile hexTile);
+        if (!newObserver.identity.TryGetComponent(out Player player))
+            return true;
 
-        int range = GetVisRange(newObserver.identity);
+        var customRange = player.GetComponent<ArmelloDistanceInterestManagementCustomRange>();
+        float range;
+        bool
+            isInRange = true,
+            isTile = false;
+
+        if (
+            identity.TryGetComponent(out CubicTransform cubicTransform) &&
+            !identity.GetComponent<Player>() &&
+            cubeMap
+        )
+        {
+            range = customRange.cubicRange;
+            isInRange = cubeMap.Distance(player.cubicTransform(), cubicTransform) <= range;
+
+            if (isTile = identity.TryGetComponent(out HexTile hexTile))
+            {
+                hexTile.TargetToggleVisibility(newObserver, isInRange);
+            }
+        }
+        else
+        {
+            range = customRange.floatRange;
+            isInRange = Vector3.Distance(player.transform.position, identity.transform.position) < range;
+        }
 
         return
-            hexTile ||
-            Vector3.Distance(identity.transform.position, newObserver.identity.transform.position) < range;
+            isTile || isInRange;
     }
 
     public override void OnRebuildObservers(NetworkIdentity identity, HashSet<NetworkConnectionToClient> newObservers)
     {
-        Vector3 position = identity.transform.position;
-
         foreach (NetworkConnectionToClient conn in NetworkServer.connections.Values)
         {
             if (conn != null && conn.isAuthenticated && conn.identity != null)
             {
-                int range = GetVisRange(conn.identity);
-
-                bool isInRange = Vector3.Distance(conn.identity.transform.position, position) < range;
-
-                if (identity.TryGetComponent(out HexTile hexTile))
-                {
-                    hexTile.TargetToggleVisibility(conn, isInRange);
-                }
-
-                if (hexTile || isInRange)
+                if (OnCheckObserver(identity, conn))
                 {
                     newObservers.Add(conn);
                 }
@@ -73,11 +71,17 @@ public class ArmelloDistanceInterestManagement : InterestManagement
         }
     }
 
+
+
+
     // internal so we can update from tests
     [ServerCallback]
     internal void Update()
     {
-        // if (cubeMap is null) return;
+        if ((cubeMap ??= FindObjectOfType<CubeMap>()) is null)
+        {
+            return;
+        }
 
         if (NetworkTime.localTime >= lastRebuildTime + rebuildInterval)
         {

@@ -10,7 +10,7 @@ public class FlagPool : NetworkBehaviour
 
     private void Awake()
     {
-        pool = new ResourcePool<Transform>("Prefabs/Flag");
+        pool = new ResourcePool<Transform>(FindObjectOfType<ArmelloNetworkManager>());
     }
 
     public override void OnStartServer()
@@ -31,8 +31,14 @@ public class FlagPool : NetworkBehaviour
     {
         var newFlag = pool.Rent();
 
+        newFlag.cubicTransform().coordinates = tile.coordinates;
         newFlag.position = tile.Top;
         tile.flag = newFlag;
+
+        newFlag
+            .GetComponentsInChildren<MeshRenderer>()
+            .ToList()
+            .ForEach(mr => mr.material.color = player.roomPlayer.playerColor);
 
         NetworkServer.Spawn(newFlag.gameObject, player.gameObject);
 
@@ -64,18 +70,16 @@ public class FlagPool : NetworkBehaviour
 public class ResourcePool<T> : UniRx.Toolkit.ObjectPool<T>
     where T : UnityEngine.Component
 {
-    protected T prefab;
+    protected ArmelloNetworkManager netman;
 
-    public ResourcePool(string resourcePath)
+    public ResourcePool(ArmelloNetworkManager netman)
     {
-        prefab = Resources.Load<T>(resourcePath);
+        this.netman = netman;
     }
 
     protected override T CreateInstance()
     {
-        var obj = GameObject.Instantiate(prefab);
-
-       
+        var obj = netman.InstantiatePrefab<T>("Flag");
 
         return obj;
     }

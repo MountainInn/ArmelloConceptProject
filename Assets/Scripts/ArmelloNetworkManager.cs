@@ -54,7 +54,7 @@ public class ArmelloNetworkManager : NetworkRoomManager
         return newPlayer.gameObject;
     }
 
-    private T InstantiatePrefab<T>(string name)
+    public T InstantiatePrefab<T>(string name)
     {
         return Instantiate(GetPrefab(name)).GetComponent<T>();
     }

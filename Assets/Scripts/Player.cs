@@ -67,7 +67,9 @@ public class Player : NetworkBehaviour
 
         inventory = GetComponent<Inventory>();
 
-        // GetComponent<DistanceInterestManagementCustomRange>().visRange = character.utilityStats.perception * 2 + 1;
+        int perception = character.utilityStats.perception;
+        GetComponent<ArmelloDistanceInterestManagementCustomRange>().cubicRange = perception;
+        GetComponent<ArmelloDistanceInterestManagementCustomRange>().floatRange = perception * 2 + .5f;
     }
 
     public void InitCharacterSO(ArmelloRoomPlayer roomPlayer)
@@ -205,7 +207,7 @@ public class Player : NetworkBehaviour
     [Command(requiresAuthority = false)]
     private void CmdSpendActionPoints(int amount)
     {
-        actionPoints -= amount;
+        // actionPoints -= amount;
         Debug.Assert(actionPoints >= 0);
     }
 }

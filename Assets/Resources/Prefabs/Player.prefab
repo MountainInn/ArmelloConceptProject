@@ -269,6 +269,8 @@ GameObject:
   - component: {fileID: 4587081185069098306}
   - component: {fileID: 4628524865180695525}
   - component: {fileID: 9035618931454882743}
+  - component: {fileID: -7994714197682258785}
+  - component: {fileID: -5266963947583511709}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -395,3 +397,36 @@ MonoBehaviour:
     value: 0
   health: 0
   attackTimerRatio: 0
+--- !u!114 &-7994714197682258785
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6100752503988652460}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b6581dd6fb9e1f04da5bf09bc0304265, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  syncDirection: 0
+  syncMode: 0
+  syncInterval: 0.1
+  floatRange: 5
+  cubicRange: 2
+--- !u!114 &-5266963947583511709
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6100752503988652460}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 80303e2d3708f3544876f37ec57fd458, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  syncDirection: 0
+  syncMode: 0
+  syncInterval: 0.1
+  coordinates: {x: 0, y: 0, z: 0}

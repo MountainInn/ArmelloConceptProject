@@ -10,8 +10,6 @@ public class TurnView : MonoBehaviour
     [SerializeField] Button endTurn;
     [SerializeField] TextMeshProUGUI turnText;
 
-    public event Action onEndTurnClicked;
-
     private void Awake()
     {
         endTurn.onClick.AddListener(EndTurn);
@@ -35,6 +33,8 @@ public class TurnView : MonoBehaviour
 
     private void EndTurn()
     {
-        onEndTurnClicked?.Invoke();
+        MessageBroker.Default.Publish(new MsgEndTurnClicked());
     }
+
+    public struct MsgEndTurnClicked {}
 }

@@ -93,6 +93,11 @@ public class Player : NetworkBehaviour
             .Subscribe(OnHexClicked)
             .AddTo(this);
 
+        MessageBroker.Default
+            .Receive<TurnView.MsgEndTurnClicked>()
+            .Subscribe(msg => CmdEndTurn())
+            .AddTo(this);
+
         MessageBroker.Default.Publish(new msgOnLocalPlayerStarted { player = this });
     }
 
@@ -102,18 +107,6 @@ public class Player : NetworkBehaviour
     public override void OnStopServer()
     {
         turnSystem.UnregisterPlayer(this);
-    }
-
-    [TargetRpc]
-    public void TargetInitTurnView()
-    {
-        turnView.onEndTurnClicked += CmdEndTurn;
-    }
-
-    [TargetRpc]
-    public void TargetCleanupTurnView()
-    {
-        turnView.onEndTurnClicked -= CmdEndTurn;
     }
 
     [Command(requiresAuthority = false)]

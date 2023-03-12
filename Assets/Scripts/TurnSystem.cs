@@ -62,7 +62,6 @@ public class TurnSystem : NetworkBehaviour
 
         players.Remove(player);
 
-        player.TargetCleanupTurnView();
         player.turn = null;
 
         MessageBroker.Default.Publish(new msgPlayerUnregistered{ player = player });
@@ -86,8 +85,6 @@ public class TurnSystem : NetworkBehaviour
 
         players.Add(player);
         players = players.Shuffle().ToList();
-
-        player.TargetInitTurnView();
     }
 
     [Server]

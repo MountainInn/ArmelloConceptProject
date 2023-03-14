@@ -15,6 +15,7 @@ public class ArmelloNetworkManager : NetworkRoomManager
     private int loadingPlayers;
 
     public struct msgAllPlayersLoaded{}
+   
 
     public override void OnStartServer()
     {
@@ -62,6 +63,29 @@ public class ArmelloNetworkManager : NetworkRoomManager
     private GameObject GetPrefab(string name)
     {
         return spawnPrefabs.Find(prefab => prefab.name == name);
+    }
+
+
+
+    public override void OnGUI()
+    {
+        base.OnGUI();
+
+        if ( GUILayout.Button("Start Client", GUILayout.MinHeight(60)) )
+        {
+            StartClient();
+        }
+
+        if ( GUILayout.Button("Start Host", GUILayout.MinHeight(60)) )
+        {
+            StartHost();
+        }
+
+        if ( GUILayout.Button("Stop All", GUILayout.MinHeight(60)) )
+        {
+            StopHost();
+            StopClient();
+        }
     }
 
 }

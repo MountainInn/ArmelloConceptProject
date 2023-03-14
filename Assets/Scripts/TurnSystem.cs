@@ -70,6 +70,9 @@ public class TurnSystem : NetworkBehaviour
     [Server]
     public void RegisterPlayer(Player player)
     {
+        if (players.Contains(player))
+            return;
+
         player.turn = new Turn(player.netId, playerNetIdStream);
         player.turn.started
             .Subscribe(b =>

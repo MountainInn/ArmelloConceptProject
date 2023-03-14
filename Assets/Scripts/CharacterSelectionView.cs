@@ -5,6 +5,7 @@ using UnityEngine.UI;
 using System.Linq;
 using Zenject;
 using System;
+using UniRx;
 
 public class CharacterSelectionView : MonoBehaviour
 {
@@ -14,7 +15,7 @@ public class CharacterSelectionView : MonoBehaviour
     CharacterCardView selected;
 
     ColorBlock defaultColorBlock;
-    public event Action<string> onSelectedCharacterChanged;
+    public struct MsgCharacterSelected{ public string characterName; }
 
     void Awake()
     {
@@ -43,6 +44,8 @@ public class CharacterSelectionView : MonoBehaviour
         defaultColorBlock = firstCard.button.colors;
 
         RadioSelect(firstCard);
+
+        MessageBroker.Default.Publish(new MsgObjectStarted<CharacterSelectionView>(this));
     }
 
     void RadioSelect(CharacterCardView card)
@@ -67,7 +70,8 @@ public class CharacterSelectionView : MonoBehaviour
 
         selected.button.colors = colorBlock;
 
-        onSelectedCharacterChanged?.Invoke(GetSelectedCharacter().name);
+        MessageBroker.Default
+            .Publish(new MsgCharacterSelected{ characterName = GetSelectedCharacter().name });
     }
 
     public CharacterScriptableObject GetSelectedCharacter()

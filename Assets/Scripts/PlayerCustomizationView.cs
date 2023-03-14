@@ -4,6 +4,7 @@ using static TMPro.TMP_Dropdown;
 using System.Collections.Generic;
 using System.Linq;
 using System;
+using UniRx;
 
 public class PlayerCustomizationView : MonoBehaviour
 {
@@ -13,8 +14,8 @@ public class PlayerCustomizationView : MonoBehaviour
     public string playerName { get; private set; }
     public Color playerColor { get; private set; }
 
-    public event Action<string> onNameChanged;
-    public event Action<Color> onColorChanged;
+    public struct MsgNameChanged{ public string name; }
+    public struct MsgColorChanged{ public Color color; }
 
     private void Awake()
     {
@@ -23,14 +24,19 @@ public class PlayerCustomizationView : MonoBehaviour
             .GetNames(typeof(PlayerColors))
             .Select(colorName => new OptionData(colorName))
             .ToList();
+    }
+
+    private void Start()
+    {
+        MessageBroker.Default.Publish(new MsgObjectStarted<PlayerCustomizationView>(this));
 
         colorDropdown.onValueChanged.AddListener(OnColorChanged);
         colorDropdown.value = 0;
         colorDropdown.onValueChanged.Invoke(0);
 
-
-        nameInputField.text = PlayerPrefs.GetString("Nickname");
         nameInputField.onValueChanged.AddListener(OnNameChanged);
+        nameInputField.text = PlayerPrefs.GetString("Nickname");
+        nameInputField.onValueChanged.Invoke(nameInputField.text);
     }
 
     private void OnNameChanged(string newName)
@@ -38,7 +44,7 @@ public class PlayerCustomizationView : MonoBehaviour
         playerName = newName;
         PlayerPrefs.SetString("Nickname", playerName);
 
-        onNameChanged?.Invoke(playerName);
+        MessageBroker.Default.Publish(new MsgNameChanged{ name = newName });
     }
 
     private void OnColorChanged(int optionId)
@@ -53,7 +59,7 @@ public class PlayerCustomizationView : MonoBehaviour
             (_) => throw new System.Exception("Not all color options handled in switch block.")
         };
 
-        onColorChanged?.Invoke(playerColor);
+        MessageBroker.Default.Publish(new MsgColorChanged{ color = playerColor });
     }
 
     public enum PlayerColors

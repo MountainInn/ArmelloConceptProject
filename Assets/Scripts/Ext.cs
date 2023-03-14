@@ -3,6 +3,7 @@ using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
 using UniRx;
+using System.Collections;
 
 namespace MountainInn
 {
@@ -219,6 +220,12 @@ public static class MonoBehaviourExtension
     {
         return mono.StartCoroutine(CoroutineExtension.InvokeAfter( action,  seconds));
     }
+
+    public static Coroutine StartSearchForObjectOfType<T>(this MonoBehaviour mono, Action<T> onFound)
+        where T : Component
+    {
+        return mono.StartCoroutine(CoroutineExtension.SearchForObjectOfType<T>(onFound));
+    }
 }
 
 public static class CoroutineExtension
@@ -231,6 +238,25 @@ public static class CoroutineExtension
 
         action.Invoke();
     }
+    public static IEnumerator SearchForObjectOfType<T>(Action<T> onFound)
+        where T : Component
+    {
+        T obj = null;
+        do
+        {
+            yield return new WaitForEndOfFrame();
+
+            obj = GameObject.FindObjectOfType<T>();
+
+            if (obj != null)
+            {
+                onFound.Invoke(obj);
+                yield break;
+            }
+        }
+        while (obj == null);
+    }
+
 }
 
 public static class CanvasGroupExtension

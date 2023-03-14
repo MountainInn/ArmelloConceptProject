@@ -1,5 +1,7 @@
 using System;
+using System.Collections;
 using Mirror;
+using UniRx;
 using UnityEngine;
 
 public class ArmelloRoomPlayer : NetworkRoomPlayer
@@ -15,17 +17,34 @@ public class ArmelloRoomPlayer : NetworkRoomPlayer
 
     public override void OnStartLocalPlayer()
     {
-        customizationView = FindObjectOfType<PlayerCustomizationView>();
-        characterSelection = FindObjectOfType<CharacterSelectionView>();
+        MessageBroker.Default.Receive<PlayerCustomizationView.MsgNameChanged>()
+            .Subscribe(msg => CmdSetNickname(msg.name))
+            .AddTo(this);
 
-        customizationView.onNameChanged += CmdSetNickname;
-        customizationView.onColorChanged += CmdSetColor;
-        characterSelection.onSelectedCharacterChanged += CmdSetSelectedCharacter;
+        MessageBroker.Default.Receive<PlayerCustomizationView.MsgColorChanged>()
+            .Subscribe(msg => CmdSetColor(msg.color))
+            .AddTo(this);
 
-        CmdSetNickname(PlayerPrefs.GetString("Nickname"));
-        CmdSetColor(customizationView.playerColor);
-        CmdSetSelectedCharacter(characterSelection.GetSelectedCharacter().name);
+        MessageBroker.Default.Receive<CharacterSelectionView.MsgCharacterSelected>()
+            .Subscribe(msg => CmdSetSelectedCharacter(msg.characterName))
+            .AddTo(this);
+
+
+        this.StartSearchForObjectOfType<CharacterSelectionView>(
+            obj =>
+            {
+                CmdSetSelectedCharacter(obj.GetSelectedCharacter().name);
+            });
+
+        this.StartSearchForObjectOfType<PlayerCustomizationView>(
+            obj =>
+            {
+                CmdSetNickname(obj.playerName);
+                CmdSetColor(obj.playerColor);
+            });
+
     }
+
 
     /// Nickname
     [Command(requiresAuthority = false)]

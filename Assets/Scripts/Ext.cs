@@ -226,6 +226,11 @@ public static class MonoBehaviourExtension
     {
         return mono.StartCoroutine(CoroutineExtension.SearchForObjectOfType<T>(onFound));
     }
+
+    public static Coroutine StartWaitWhile(this MonoBehaviour mono, Func<bool> predicate)
+    {
+        return mono.StartCoroutine(CoroutineExtension.WaitWhile(predicate));
+    }
 }
 
 public static class CoroutineExtension
@@ -257,6 +262,13 @@ public static class CoroutineExtension
         while (obj == null);
     }
 
+    public static IEnumerator WaitWhile(Func<bool> predicate)
+    {
+        while (predicate.Invoke())
+        {
+            yield return new WaitForEndOfFrame();
+        }
+    }
 }
 
 public static class CanvasGroupExtension

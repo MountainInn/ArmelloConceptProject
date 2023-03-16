@@ -116,8 +116,7 @@ public class Combat : NetworkBehaviour
         units
             .Select(u => u.netIdentity.connectionToClient)
             .Distinct()
-            .ToList()
-            .ForEach(conn => TargetInitCombatViews(conn, units, hits));
+            .Map(conn => TargetInitCombatViews(conn, units, hits));
     }
 
     [TargetRpc]

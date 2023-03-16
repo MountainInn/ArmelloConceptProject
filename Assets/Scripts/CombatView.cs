@@ -42,8 +42,7 @@ public class CombatView : MonoBehaviour
 
         units
             .Enumerate()
-            .ToList()
-            .ForEach(tup =>
+            .Map(tup =>
             {
                 (int i, CombatUnit unit) = tup;
 

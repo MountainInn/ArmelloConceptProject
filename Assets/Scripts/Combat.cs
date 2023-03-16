@@ -13,14 +13,6 @@ public class Combat : NetworkBehaviour
     [SerializeField]
     float combatDurationInSeconds = 5;
 
-    [SyncVar(hook = nameof(OnIsOngoingSync))]
-    public bool isOngoing;
-    public ReactiveProperty<bool> isOngoingReactive = new ReactiveProperty<bool>(false);
-    private void OnIsOngoingSync(bool oldb, bool newb)
-    {
-        isOngoingReactive.Value = newb;
-    }
-
     CombatView combatView;
     private List<CombatUnit[]> combatList;
     private AttackMarkerPool attackMarkerPool;
@@ -35,9 +27,6 @@ public class Combat : NetworkBehaviour
 
     public override void OnStartClient()
     {
-        isOngoingReactive
-            .Subscribe(combatView.SetVisible);
-
         attackMarkerPool = new AttackMarkerPool(Resources.Load<LineRenderer>("Prefabs/Attack Marker"));
         attackMarkers = new List<LineRenderer>();
     }

@@ -9,6 +9,7 @@ using System.Collections.Generic;
 public class TurnSystem : NetworkBehaviour
 {
     [SyncVar] int currentPlayerIndex = -1;
+
     [SyncVar(hook=nameof(OnRoundCountSync))] int roundCount = 0;
 
     private void OnRoundCountSync(int oldv, int newv)

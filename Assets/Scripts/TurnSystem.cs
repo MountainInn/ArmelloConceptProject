@@ -101,7 +101,7 @@ public class TurnSystem : NetworkBehaviour
         {
             currentPlayerIndex %= players.Count;
 
-            EndRound();
+            roundCount++;
         }
 
         Player nextPlayer = players.ElementAt(currentPlayerIndex);
@@ -114,13 +114,6 @@ public class TurnSystem : NetworkBehaviour
 
         currentPlayer = nextPlayer;
         currentPlayerNetId = nextPlayer.netId;
-    }
-
-    [Server]
-    private void EndRound()
-    {
-        roundCount++;
-        MessageBroker.Default.Publish<msgRoundEnd>(new msgRoundEnd() { roundCount = roundCount });
     }
 
     private void OnCurrentPlayerNetIdSync(uint oldNetId, uint newNetId)

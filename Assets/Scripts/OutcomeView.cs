@@ -10,10 +10,12 @@ public class OutcomeView : MonoBehaviour
     [SerializeField] Button leaveButton;
 
     CanvasGroup canvasGroup;
+    private ViewQueue viewQueue;
 
     private void Awake()
     {
         canvasGroup = GetComponent<CanvasGroup>();
+        viewQueue = FindObjectOfType<ViewQueue>();
 
         leaveButton.onClick.AddListener(LeaveGame);
     }
@@ -29,16 +31,15 @@ public class OutcomeView : MonoBehaviour
         NetworkClient.Disconnect();
     }
 
-
     public void ShowLoss()
     {
         outcomeText.text = "You lose!";
-        canvasGroup.SetVisibleAndInteractable(true);
+        viewQueue.Add(canvasGroup);
     }
 
     public void ShowVictory()
     {
         outcomeText.text = "You win!";
-        canvasGroup.SetVisibleAndInteractable(true);
+        viewQueue.Add(canvasGroup);
     }
 }

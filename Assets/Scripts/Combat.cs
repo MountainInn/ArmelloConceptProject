@@ -138,7 +138,6 @@ public class Combat : NetworkBehaviour
     public void TargetInitCombatViews(NetworkConnection target, CombatUnit[] units, Hit[] hits)
     {
         combatView.InitCombatView(units);
-        combatView.SetVisible(true);
         combatView.StartCombatView(hits);
     }
 

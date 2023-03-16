@@ -30,10 +30,9 @@ public class Outcome : NetworkBehaviour
         TargetLoss(removedPlayer.connectionToClient, removedPlayer);
         RpcLoss(removedPlayer);
 
-        Player onlyPlayerLeft = turnSystem.players.SingleOrDefault();
-
-        if (onlyPlayerLeft != default)
+        if (turnSystem.players.Count == 1)
         {
+            Player onlyPlayerLeft = turnSystem.players.Single();
             TargetVictory(onlyPlayerLeft.connectionToClient, onlyPlayerLeft);
         }
     }

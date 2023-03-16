@@ -99,7 +99,7 @@ public class TurnSystem : NetworkBehaviour
 
         if (currentPlayerIndex >= players.Count)
         {
-            currentPlayerIndex %= players.Count;
+            currentPlayerIndex = 0;
 
             roundCount++;
         }

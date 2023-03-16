@@ -27,8 +27,9 @@ public class OutcomeView : MonoBehaviour
 
     private void LeaveGame()
     {
-        NetworkClient.Disconnect();
-        NetworkServer.Shutdown();
+        ArmelloNetworkManager netman = FindObjectOfType<ArmelloNetworkManager>();
+        netman.StopHost();
+        netman.StopClient();
     }
 
     public void ShowLoss()

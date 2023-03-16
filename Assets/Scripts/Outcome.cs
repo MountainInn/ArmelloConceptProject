@@ -20,8 +20,7 @@ public class Outcome : NetworkBehaviour
         var obsPlayerLost = MessageBroker.Default.Receive<OnPlayerLost>();
 
         obsPlayerLost
-            .Subscribe(msg =>
-                       this.StartInvokeAfter(() => OnPlayerLost(msg.player), 3))
+            .Subscribe(msg => OnPlayerLost(msg.player))
             .AddTo(this);
     }
 

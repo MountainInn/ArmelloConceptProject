@@ -5,11 +5,13 @@ class ViewQueue : MonoBehaviour
 {
     public Queue<CanvasGroup> viewsToShow = new Queue<CanvasGroup>();
 
+    Coroutine showingCoroutine;
+
     public void Add(CanvasGroup canvasGroup)
     {
         viewsToShow.Enqueue(canvasGroup);
 
-        StartCoroutine(KeepShowingNext());
+        showingCoroutine ??= StartCoroutine(KeepShowingNext());
     }
 
     private System.Collections.IEnumerator KeepShowingNext()
@@ -23,5 +25,7 @@ class ViewQueue : MonoBehaviour
 
             yield return CoroutineExtension.WaitWhile(() => canvasGroup.alpha != 0f);
         }
+
+        showingCoroutine = null;
     }
 }

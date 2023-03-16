@@ -25,10 +25,10 @@ public class OutcomeView : MonoBehaviour
         canvasGroup.SetVisibleAndInteractable(false);
     }
 
-
     private void LeaveGame()
     {
         NetworkClient.Disconnect();
+        NetworkServer.Shutdown();
     }
 
     public void ShowLoss()

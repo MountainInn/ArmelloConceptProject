@@ -90,7 +90,7 @@ public class TurnSystem : NetworkBehaviour
     [Server]
     public void StartNextPlayerTurn()
     {
-        if (players.Count == 0) return;
+        if (players.Count <= 1) return;
 
         currentPlayerNetId = uint.MaxValue;
 

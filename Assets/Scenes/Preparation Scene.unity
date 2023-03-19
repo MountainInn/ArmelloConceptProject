@@ -817,7 +817,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 266844778}
   m_Direction: 0
   m_Value: 0
-  m_Size: 0.9999999
+  m_Size: 0.99999994
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -1213,7 +1213,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0.000030517578, y: 0.000091552734}
+  m_AnchoredPosition: {x: 0.000030517578, y: 0.0006713867}
   m_SizeDelta: {x: 0, y: -5.4183655}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1059352017
@@ -2469,7 +2469,9 @@ GameObject:
   m_Component:
   - component: {fileID: 1954750126}
   - component: {fileID: 1954750125}
-  - component: {fileID: 1954750127}
+  - component: {fileID: 1954750124}
+  - component: {fileID: 1954750123}
+  - component: {fileID: 1954750122}
   m_Layer: 0
   m_Name: Armello Room Network Manager
   m_TagString: Untagged
@@ -2477,6 +2479,63 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!114 &1954750122
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1954750121}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 09c2b9adb023e6547aa45a0e8bf5fcfc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  apiKeys: {fileID: 11400000, guid: 2c4877059ae47d64f957cc0b2812fe97, type: 2}
+  authInterfaceLogin: 0
+  authInterfaceCredentialType: 6
+  devAuthToolPort: 7878
+  devAuthToolCredentialName: 
+  connectInterfaceCredentialType: 10
+  deviceModel: PC Windows 64bit
+  displayName: User
+  epicLoggerLevel: 200
+  collectPlayerMetrics: 0
+  checkForEpicLauncherAndRestart: 0
+  delayedInitialization: 0
+  platformTickIntervalInSeconds: 0
+  tickBudgetInMilliseconds: 0
+--- !u!114 &1954750123
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1954750121}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: db5efa10489208a44a5e560cc56f93ed, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  AttributeKeys:
+  - lobby_name
+--- !u!114 &1954750124
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1954750121}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f5f2d307354f3ea49b3ea12e6763a9fe, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Channels: 0200000000000000
+  timeout: 25
+  maxFragments: 55
+  ignoreCachedMessagesAtStartUpInSeconds: 2
+  relayControl: 1
 --- !u!114 &1954750125
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2496,7 +2555,7 @@ MonoBehaviour:
   sendRate: 30
   offlineScene: Assets/Scenes/Preparation Scene.unity
   onlineScene: 
-  transport: {fileID: 1954750127}
+  transport: {fileID: 1954750124}
   networkAddress: localhost
   maxConnections: 100
   authenticator: {fileID: 0}
@@ -2524,7 +2583,6 @@ MonoBehaviour:
   _allPlayersReady: 0
   roomSlots: []
   clientIndex: 0
-  START_EDITOR_AS_HOST: 1
 --- !u!4 &1954750126
 Transform:
   m_ObjectHideFlags: 0
@@ -2540,33 +2598,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1954750127
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1954750121}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0110f245bfcfc7d459681f7bd9ebc590, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  port: 7778
-  maxMessageSize: 16384
-  handshakeMaxSize: 3000
-  noDelay: 1
-  sendTimeout: 5000
-  receiveTimeout: 20000
-  serverMaxMessagesPerTick: 10000
-  clientMaxMessagesPerTick: 1000
-  batchSend: 1
-  waitBeforeSend: 0
-  clientUseWss: 0
-  sslEnabled: 0
-  sslCertJson: ./cert.json
-  sslProtocols: 3072
-  _logLevels: 0
 --- !u!1 &1976413440
 GameObject:
   m_ObjectHideFlags: 0
@@ -2651,7 +2682,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 24015969}
   m_Direction: 2
   m_Value: 0
-  m_Size: 0.999995
+  m_Size: 0.9999972
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:

@@ -3,6 +3,7 @@ using UniRx;
 using System.Linq;
 using System.Collections.Generic;
 using Mirror;
+using MountainInn;
 
 public class FlagPool : NetworkBehaviour
 {
@@ -23,6 +24,15 @@ public class FlagPool : NetworkBehaviour
         MessageBroker.Default
             .Receive<Influence.msgTilePlundered>()
             .Subscribe(msg => Return(msg.hexTile))
+            .AddTo(this);
+
+        MessageBroker.Default.Receive<OnPlayerLost>()
+            .Subscribe(msg =>
+                       FindObjectsOfType<Influence>()
+                       .Where(inf => inf.owner == msg.player)
+                       .Select(inf => inf.GetComponent<HexTile>())
+                       .Map(tile => Return(tile))
+            )
             .AddTo(this);
     }
 

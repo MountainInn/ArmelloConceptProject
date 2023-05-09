@@ -13,14 +13,6 @@ public class Combat : NetworkBehaviour
     [SerializeField]
     float combatDurationInSeconds = 5;
 
-    [SyncVar(hook = nameof(OnIsOngoingSync))]
-    public bool isOngoing;
-    public ReactiveProperty<bool> isOngoingReactive = new ReactiveProperty<bool>(false);
-    private void OnIsOngoingSync(bool oldb, bool newb)
-    {
-        isOngoingReactive.Value = newb;
-    }
-
     CombatView combatView;
     private List<CombatUnit[]> combatList;
     private AttackMarkerPool attackMarkerPool;
@@ -35,9 +27,6 @@ public class Combat : NetworkBehaviour
 
     public override void OnStartClient()
     {
-        isOngoingReactive
-            .Subscribe(combatView.SetVisible);
-
         attackMarkerPool = new AttackMarkerPool(Resources.Load<LineRenderer>("Prefabs/Attack Marker"));
         attackMarkers = new List<LineRenderer>();
     }
@@ -60,11 +49,8 @@ public class Combat : NetworkBehaviour
     [Server]
     private void WarPhase(TurnSystem.msgRoundEnd msg)
     {
-        Debug.Log($"WarPhase; round number: {msg.roundCount}");
         if (msg.roundCount >= warPhaseStartRound)
         {
-            Debug.Log($"This is war");
-
             var allUnits = FindObjectsOfType<CombatUnit>();
 
             if (allUnits.Count() < 2)
@@ -130,15 +116,13 @@ public class Combat : NetworkBehaviour
         units
             .Select(u => u.netIdentity.connectionToClient)
             .Distinct()
-            .ToList()
-            .ForEach(conn => TargetInitCombatViews(conn, units, hits));
+            .Map(conn => TargetInitCombatViews(conn, units, hits));
     }
 
     [TargetRpc]
     public void TargetInitCombatViews(NetworkConnection target, CombatUnit[] units, Hit[] hits)
     {
         combatView.InitCombatView(units);
-        combatView.SetVisible(true);
         combatView.StartCombatView(hits);
     }
 

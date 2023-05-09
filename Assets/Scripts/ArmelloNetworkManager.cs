@@ -31,11 +31,10 @@ public class ArmelloNetworkManager : NetworkRoomManager
     {
        if (--loadingPlayers == 0)
        {
-           FindObjectOfType<TurnSystem>()
-               .StartNextPlayerTurn();
-
-           Debug.Log($"All Players Looaded ___+++");
            MessageBroker.Default.Publish(new msgAllPlayersLoaded());
+
+           turnSystem = FindObjectOfType<TurnSystem>();
+           turnSystem.StartNextPlayerTurn();
        }
     }
 

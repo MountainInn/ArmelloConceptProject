@@ -18,36 +18,27 @@ public class Outcome : NetworkBehaviour
     public override void OnStartServer()
     {
         var obsPlayerLost = MessageBroker.Default.Receive<OnPlayerLost>();
-        var obsPlayerUnregistered = MessageBroker.Default.Receive<TurnSystem.msgPlayerUnregistered>();
 
-        var obsPlayerRemoved =
-            Observable.CombineLatest(obsPlayerLost,
-                                     obsPlayerUnregistered,
-                                     (a, b) => (a.player, b.player))
-            .Where(tup => tup.Item1 == tup.Item2)
-            .Select(tup => tup.Item1);
-
-        obsPlayerRemoved
-            .Subscribe(player => this.StartInvokeAfter(() => OnPlayerRemoved(player), 3))
+        obsPlayerLost
+            .Subscribe(msg => OnPlayerLost(msg.player))
             .AddTo(this);
     }
 
     [Server]
-    private void OnPlayerRemoved(Player removedPlayer)
+    private void OnPlayerLost(Player removedPlayer)
     {
-        TargetLoss(removedPlayer);
+        TargetLoss(removedPlayer.connectionToClient, removedPlayer);
         RpcLoss(removedPlayer);
 
-        Player onlyPlayerLeft = turnSystem.players.SingleOrDefault();
-
-        if (onlyPlayerLeft != default)
+        if (turnSystem.players.Count == 1)
         {
-            TargetVictory(onlyPlayerLeft);
+            Player onlyPlayerLeft = turnSystem.players.Single();
+            TargetVictory(onlyPlayerLeft.connectionToClient, onlyPlayerLeft);
         }
     }
 
     [TargetRpc]
-    public void TargetLoss(Player player)
+    public void TargetLoss(NetworkConnectionToClient conn, Player player)
     {
         outcomeView.ShowLoss();
     }
@@ -59,7 +50,7 @@ public class Outcome : NetworkBehaviour
     }
 
     [TargetRpc]
-    public void TargetVictory(Player player)
+    public void TargetVictory(NetworkConnectionToClient conn, Player player)
     {
         outcomeView.ShowVictory();
     }

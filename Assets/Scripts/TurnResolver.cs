@@ -20,10 +20,7 @@ public class TurnResolver : NetworkBehaviour
     {
         if (Input.GetKeyDown(KeyCode.F))
         {
-            if (!combat.isOngoing)
-            {
-                CmdStartMockupCombat();
-            }
+            CmdStartMockupCombat();
         }
     }
 

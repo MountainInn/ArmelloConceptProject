@@ -6,6 +6,7 @@ using Zenject;
 using MountainInn;
 using System.Collections.Generic;
 using System;
+using System.Collections;
 
 public class CombatView : MonoBehaviour
 {
@@ -14,7 +15,7 @@ public class CombatView : MonoBehaviour
 
     RectTransform rect;
     CanvasGroup canvasGroup;
-
+    ViewQueue viewQueue;
     StatView statViewPrefab;
     Dictionary<CombatUnit, StatView> unitViews = new Dictionary<CombatUnit, StatView>();
 
@@ -30,15 +31,9 @@ public class CombatView : MonoBehaviour
     {
         rect = GetComponent<RectTransform>();
         canvasGroup = GetComponent<CanvasGroup>();
+        viewQueue = FindObjectOfType<ViewQueue>();
 
-        SetVisible(false);
-    }
-
-    public void SetVisible(bool visible)
-    {
-        canvasGroup.alpha = (visible) ? 1f : 0f;
-        canvasGroup.interactable = visible;
-        canvasGroup.blocksRaycasts = visible;
+        canvasGroup.SetVisibleAndInteractable(false);
     }
 
     public void InitCombatView(CombatUnit[] units)
@@ -47,8 +42,7 @@ public class CombatView : MonoBehaviour
 
         units
             .Enumerate()
-            .ToList()
-            .ForEach(tup =>
+            .Map(tup =>
             {
                 (int i, CombatUnit unit) = tup;
 
@@ -67,6 +61,8 @@ public class CombatView : MonoBehaviour
 
     public void StartCombatView(Hit[] hits)
     {
+        viewQueue.Add(canvasGroup);
+
         combatDisposable?.Dispose();
         combatDisposable = null;
 
@@ -88,7 +84,9 @@ public class CombatView : MonoBehaviour
         combatDisposable =
             this.UpdateAsObservable()
             .TakeWhile((_) => hitQueue.Any())
-            .DoOnCompleted(() => this.StartInvokeAfter(() => SetVisible(false), 2f))
+            .DoOnCompleted(() =>
+                           this.StartInvokeAfter(() => canvasGroup.SetVisibleAndInteractable(false),
+                                                 2f))
             .Subscribe((_) =>
             {
                 float delta = Time.deltaTime;
@@ -131,4 +129,3 @@ public class CombatView : MonoBehaviour
     }
 
 }
-

@@ -60,20 +60,12 @@ public class Character : NetworkBehaviour
             .Where(msg => msg.loser == combatUnit)
             .Subscribe(OnLostFight);
 
-        var msgAllPlayersLoaded =
-            MessageBroker.Default
-            .Receive<ArmelloNetworkManager.msgAllPlayersLoaded>()
-            .Select(msg => new Unit());
 
-        var msgCubeMapFullySpawned =
-            MessageBroker.Default
-            .Receive<CubeMap.msgFullySpawned>()
-            .Select(msg => new Unit());
-
-        Observable.CombineLatest(new [] { msgAllPlayersLoaded, msgCubeMapFullySpawned })
-            .Subscribe(_=> CmdInitializeCoordinates())
+        MessageBroker.Default.Receive<ArmelloNetworkManager.msgAllPlayersLoaded>()
+            .Subscribe(msg => InitializeCoords())
             .AddTo(this);
     }
+
 
     [Server]
     private void OnLostFight(OnLostFight msg)
@@ -88,8 +80,8 @@ public class Character : NetworkBehaviour
         }
     }
 
-    [Command(requiresAuthority = false)]
-    private void CmdInitializeCoordinates()
+    [Server]
+    public void InitializeCoords()
     {
         Vector3Int coordinates = cubeMap.GetRandomCoordinates();
 

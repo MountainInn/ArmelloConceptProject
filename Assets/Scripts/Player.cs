@@ -104,6 +104,7 @@ public class Player : NetworkBehaviour
             .AddTo(this);
 
         CmdPublishLocalPlayerStarted();
+        MessageBroker.Default.Publish(new msgOnLocalPlayerStarted { player = this });
     }
 
     [Command(requiresAuthority = false)]

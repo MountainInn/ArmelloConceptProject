@@ -3,6 +3,7 @@ using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
 using UniRx;
+using System.Collections;
 
 namespace MountainInn
 {
@@ -232,6 +233,16 @@ public static class MonoBehaviourExtension
     {
         return gameObject.GetComponent<CubicTransform>();
     }
+    public static Coroutine StartSearchForObjectOfType<T>(this MonoBehaviour mono, Action<T> onFound)
+        where T : Component
+    {
+        return mono.StartCoroutine(CoroutineExtension.SearchForObjectOfType<T>(onFound));
+    }
+
+    public static Coroutine StartWaitWhile(this MonoBehaviour mono, Func<bool> predicate)
+    {
+        return mono.StartCoroutine(CoroutineExtension.WaitWhile(predicate));
+    }
 }
 
 public static class CoroutineExtension
@@ -243,6 +254,32 @@ public static class CoroutineExtension
         while ((seconds -= Time.deltaTime) > 0f) yield return wait;
 
         action.Invoke();
+    }
+    public static IEnumerator SearchForObjectOfType<T>(Action<T> onFound)
+        where T : Component
+    {
+        T obj = null;
+        do
+        {
+            yield return new WaitForEndOfFrame();
+
+            obj = GameObject.FindObjectOfType<T>();
+
+            if (obj != null)
+            {
+                onFound.Invoke(obj);
+                yield break;
+            }
+        }
+        while (obj == null);
+    }
+
+    public static IEnumerator WaitWhile(Func<bool> predicate)
+    {
+        while (predicate.Invoke())
+        {
+            yield return new WaitForEndOfFrame();
+        }
     }
 }
 

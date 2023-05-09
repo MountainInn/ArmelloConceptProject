@@ -9,6 +9,7 @@ using System.Collections.Generic;
 public class TurnSystem : NetworkBehaviour
 {
     [SyncVar] int currentPlayerIndex = -1;
+
     [SyncVar(hook=nameof(OnRoundCountSync))] int roundCount = 0;
 
     private void OnRoundCountSync(int oldv, int newv)
@@ -70,6 +71,9 @@ public class TurnSystem : NetworkBehaviour
     [Server]
     public void RegisterPlayer(Player player)
     {
+        if (players.Contains(player))
+            return;
+
         player.turn = new Turn(player.netId, playerNetIdStream);
         player.turn.started
             .Subscribe(b =>
@@ -87,10 +91,7 @@ public class TurnSystem : NetworkBehaviour
     [Server]
     public void StartNextPlayerTurn()
     {
-        Debug.Log($"NextPlayerTurn");
-        if (players.Count == 0) return;
-
-        Debug.Log($"NextPlayerTurnStarted");
+        if (players.Count <= 1) return;
 
         currentPlayerNetId = uint.MaxValue;
 
@@ -98,9 +99,9 @@ public class TurnSystem : NetworkBehaviour
 
         if (currentPlayerIndex >= players.Count)
         {
-            currentPlayerIndex %= players.Count;
+            currentPlayerIndex = 0;
 
-            EndRound();
+            roundCount++;
         }
 
         Player nextPlayer = players.ElementAt(currentPlayerIndex);
@@ -113,13 +114,6 @@ public class TurnSystem : NetworkBehaviour
 
         currentPlayer = nextPlayer;
         currentPlayerNetId = nextPlayer.netId;
-    }
-
-    [Server]
-    private void EndRound()
-    {
-        roundCount++;
-        MessageBroker.Default.Publish<msgRoundEnd>(new msgRoundEnd() { roundCount = roundCount });
     }
 
     private void OnCurrentPlayerNetIdSync(uint oldNetId, uint newNetId)

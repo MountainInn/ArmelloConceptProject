@@ -127,6 +127,7 @@ public class Inventory : NetworkBehaviour
     public void Equip(Item item)
     {
         equipment.Add(item);
+        item.wearer = owner;
         UpdateEquipmentStats();
     }
 
@@ -134,6 +135,7 @@ public class Inventory : NetworkBehaviour
     public void Unequip(Item item)
     {
         equipment.Remove(item);
+        item.wearer = null;
         UpdateEquipmentStats();
     }
 

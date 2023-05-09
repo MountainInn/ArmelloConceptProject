@@ -26,6 +26,8 @@ public class ItemPlacement : NetworkBehaviour
 
         this.item = item;
 
+        item.cubicTransform().coordinates = hexTile.coordinates;
+
         item.transform.position = ItemSpawner.GetItemPosition(hexTile);
 
         item.RpcToggleParticle(true);
@@ -35,6 +37,8 @@ public class ItemPlacement : NetworkBehaviour
     public void PutItem(Item item)
     {
         this.item = item;
+
+        item.cubicTransform().coordinates = hexTile.coordinates;
 
         item.transform.position = ItemSpawner.GetItemPosition(hexTile);
 

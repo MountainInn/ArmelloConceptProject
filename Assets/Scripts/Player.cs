@@ -66,6 +66,10 @@ public class Player : NetworkBehaviour
         InitCharacterSO(roomPlayer);
 
         inventory = GetComponent<Inventory>();
+
+        int perception = character.utilityStats.perception;
+        GetComponent<ArmelloDistanceInterestManagementCustomRange>().cubicRange = perception;
+        GetComponent<ArmelloDistanceInterestManagementCustomRange>().floatRange = perception * 2 + .5f;
     }
 
     public void InitCharacterSO(ArmelloRoomPlayer roomPlayer)
@@ -130,14 +134,14 @@ public class Player : NetworkBehaviour
 
         if (hex.character is null)
         {
-            if (movementPoints < hex.moveCost)
+            if (movementPoints < hex.tileLevel.syncLevel)
                 return;
 
             if (cubeMap.Distance(character.coordinates, hex.coordinates) != 1)
                 return;
 
             character.CmdMove(hex);
-            CmdSpendMovementPoints(hex.moveCost);
+            CmdSpendMovementPoints(hex.tileLevel.syncLevel);
         }
         else if (hex.character.isOwned)
         {
@@ -203,7 +207,7 @@ public class Player : NetworkBehaviour
     [Command(requiresAuthority = false)]
     private void CmdSpendActionPoints(int amount)
     {
-        actionPoints -= amount;
+        // actionPoints -= amount;
         Debug.Assert(actionPoints >= 0);
     }
 }

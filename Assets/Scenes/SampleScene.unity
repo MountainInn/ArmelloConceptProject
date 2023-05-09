@@ -692,7 +692,7 @@ MonoBehaviour:
   syncDirection: 0
   syncMode: 0
   syncInterval: 0.1
-  warPhaseStartRound: 2
+  warPhaseStartRound: 15
   combatDurationInSeconds: 5
   isOngoing: 0
   isOngoingReactive:
@@ -3150,7 +3150,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1861602513}
   - component: {fileID: 1861602511}
-  - component: {fileID: 1861602514}
   - component: {fileID: 1861602515}
   m_Layer: 0
   m_Name: CubeMap
@@ -3191,20 +3190,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 6
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1861602514
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1861602510}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 36e1ccb8f3314f84cb516997b619be3f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  highlightNeighbours: 0
-  highlightPath: 0
 --- !u!114 &1861602515
 MonoBehaviour:
   m_ObjectHideFlags: 0

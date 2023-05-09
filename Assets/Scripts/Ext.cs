@@ -219,6 +219,19 @@ public static class MonoBehaviourExtension
     {
         return mono.StartCoroutine(CoroutineExtension.InvokeAfter( action,  seconds));
     }
+
+    public static CubicTransform cubicTransform(this Component comp)
+    {
+        return comp.GetComponent<CubicTransform>();
+    }
+    public static CubicTransform cubicTransform(this MonoBehaviour mono)
+    {
+        return mono.GetComponent<CubicTransform>();
+    }
+    public static CubicTransform cubicTransform(this GameObject gameObject)
+    {
+        return gameObject.GetComponent<CubicTransform>();
+    }
 }
 
 public static class CoroutineExtension

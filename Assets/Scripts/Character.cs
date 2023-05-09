@@ -8,8 +8,11 @@ using UniRx;
 
 public class Character : NetworkBehaviour
 {
-    [SyncVar]
-    public Vector3Int coordinates;
+    public Vector3Int coordinates
+    {
+        get => this.cubicTransform().coordinates;
+        set => this.cubicTransform().coordinates = value;
+    }
 
     public Color characterColor;
 
@@ -104,6 +107,8 @@ public class Character : NetworkBehaviour
 
         SetCoordinates(coordinates);
 
+        Move(hex, true);
+
         RpcMove(hex, true);
     }
 
@@ -124,6 +129,11 @@ public class Character : NetworkBehaviour
     [ClientRpc]
     public void RpcMove(HexTile hex, bool useTween)
     {
+        Move(hex, useTween);
+    }
+
+    public void Move(HexTile hex, bool useTween)
+    {
         Vector3 position = hex.Top;
 
         if (useTween)
@@ -139,12 +149,10 @@ public class Character : NetworkBehaviour
         }
     }
 
+
     [Client]
     private void OnStandOnTile(HexTile hex)
     {
-        if (isOwned)
-            ClearWarscreen();
-
         MessageBroker.Default
             .Publish<OnStandOnTile>(new OnStandOnTile(){ hex = hex, character = this });
     }
@@ -153,15 +161,6 @@ public class Character : NetworkBehaviour
     private void InvokeOnCharacterMoved()
     {
         onCharacterMoved?.Invoke(this);
-    }
-
-    private void ClearWarscreen()
-    {
-        cubeMap.tiles[coordinates].ToggleVisibility(true);
-
-        cubeMap.NeighbourTilesInRadius(utilityStats.perception, coordinates)
-            .ToList()
-            .ForEach(tile => tile.ToggleVisibility(true));
     }
 
     public bool OutOfReach(Vector3Int target)

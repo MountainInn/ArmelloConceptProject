@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 2174319019795375043}
   - component: {fileID: 2174319019795375044}
   - component: {fileID: 2174319019795375045}
+  - component: {fileID: -4381539598582085511}
   m_Layer: 0
   m_Name: Item
   m_TagString: Untagged
@@ -77,8 +78,9 @@ MonoBehaviour:
     agility: 0
     speed: 0
     attackTimerRatio: 0
-  name: 
   icon: {fileID: 0}
+  cubicTransform: {fileID: 0}
+  itemSO: {fileID: 0}
 --- !u!198 &2174319019795375044
 ParticleSystem:
   m_ObjectHideFlags: 0
@@ -4858,3 +4860,19 @@ ParticleSystemRenderer:
   m_MeshWeighting2: 1
   m_MeshWeighting3: 1
   m_MaskInteraction: 0
+--- !u!114 &-4381539598582085511
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2174319019795375046}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 80303e2d3708f3544876f37ec57fd458, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  syncDirection: 0
+  syncMode: 0
+  syncInterval: 0.1
+  coordinates: {x: 0, y: 0, z: 0}

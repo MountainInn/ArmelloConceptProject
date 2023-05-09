@@ -40,7 +40,7 @@ public class ArmelloDistanceInterestManagement : InterestManagement
         )
         {
             range = customRange.cubicRange;
-            isInRange = cubeMap.Distance(player.cubicTransform(), cubicTransform) <= range;
+            isInRange = cubeMap.Distance(player.cubicTransform().coordinates, cubicTransform.coordinates) <= range;
 
             if (isTile = identity.TryGetComponent(out HexTile hexTile))
             {
